@@ -4,5 +4,5 @@ High performance cryptocurrency trading API with support for user defined networ
 
 * Based on Rust, memory safe by default.
 * Support for websockets and user defined networking.
-* Think layer wrappers for Java, C#, Python and Node.js
+* Thin layer wrappers for Java, C#, Python and Node.js
 * Easy to add support for additional exchanges.
