@@ -1,2 +1,8 @@
-# openlimits
-Open, safe and high performance cryptocurrency trading API with advanced support for streams and user defined networking.
+# OpenLimits
+
+High performance cryptocurrency trading API with support for user defined networking.
+
+* Based on Rust, memory safe by default.
+* Support for websockets and user defined networking.
+* Think layer wrappers for Java, C#, Python and Node.js
+* Easy to add support for additional exchanges.
