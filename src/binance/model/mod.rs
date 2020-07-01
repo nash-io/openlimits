@@ -1,4 +1,4 @@
-// pub mod websocket;
+pub mod websocket;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
