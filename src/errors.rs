@@ -18,7 +18,7 @@ impl fmt::Display for BinanceContentError {
         write!(f, "error code: {} msg: {}", self.code, self.msg)
     }
 }
-// TODO CREATE A NEW TYPE OF ENUM ERRORS FOR THE DIFFERENT BAIL ERRORS
+
 #[derive(Error, Debug)]
 pub enum OpenLimitError {
     #[error("")]
@@ -54,7 +54,7 @@ pub enum OpenLimitError {
     #[error("")]
     UrlParserError(#[from] url::ParseError),
     #[error("")]
-    Tungstenite(#[from] tungstenite::Error),
+    Tungstenite(#[from] tokio_tungstenite::tungstenite::Error),
     #[error("")]
     TimestampError(#[from] std::time::SystemTimeError),
     #[error("")]

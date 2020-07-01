@@ -2,7 +2,7 @@ mod account;
 mod general;
 mod market;
 mod userstream;
-//mod websocket;
+mod websocket;
 
 use super::transport::Transport;
 
