@@ -1,13 +1,13 @@
+use crate::Result;
 use chrono::Utc;
 use hex::encode as hexify;
 use hmac::{Hmac, Mac, NewMac};
-use sha2::Sha256;
 use reqwest::header;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use serde_urlencoded;
+use sha2::Sha256;
 use url::Url;
-use crate::Result;
 
 use crate::errors::OpenLimitError;
 
@@ -25,12 +25,10 @@ pub struct Transport {
 
 impl Transport {
     pub fn new() -> Result<Self> {
-        let client = reqwest::Client::new();
-
         let default_headers = Transport::default_headers(None);
         let client = reqwest::Client::builder()
-        .default_headers(default_headers)
-        .build()?;
+            .default_headers(default_headers)
+            .build()?;
 
         Ok(Transport {
             credential: None,
@@ -42,8 +40,8 @@ impl Transport {
     pub fn with_credential(api_key: &str, api_secret: &str) -> Result<Self> {
         let default_headers = Transport::default_headers(Some(api_key));
         let client = reqwest::Client::builder()
-        .default_headers(default_headers)
-        .build()?;
+            .default_headers(default_headers)
+            .build()?;
 
         Ok(Transport {
             client: client,
@@ -54,9 +52,15 @@ impl Transport {
 
     pub fn default_headers(api_key: Option<&str>) -> header::HeaderMap<header::HeaderValue> {
         let mut headers = header::HeaderMap::new();
-        headers.insert(header::USER_AGENT, header::HeaderValue::from_static("open_limit"));
-        headers.insert(header::CONTENT_TYPE, header::HeaderValue::from_static("application/x-www-form-urlencoded"));
-        
+        headers.insert(
+            header::USER_AGENT,
+            header::HeaderValue::from_static("open_limit"),
+        );
+        headers.insert(
+            header::CONTENT_TYPE,
+            header::HeaderValue::from_static("application/x-www-form-urlencoded"),
+        );
+
         if let Some(key) = api_key {
             headers.insert("X-MBX-APIKEY", header::HeaderValue::from_str(key).unwrap());
         };
@@ -64,125 +68,148 @@ impl Transport {
         headers
     }
 
-    pub async fn get<O, S>(
-        &self,
-        endpoint: &str,
-        params: Option<S>,
-    ) -> Result<O>
+    pub async fn get<O, S>(&self, endpoint: &str, params: Option<S>) -> Result<O>
     where
         O: DeserializeOwned,
         S: Serialize,
     {
         let url = self.get_url(endpoint, false)?;
-        Ok(self.client.get(url).form(&params).send().await?.json::<O>().await?)
+        Ok(self
+            .client
+            .get(url)
+            .form(&params)
+            .send()
+            .await?
+            .json::<O>()
+            .await?)
     }
 
-    pub async fn post<O, D>(
-        &self,
-        endpoint: &str,
-        data: Option<D>,
-    ) -> Result<O>
+    pub async fn post<O, D>(&self, endpoint: &str, data: Option<D>) -> Result<O>
     where
         O: DeserializeOwned,
         D: Serialize,
     {
         let url = self.get_url(endpoint, false)?;
-        Ok(self.client.post(url).json(&data).send().await?.json::<O>().await?)
+        Ok(self
+            .client
+            .post(url)
+            .json(&data)
+            .send()
+            .await?
+            .json::<O>()
+            .await?)
     }
 
-    pub async fn put<O, D>(
-        &self,
-        endpoint: &str,
-        data: Option<D>,
-    ) -> Result<O>
+    pub async fn put<O, D>(&self, endpoint: &str, data: Option<D>) -> Result<O>
     where
         O: DeserializeOwned,
         D: Serialize,
     {
         let url = self.get_url(endpoint, false)?;
-        Ok(self.client.put(url).json(&data).send().await?.json::<O>().await?)
+        Ok(self
+            .client
+            .put(url)
+            .json(&data)
+            .send()
+            .await?
+            .json::<O>()
+            .await?)
     }
 
-    pub async fn delete<O, Q>(
-        &self,
-        endpoint: &str,
-        data: Option<Q>,
-    ) ->  Result<O>
+    pub async fn delete<O, Q>(&self, endpoint: &str, data: Option<Q>) -> Result<O>
     where
         O: DeserializeOwned,
         Q: Serialize,
     {
         let url = self.get_url(endpoint, false)?;
-        Ok(self.client.delete(url).json(&data).send().await?.json::<O>().await?)
+        Ok(self
+            .client
+            .delete(url)
+            .json(&data)
+            .send()
+            .await?
+            .json::<O>()
+            .await?)
     }
 
-    pub async fn signed_get<O, Q>(
-        &self,
-        endpoint: &str,
-        params: Option<Q>,
-    ) -> Result<O>
+    pub async fn signed_get<O, Q>(&self, endpoint: &str, params: Option<Q>) -> Result<O>
     where
         O: DeserializeOwned,
         Q: Serialize,
     {
         let mut url = self.get_url(endpoint, true)?;
 
-        let (key, signature) = self.signature::<()>(&url, None)?;
+        let (_, signature) = self.signature::<()>(&url, None)?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        Ok(self.client.get(url).form(&params).send().await?.json::<O>().await?)
+        Ok(self
+            .client
+            .get(url)
+            .form(&params)
+            .send()
+            .await?
+            .json::<O>()
+            .await?)
     }
 
-    pub async fn signed_post<D, O>(
-        &self,
-        endpoint: &str,
-        data: Option<D>,
-    ) -> Result<O>
+    pub async fn signed_post<D, O>(&self, endpoint: &str, data: Option<D>) -> Result<O>
     where
         O: DeserializeOwned,
         D: Serialize,
     {
         let mut url = self.get_url(endpoint, true)?;
 
-        let (key, signature) = self.signature(&url, Some(&data))?;
+        let (_, signature) = self.signature(&url, Some(&data))?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        Ok(self.client.post(url).json(&data).send().await?.json::<O>().await?)
+        Ok(self
+            .client
+            .post(url)
+            .json(&data)
+            .send()
+            .await?
+            .json::<O>()
+            .await?)
     }
 
-    pub async fn signed_put<O, Q>(
-        &self,
-        endpoint: &str,
-        data: Option<Q>,
-    ) -> Result<O>
-    where
-        O: DeserializeOwned,
-        Q: Serialize,
-    {
-
-        let mut url = self.get_url(endpoint, true)?;
-
-        let (key, signature) = self.signature(&url, Some(&data))?;
-        url.query_pairs_mut().append_pair("signature", &signature);
-
-        Ok(self.client.put(url).json(&data).send().await?.json::<O>().await?)
-    }
-
-    pub async fn signed_delete<O, Q>(
-        &self,
-        endpoint: &str,
-        data: Option<Q>,
-    ) -> Result<O>
+    pub async fn signed_put<O, Q>(&self, endpoint: &str, data: Option<Q>) -> Result<O>
     where
         O: DeserializeOwned,
         Q: Serialize,
     {
         let mut url = self.get_url(endpoint, true)?;
 
-        let (key, signature) = self.signature(&url, Some(&data))?;
+        let (_, signature) = self.signature(&url, Some(&data))?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        Ok(self.client.delete(url).json(&data).send().await?.json::<O>().await?)
+        Ok(self
+            .client
+            .put(url)
+            .json(&data)
+            .send()
+            .await?
+            .json::<O>()
+            .await?)
+    }
+
+    pub async fn signed_delete<O, Q>(&self, endpoint: &str, data: Option<Q>) -> Result<O>
+    where
+        O: DeserializeOwned,
+        Q: Serialize,
+    {
+        let mut url = self.get_url(endpoint, true)?;
+
+        let (_, signature) = self.signature(&url, Some(&data))?;
+        url.query_pairs_mut().append_pair("signature", &signature);
+
+        Ok(self
+            .client
+            .delete(url)
+            .json(&data)
+            .send()
+            .await?
+            .json::<O>()
+            .await?)
     }
 
     pub fn get_url(&self, endpoint: &str, add_recv_window: bool) -> Result<Url> {
@@ -191,9 +218,9 @@ impl Transport {
 
         if add_recv_window {
             url.query_pairs_mut()
-            .append_pair("timestamp", &Utc::now().timestamp_millis().to_string());
-        url.query_pairs_mut()
-            .append_pair("recvWindow", &self.recv_window.to_string());
+                .append_pair("timestamp", &Utc::now().timestamp_millis().to_string());
+            url.query_pairs_mut()
+                .append_pair("recvWindow", &self.recv_window.to_string());
         };
         Ok(url)
     }
@@ -206,13 +233,14 @@ impl Transport {
     }
 
     pub fn signature<D>(&self, url: &Url, body: Option<&D>) -> Result<(&str, String)>
-      where D: Serialize, {
+    where
+        D: Serialize,
+    {
         let (key, secret) = self.check_key()?;
         let mut mac = HmacSha256::new_varkey(secret.as_bytes()).unwrap();
         let body = if let Some(_) = body {
             serde_urlencoded::to_string(body)?
-        }
-        else{
+        } else {
             String::from("")
         };
 

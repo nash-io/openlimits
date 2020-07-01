@@ -1,22 +1,20 @@
 use std::collections::HashMap;
 use std::iter::FromIterator;
 
+use crate::Result;
 use serde_json::json;
 use serde_json::Value;
-use crate::Result;
 
 use super::Binance;
+use crate::binance::model::{
+    BookTickers, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices, Ticker,
+};
 use crate::errors::OpenLimitError;
-use crate::binance::model::{BookTickers, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices, Ticker};
 
 // Market Data endpoints
 impl Binance {
     // Order book (Default 100; max 100)
-    pub async fn get_depth<I>(
-        &self,
-        symbol: &str,
-        limit: I,
-    ) -> Result<OrderBook>
+    pub async fn get_depth<I>(&self, symbol: &str, limit: I) -> Result<OrderBook>
     where
         I: Into<Option<u64>>,
     {
@@ -30,22 +28,22 @@ impl Binance {
     pub async fn get_all_prices(&self) -> Result<Prices> {
         Ok(self
             .transport
-            .get::<_, ()>("/api/v1/ticker/allPrices", None).await?)
+            .get::<_, ()>("/api/v1/ticker/allPrices", None)
+            .await?)
     }
 
     // Latest price for ONE symbol.
     pub async fn get_price(&self, symbol: &str) -> Result<f64> {
         let symbol = symbol.to_string();
-        self
-        .get_all_prices()
-        .await
-        .and_then(move |Prices::AllPrices(prices)| {
-            Ok(prices
-                .into_iter()
-                .find(|obj| obj.symbol == symbol)
-                .map(|par| par.price)
-                .ok_or(OpenLimitError::SymbolNotFound())?)
-        })
+        self.get_all_prices()
+            .await
+            .and_then(move |Prices::AllPrices(prices)| {
+                Ok(prices
+                    .into_iter()
+                    .find(|obj| obj.symbol == symbol)
+                    .map(|par| par.price)
+                    .ok_or(OpenLimitError::SymbolNotFound())?)
+            })
     }
 
     // Symbols order book ticker
@@ -53,14 +51,12 @@ impl Binance {
     pub async fn get_all_book_tickers(&self) -> Result<BookTickers> {
         Ok(self
             .transport
-            .get::<_, ()>("/api/v1/ticker/allBookTickers", None).await?)
+            .get::<_, ()>("/api/v1/ticker/allBookTickers", None)
+            .await?)
     }
 
     // -> Best price/qty on the order book for ONE symbol
-    pub async fn get_book_ticker(
-        &self,
-        symbol: &str,
-    ) -> Result<Ticker> {
+    pub async fn get_book_ticker(&self, symbol: &str) -> Result<Ticker> {
         let symbol = symbol.to_string();
         self.get_all_book_tickers().await.and_then(
             move |BookTickers::AllBookTickers(book_tickers)| {
@@ -73,12 +69,12 @@ impl Binance {
     }
 
     // 24hr ticker price change statistics
-    pub async fn get_24h_price_stats(
-        &self,
-        symbol: &str,
-    ) -> Result<PriceStats> {
+    pub async fn get_24h_price_stats(&self, symbol: &str) -> Result<PriceStats> {
         let params = json! {{"symbol": symbol}};
-        Ok(self.transport.get("/api/v1/ticker/24hr", Some(params)).await?)
+        Ok(self
+            .transport
+            .get("/api/v1/ticker/24hr", Some(params))
+            .await?)
     }
 
     // Returns up to 'limit' klines for given symbol and interval ("1m", "5m", ...)
@@ -113,36 +109,36 @@ impl Binance {
         }
         let params: HashMap<&str, String> = HashMap::from_iter(params);
 
-        let summaries =
-            self.transport
-                .get("/api/v1/klines", Some(params)).await?
-                .map(|data: Vec<Vec<Value>>| {
-                    KlineSummaries::AllKlineSummaries(
-                        data.iter()
-                            .map(|row| KlineSummary {
-                                open_time: to_i64(&row[0]),
-                                open: to_f64(&row[1]),
-                                high: to_f64(&row[2]),
-                                low: to_f64(&row[3]),
-                                close: to_f64(&row[4]),
-                                volume: to_f64(&row[5]),
-                                close_time: to_i64(&row[6]),
-                                quote_asset_volume: to_f64(&row[7]),
-                                number_of_trades: to_i64(&row[8]),
-                                taker_buy_base_asset_volume: to_f64(&row[9]),
-                                taker_buy_quote_asset_volume: to_f64(&row[10]),
-                            })
-                            .collect(),
-                    )
-                });
-        Ok(summaries)
+        self.transport
+            .get("/api/v1/klines", Some(params))
+            .await
+            .map(|data: Vec<Vec<Value>>| {
+                KlineSummaries::AllKlineSummaries(
+                    data.iter()
+                        .map(|row| KlineSummary {
+                            open_time: to_i64(&row[0]),
+                            open: to_f64(&row[1]),
+                            high: to_f64(&row[2]),
+                            low: to_f64(&row[3]),
+                            close: to_f64(&row[4]),
+                            volume: to_f64(&row[5]),
+                            close_time: to_i64(&row[6]),
+                            quote_asset_volume: to_f64(&row[7]),
+                            number_of_trades: to_i64(&row[8]),
+                            taker_buy_base_asset_volume: to_f64(&row[9]),
+                            taker_buy_quote_asset_volume: to_f64(&row[10]),
+                        })
+                        .collect(),
+                )
+            })
     }
 
     // 24hr ticker price change statistics
-    pub async fn get_24h_price_stats_all(
-        &self,
-    ) -> Result<Vec<PriceStats>> {
-        Ok(self.transport.get::<_, ()>("/api/v1/ticker/24hr", None).await?)
+    pub async fn get_24h_price_stats_all(&self) -> Result<Vec<PriceStats>> {
+        Ok(self
+            .transport
+            .get::<_, ()>("/api/v1/ticker/24hr", None)
+            .await?)
     }
 }
 
