@@ -2,7 +2,7 @@ use crate::binance::client::Binance;
 use crate::binance::model::{Success, UserDataStream};
 use crate::Result;
 
-static USER_DATA_STREAM: &'static str = "/api/v1/userDataStream";
+static USER_DATA_STREAM: &str = "/api/v1/userDataStream";
 
 impl Binance {
     // User Stream
