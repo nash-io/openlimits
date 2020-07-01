@@ -25,7 +25,7 @@ impl Binance {
     }
 }
 impl Default for Binance {
-     fn default() -> Self {
-         Self::new()
-     }
- }
+    fn default() -> Self {
+        Self::new()
+    }
+}
