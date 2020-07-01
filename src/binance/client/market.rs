@@ -1,15 +1,15 @@
 use std::collections::HashMap;
 use std::iter::FromIterator;
 
-use crate::Result;
 use serde_json::json;
 use serde_json::Value;
 
-use super::Binance;
 use crate::binance::model::{
     BookTickers, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices, Ticker,
 };
+use crate::binance::Binance;
 use crate::errors::OpenLimitError;
+use crate::Result;
 
 // Market Data endpoints
 impl Binance {

@@ -1,4 +1,5 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+
 use super::string_or_float;
 use super::{
     Asks, Bids, Kline, OrderBook, OrderExecType, OrderRejectReason, OrderStatus, OrderType, Side,

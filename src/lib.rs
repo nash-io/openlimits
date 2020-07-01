@@ -6,23 +6,23 @@
     unused_import_braces
 )]
 
+extern crate chrono;
 extern crate hex;
 extern crate hmac;
-extern crate serde;
-extern crate sha2;
-extern crate serde_json;
 extern crate log;
-extern crate chrono;
+extern crate serde;
+extern crate serde_json;
+extern crate sha2;
 extern crate sugar;
 extern crate tokio;
 extern crate tokio_tungstenite;
 extern crate tungstenite;
 extern crate url;
 
-pub mod errors;
-pub mod client;
-pub mod exchange;
 pub mod binance;
+pub mod client;
+pub mod errors;
+pub mod exchange;
 
 use errors::OpenLimitError;
 pub(crate) type Result<T> = std::result::Result<T, OpenLimitError>;

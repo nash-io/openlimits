@@ -1,4 +1,3 @@
-
 use crate::binance::client::Binance;
 use crate::binance::model::{Success, UserDataStream};
 use crate::Result;
@@ -13,25 +12,25 @@ impl Binance {
     }
 
     // Current open orders on a symbol
-    pub async fn user_stream_keep_alive(
-        &self,
-        listen_key: &str,
-    ) -> Result<Success> {
-        let success = self.transport.put(
-            USER_DATA_STREAM,
-            Some(vec![("listen_key", listen_key.to_string())]),
-        ).await?;
+    pub async fn user_stream_keep_alive(&self, listen_key: &str) -> Result<Success> {
+        let success = self
+            .transport
+            .put(
+                USER_DATA_STREAM,
+                Some(vec![("listen_key", listen_key.to_string())]),
+            )
+            .await?;
         Ok(success)
     }
 
-    pub async fn user_stream_close(
-        &self,
-        listen_key: &str,
-    ) -> Result<Success> {
-        let success = self.transport.delete(
-            USER_DATA_STREAM,
-            Some(vec![("listen_key", listen_key.to_string())]),
-        ).await?;
+    pub async fn user_stream_close(&self, listen_key: &str) -> Result<Success> {
+        let success = self
+            .transport
+            .delete(
+                USER_DATA_STREAM,
+                Some(vec![("listen_key", listen_key.to_string())]),
+            )
+            .await?;
         Ok(success)
     }
 }

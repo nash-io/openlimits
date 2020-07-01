@@ -1,4 +1,3 @@
-use crate::Result;
 use chrono::Utc;
 use hex::encode as hexify;
 use hmac::{Hmac, Mac, NewMac};
@@ -10,6 +9,7 @@ use sha2::Sha256;
 use url::Url;
 
 use crate::errors::OpenLimitError;
+use crate::Result;
 
 type HmacSha256 = Hmac<Sha256>;
 

@@ -1,8 +1,8 @@
-use thiserror::Error;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
-use serde::{Serialize, Deserialize};
 use std::fmt;
+use thiserror::Error;
 
 #[derive(Serialize, Deserialize, Debug, Error)]
 pub struct BinanceContentError {
@@ -18,7 +18,7 @@ impl fmt::Display for BinanceContentError {
         write!(f, "error code: {} msg: {}", self.code, self.msg)
     }
 }
-// TODO CREATE A NEW TYPE OF ENUM ERRORS FOR THE DIFFERENT BAIL ERRORS 
+// TODO CREATE A NEW TYPE OF ENUM ERRORS FOR THE DIFFERENT BAIL ERRORS
 #[derive(Error, Debug)]
 pub enum OpenLimitError {
     #[error("")]
@@ -58,5 +58,5 @@ pub enum OpenLimitError {
     #[error("")]
     TimestampError(#[from] std::time::SystemTimeError),
     #[error("")]
-    UnkownResponse(String)
+    UnkownResponse(String),
 }

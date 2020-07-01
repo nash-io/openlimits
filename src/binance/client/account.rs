@@ -1,10 +1,13 @@
-use crate::Result;
-use crate::errors::OpenLimitError;
+use serde_json::json;
 use std::collections::HashMap;
 use sugar::{convert_args, hashmap};
+
 use crate::binance::client::Binance;
-use crate::binance::model::{AccountInformation, Balance, Order, OrderCanceled, TradeHistory, Transaction};
-use serde_json::json;
+use crate::binance::model::{
+    AccountInformation, Balance, Order, OrderCanceled, TradeHistory, Transaction,
+};
+use crate::errors::OpenLimitError;
+use crate::Result;
 
 static ORDER_TYPE_LIMIT: &'static str = "LIMIT";
 static ORDER_TYPE_MARKET: &'static str = "MARKET";
@@ -13,7 +16,6 @@ static ORDER_SIDE_SELL: &'static str = "SELL";
 static TIME_IN_FORCE_GTC: &'static str = "GTC";
 
 static API_V3_ORDER: &'static str = "/api/v3/order";
-
 
 struct OrderRequest {
     pub symbol: String,
@@ -29,7 +31,8 @@ impl Binance {
     pub async fn get_account(&self) -> Result<AccountInformation> {
         let account_info = self
             .transport
-            .signed_get::<_, ()>("/api/v3/account", None).await?;
+            .signed_get::<_, ()>("/api/v3/account", None)
+            .await?;
 
         Ok(account_info)
     }
@@ -51,14 +54,12 @@ impl Binance {
     }
 
     // Current open orders for ONE symbol
-    pub async fn get_open_orders(
-        &self,
-        symbol: &str,
-    ) -> Result<Vec<Order>> {
+    pub async fn get_open_orders(&self, symbol: &str) -> Result<Vec<Order>> {
         let params = json! {{"symbol": symbol}};
         let orders = self
             .transport
-            .signed_get("/api/v3/openOrders", Some(params)).await?;
+            .signed_get("/api/v3/openOrders", Some(params))
+            .await?;
         Ok(orders)
     }
 
@@ -66,29 +67,24 @@ impl Binance {
     pub async fn get_all_open_orders(&self) -> Result<Vec<Order>> {
         let orders = self
             .transport
-            .signed_get::<_, ()>("/api/v3/openOrders", None).await?;
+            .signed_get::<_, ()>("/api/v3/openOrders", None)
+            .await?;
         Ok(orders)
     }
 
     // Check an order's status
-    pub async fn order_status(
-        &self,
-        symbol: &str,
-        order_id: u64,
-    ) -> Result<Order> {
+    pub async fn order_status(&self, symbol: &str, order_id: u64) -> Result<Order> {
         let params = json! {{"symbol": symbol, "orderId": order_id}};
 
-        let order = self.transport.signed_get(API_V3_ORDER, Some(params)).await?;
+        let order = self
+            .transport
+            .signed_get(API_V3_ORDER, Some(params))
+            .await?;
         Ok(order)
     }
 
     // Place a LIMIT order - BUY
-    pub async fn limit_buy(
-        &self,
-        symbol: &str,
-        qty: f64,
-        price: f64,
-    ) ->  Result<Transaction> {
+    pub async fn limit_buy(&self, symbol: &str, qty: f64, price: f64) -> Result<Transaction> {
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             qty: qty.into(),
@@ -99,18 +95,16 @@ impl Binance {
         };
         let params = self.build_order(buy);
 
-        let transaction = self.transport.signed_post(API_V3_ORDER, Some(params)).await?;
+        let transaction = self
+            .transport
+            .signed_post(API_V3_ORDER, Some(params))
+            .await?;
 
         Ok(transaction)
     }
 
     // Place a LIMIT order - SELL
-    pub async fn limit_sell(
-        &self,
-        symbol: &str,
-        qty: f64,
-        price: f64,
-    ) -> Result<Transaction> {
+    pub async fn limit_sell(&self, symbol: &str, qty: f64, price: f64) -> Result<Transaction> {
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             qty: qty.into(),
@@ -120,17 +114,16 @@ impl Binance {
             time_in_force: TIME_IN_FORCE_GTC.to_string(),
         };
         let params = self.build_order(sell);
-        let transaction = self.transport.signed_post(API_V3_ORDER, Some(params)).await?;
+        let transaction = self
+            .transport
+            .signed_post(API_V3_ORDER, Some(params))
+            .await?;
 
         Ok(transaction)
     }
 
     // Place a MARKET order - BUY
-    pub async fn market_buy(
-        &self,
-        symbol: &str,
-        qty: f64,
-    ) -> Result<Transaction> {
+    pub async fn market_buy(&self, symbol: &str, qty: f64) -> Result<Transaction> {
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             qty: qty.into(),
@@ -140,17 +133,16 @@ impl Binance {
             time_in_force: TIME_IN_FORCE_GTC.to_string(),
         };
         let params = self.build_order(buy);
-        let transaction = self.transport.signed_post(API_V3_ORDER, Some(params)).await?;
+        let transaction = self
+            .transport
+            .signed_post(API_V3_ORDER, Some(params))
+            .await?;
 
         Ok(transaction)
     }
 
     // Place a MARKET order - SELL
-    pub async fn market_sell(
-        &self,
-        symbol: &str,
-        qty: f64,
-    ) ->  Result<Transaction> {
+    pub async fn market_sell(&self, symbol: &str, qty: f64) -> Result<Transaction> {
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             qty: qty.into(),
@@ -160,30 +152,30 @@ impl Binance {
             time_in_force: TIME_IN_FORCE_GTC.to_string(),
         };
         let params = self.build_order(sell);
-        let transaction = self.transport.signed_post(API_V3_ORDER, Some(params)).await?;
+        let transaction = self
+            .transport
+            .signed_post(API_V3_ORDER, Some(params))
+            .await?;
         Ok(transaction)
     }
 
     // Check an order's status
-    pub async fn cancel_order(
-        &self,
-        symbol: &str,
-        order_id: u64,
-    ) ->  Result<OrderCanceled> {
+    pub async fn cancel_order(&self, symbol: &str, order_id: u64) -> Result<OrderCanceled> {
         let params = json! {{"symbol":symbol, "orderId":order_id}};
-        let order_canceled = self.transport.signed_delete(API_V3_ORDER, Some(params)).await?;
+        let order_canceled = self
+            .transport
+            .signed_delete(API_V3_ORDER, Some(params))
+            .await?;
         Ok(order_canceled)
     }
 
     // Trade history
-    pub async fn trade_history(
-        &self,
-        symbol: &str,
-    ) -> Result<Vec<TradeHistory>> {
+    pub async fn trade_history(&self, symbol: &str) -> Result<Vec<TradeHistory>> {
         let params = json! {{"symbol":symbol}};
         let trade_history = self
             .transport
-            .signed_get("/api/v3/myTrades", Some(params)).await?;
+            .signed_get("/api/v3/myTrades", Some(params))
+            .await?;
 
         Ok(trade_history)
     }
