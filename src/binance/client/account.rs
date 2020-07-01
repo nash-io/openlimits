@@ -9,13 +9,13 @@ use crate::binance::model::{
 use crate::errors::OpenLimitError;
 use crate::Result;
 
-static ORDER_TYPE_LIMIT: &'static str = "LIMIT";
-static ORDER_TYPE_MARKET: &'static str = "MARKET";
-static ORDER_SIDE_BUY: &'static str = "BUY";
-static ORDER_SIDE_SELL: &'static str = "SELL";
-static TIME_IN_FORCE_GTC: &'static str = "GTC";
+static ORDER_TYPE_LIMIT: &str = "LIMIT";
+static ORDER_TYPE_MARKET: &str = "MARKET";
+static ORDER_SIDE_BUY: &str = "BUY";
+static ORDER_SIDE_SELL: &str = "SELL";
+static TIME_IN_FORCE_GTC: &str = "GTC";
 
-static API_V3_ORDER: &'static str = "/api/v3/order";
+static API_V3_ORDER: &str = "/api/v3/order";
 
 struct OrderRequest {
     pub symbol: String,
@@ -87,8 +87,8 @@ impl Binance {
     pub async fn limit_buy(&self, symbol: &str, qty: f64, price: f64) -> Result<Transaction> {
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
-            qty: qty.into(),
-            price: price,
+            qty,
+            price,
             order_side: ORDER_SIDE_BUY.to_string(),
             order_type: ORDER_TYPE_LIMIT.to_string(),
             time_in_force: TIME_IN_FORCE_GTC.to_string(),
@@ -107,8 +107,8 @@ impl Binance {
     pub async fn limit_sell(&self, symbol: &str, qty: f64, price: f64) -> Result<Transaction> {
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
-            qty: qty.into(),
-            price: price,
+            qty,
+            price,
             order_side: ORDER_SIDE_SELL.to_string(),
             order_type: ORDER_TYPE_LIMIT.to_string(),
             time_in_force: TIME_IN_FORCE_GTC.to_string(),
@@ -126,7 +126,7 @@ impl Binance {
     pub async fn market_buy(&self, symbol: &str, qty: f64) -> Result<Transaction> {
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
-            qty: qty.into(),
+            qty: qty,
             price: 0.0,
             order_side: ORDER_SIDE_BUY.to_string(),
             order_type: ORDER_TYPE_MARKET.to_string(),
@@ -145,7 +145,7 @@ impl Binance {
     pub async fn market_sell(&self, symbol: &str, qty: f64) -> Result<Transaction> {
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
-            qty: qty.into(),
+            qty,
             price: 0.0,
             order_side: ORDER_SIDE_SELL.to_string(),
             order_type: ORDER_TYPE_MARKET.to_string(),
@@ -190,7 +190,7 @@ impl Binance {
 
         if order.price != 0.0 {
             params.insert("price", order.price.to_string());
-            params.insert("timeInForce", order.time_in_force.to_string());
+            params.insert("timeInForce", order.time_in_force);
         }
 
         params

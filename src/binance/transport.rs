@@ -4,7 +4,6 @@ use hmac::{Hmac, Mac, NewMac};
 use reqwest::header;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use serde_urlencoded;
 use sha2::Sha256;
 use url::Url;
 
@@ -13,7 +12,7 @@ use crate::Result;
 
 type HmacSha256 = Hmac<Sha256>;
 
-static BASE: &'static str = "https://www.binance.com";
+static BASE: &str = "https://www.binance.com";
 static RECV_WINDOW: usize = 5000;
 
 #[derive(Clone)]
@@ -32,7 +31,7 @@ impl Transport {
 
         Ok(Transport {
             credential: None,
-            client: client,
+            client,
             recv_window: RECV_WINDOW,
         })
     }
@@ -44,7 +43,7 @@ impl Transport {
             .build()?;
 
         Ok(Transport {
-            client: client,
+            client,
             credential: Some((api_key.into(), api_secret.into())),
             recv_window: RECV_WINDOW,
         })
@@ -238,7 +237,7 @@ impl Transport {
     {
         let (key, secret) = self.check_key()?;
         let mut mac = HmacSha256::new_varkey(secret.as_bytes()).unwrap();
-        let body = if let Some(_) = body {
+        let body = if body.is_some() {
             serde_urlencoded::to_string(body)?
         } else {
             String::from("")
@@ -246,7 +245,7 @@ impl Transport {
 
         let sign_message = match url.query() {
             Some(query) => format!("{}{}", query, body),
-            None => format!("{}", body),
+            None => body,
         };
 
         mac.update(sign_message.as_bytes());
