@@ -1,30 +1,18 @@
-use crate::
-    binance::model::websocket::{
-        AccountUpdate,
-        UserOrderUpdate,
-        BinanceWebsocketMessage,
-        Subscription,
-    
+use crate::binance::model::websocket::{
+    AccountUpdate, BinanceWebsocketMessage, Subscription, UserOrderUpdate,
 };
 
-use std::{
-    collections::HashMap,
-    pin::Pin,
-    task::Poll,
-};
+use std::{collections::HashMap, pin::Pin, task::Poll};
 
 use futures::{
     stream::{SplitStream, Stream},
     StreamExt,
 };
 use serde::{Deserialize, Serialize};
-use tokio_tungstenite::{
-    connect_async,
-    tungstenite::protocol::Message,
-    MaybeTlsStream,
-    WebSocketStream,
-};
 use tokio::net::TcpStream;
+use tokio_tungstenite::{
+    connect_async, tungstenite::protocol::Message, MaybeTlsStream, WebSocketStream,
+};
 
 use crate::Result;
 
@@ -56,11 +44,9 @@ impl BinancexWebsocket {
             Subscription::Candlestick(ref symbol, ref interval) => {
                 format!("{}@kline_{}", symbol, interval)
             }
-            Subscription::Depth(ref symbol, interval) => {
-                match interval {
-                    None => format!("{}@depth", symbol),
-                    Some(i) => format!("{}@depth@{}ms", symbol, i),
-                }
+            Subscription::Depth(ref symbol, interval) => match interval {
+                None => format!("{}@depth", symbol),
+                Some(i) => format!("{}@depth@{}ms", symbol, i),
             },
             Subscription::MiniTicker(symbol) => format!("{}@miniTicker", symbol),
             Subscription::MiniTickerAll => "!miniTicker@arr".to_string(),
@@ -83,7 +69,10 @@ impl BinancexWebsocket {
 impl Stream for BinancexWebsocket {
     type Item = Result<BinanceWebsocketMessage>;
 
-    fn poll_next(mut self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Option<Self::Item>> {
+    fn poll_next(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> Poll<Option<Self::Item>> {
         for (sub, stream) in &mut self.subscriptions.iter_mut() {
             if let Poll::Ready(Some(message)) = Pin::new(stream).poll_next(cx) {
                 let m = parse_message(sub.clone(), message?);
@@ -109,11 +98,19 @@ fn parse_message(sub: Subscription, ws_message: Message) -> Result<BinanceWebsoc
         Subscription::AggregateTrade(..) => {
             BinanceWebsocketMessage::AggregateTrade(serde_json::from_str(&msg)?)
         }
-        Subscription::Candlestick(..) => BinanceWebsocketMessage::Candlestick(serde_json::from_str(&msg)?),
+        Subscription::Candlestick(..) => {
+            BinanceWebsocketMessage::Candlestick(serde_json::from_str(&msg)?)
+        }
         Subscription::Depth(..) => BinanceWebsocketMessage::Depth(serde_json::from_str(&msg)?),
-        Subscription::MiniTicker(..) => BinanceWebsocketMessage::MiniTicker(serde_json::from_str(&msg)?),
-        Subscription::MiniTickerAll => BinanceWebsocketMessage::MiniTickerAll(serde_json::from_str(&msg)?),
-        Subscription::OrderBook(..) => BinanceWebsocketMessage::OrderBook(serde_json::from_str(&msg)?),
+        Subscription::MiniTicker(..) => {
+            BinanceWebsocketMessage::MiniTicker(serde_json::from_str(&msg)?)
+        }
+        Subscription::MiniTickerAll => {
+            BinanceWebsocketMessage::MiniTickerAll(serde_json::from_str(&msg)?)
+        }
+        Subscription::OrderBook(..) => {
+            BinanceWebsocketMessage::OrderBook(serde_json::from_str(&msg)?)
+        }
         Subscription::Ticker(..) => BinanceWebsocketMessage::Ticker(serde_json::from_str(&msg)?),
         Subscription::TickerAll => BinanceWebsocketMessage::TickerAll(serde_json::from_str(&msg)?),
         Subscription::Trade(..) => BinanceWebsocketMessage::Trade(serde_json::from_str(&msg)?),
