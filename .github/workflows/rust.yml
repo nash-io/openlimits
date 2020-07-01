@@ -23,45 +23,28 @@ jobs:
 
   clippy_check:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-    - name: rust-clippy-check
-      with:
-        toolchain: nightly
-        components: rustfmt, clippy
-        override: true
-    - uses: actions-rs/clippy-check@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        args: --all-features
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            components: clippy
+            override: true
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features
 
   rustfmt_check:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions-rs/toolchain@v1
-    - name: rust-clippy-check
-      with:
-        toolchain: nightly
-        components: rustfmt
-        override: true
-    - uses: actions-rs/cargo@v1
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
         with:
-          command: fmt
-          args: --all -- --check
-
-  name: Security audit
-    on:
-      schedule:
-        - cron: '0 0 * * *'
-    jobs:
-      audit:
-        runs-on: ubuntu-latest
-        steps:
-          - uses: actions/checkout@v2
-          - uses: actions-rs/audit-check@v1
-            with:
-              token: ${{ secrets.GITHUB_TOKEN }}
+            toolchain: stable
+            components: rustfmt
+            override: true
+      - uses: mbrobbel/rustfmt-check@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
