@@ -1,8 +1,8 @@
-use crate::Result;
 use serde_json::Value;
 
 use crate::binance::client::Binance;
 use crate::binance::model::{ExchangeInfo, ExchangeInformation, ServerTime};
+use crate::Result;
 
 impl Binance {
     // Test connectivity
