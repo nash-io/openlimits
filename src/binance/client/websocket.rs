@@ -16,7 +16,7 @@ use tokio_tungstenite::{
 
 use crate::Result;
 
-const WS_URL: &'static str = "wss://stream.binance.com:9443/ws";
+const WS_URL: &str = "wss://stream.binance.com:9443/ws";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
