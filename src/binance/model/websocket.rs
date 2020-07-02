@@ -6,7 +6,6 @@ use super::{
     TimeInForce,
 };
 
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Subscription {
     UserData(String),            // listen key
@@ -15,10 +14,10 @@ pub enum Subscription {
     Candlestick(String, String), // (symbol, interval)
     MiniTicker(String),          // symbol
     MiniTickerAll,
-    Ticker(String),              // symbol
+    Ticker(String), // symbol
     TickerAll,
-    OrderBook(String, i64),      // (symbol, depth)
-    Depth(String, Option<u16>),  // (symbol, interval)
+    OrderBook(String, i64),     // (symbol, depth)
+    Depth(String, Option<u16>), // (symbol, interval)
 }
 
 #[derive(Debug, Clone, Serialize)]
