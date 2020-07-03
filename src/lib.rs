@@ -21,6 +21,7 @@ extern crate url;
 
 pub mod binance;
 pub mod client;
+pub mod coinbase;
 pub mod errors;
 pub mod exchange;
 
