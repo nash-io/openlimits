@@ -1,4 +1,4 @@
-use crate::binance::client::Binance;
+use crate::binance::Binance;
 use crate::binance::model::{Success, UserDataStream};
 use crate::Result;
 

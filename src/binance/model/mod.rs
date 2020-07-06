@@ -264,66 +264,7 @@ pub struct Kline {
     #[serde(skip_serializing, rename = "B")]
     pub ignore_me: String,
 }
-//  "timezone": "UTC",
-//   "serverTime": 1508631584636,
-//   "rateLimits": [{
-//       "rateLimitType": "REQUESTS",
-//       "interval": "MINUTE",
-//       "limit": 1200
-//     },
-//     {
-//       "rateLimitType": "ORDERS",
-//       "interval": "SECOND",
-//       "limit": 10
-//     },
-//     {
-//       "rateLimitType": "ORDERS",
-//       "interval": "DAY",
-//       "limit": 100000
-//     }
-//   ],
-//   "exchangeFilters": [],
-//   "symbols": [{
-//     "symbol": "ETHBTC",
-//     "status": "TRADING",
-//     "baseAsset": "ETH",
-//     "baseAssetPrecision": 8,
-//     "quoteAsset": "BTC",
-//     "quotePrecision": 8,
-//     "orderTypes": ["LIMIT", "MARKET"],
-//     "icebergAllowed": false,
-//     "filters": [{
-//       "filterType": "PRICE_FILTER",
-//       "minPrice": "0.00000100",
-//       "maxPrice": "100000.00000000",
-//       "tickSize": "0.00000100"
-//     }, {
-//       "filterType": "LOT_SIZE",
-//       "minQty": "0.00100000",
-//       "maxQty": "100000.00000000",
-//       "stepSize": "0.00100000"
-//     }, {
-//       "filterType": "MIN_NOTIONAL",
-//       "minNotional": "0.00100000"
-//     }]
-//   }]
-// }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct ExchangeInfo {
-    pub timezone: String,
-    pub server_time: u64,
-    pub rate_limits: Vec<RateLimit>,
-    pub exchange_filters: Vec<ExchangeFilter>,
-    pub symbols: Vec<Symbol>,
-}
-
-// {
-//       "rateLimitType": "ORDERS",
-//       "interval": "DAY",
-//       "limit": 100000
-//     }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct RateLimit {
@@ -346,13 +287,6 @@ pub enum Interval {
     Minute,
     Day,
 }
-
-// {
-//       "filterType": "LOT_SIZE",
-//       "minQty": "0.00100000",
-//       "maxQty": "100000.00000000",
-//       "stepSize": "0.00100000"
-//     }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "filterType", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SymbolFilter {
@@ -373,35 +307,16 @@ pub enum SymbolFilter {
     #[serde(rename_all = "camelCase")]
     MaxNumAlgoOrders { max_num_algo_orders: u64 },
     #[serde(rename_all = "camelCase")]
-    MaxNumOrders { limit: u64 },
+    MaxNumOrders { max_num_orders: u64 },
     #[serde(rename_all = "camelCase")]
     IcebergParts { limit: u64 },
+    #[serde(rename_all = "camelCase")]
+    PercentPrice { multiplier_up: String, multiplier_down: String, avg_price_mins: u64 },
+    #[serde(rename_all = "camelCase")]
+    MarketLotSize { min_qty: String, max_qty: String, step_size: String },
+    
 }
 
-// {
-//     "symbol": "ETHBTC",
-//     "status": "TRADING",
-//     "baseAsset": "ETH",
-//     "baseAssetPrecision": 8,
-//     "quoteAsset": "BTC",
-//     "quotePrecision": 8,
-//     "orderTypes": ["LIMIT", "MARKET"],
-//     "icebergAllowed": false,
-//     "filters": [{
-//       "filterType": "PRICE_FILTER",
-//       "minPrice": "0.00000100",
-//       "maxPrice": "100000.00000000",
-//       "tickSize": "0.00000100"
-//     }, {
-//       "filterType": "LOT_SIZE",
-//       "minQty": "0.00100000",
-//       "maxQty": "100000.00000000",
-//       "stepSize": "0.00100000"
-//     }, {
-//       "filterType": "MIN_NOTIONAL",
-//       "minNotional": "0.00100000"
-//     }]
-//   }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "filterType", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ExchangeFilter {
