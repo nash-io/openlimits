@@ -19,7 +19,7 @@ async fn get_balance() {
 #[tokio::test]
 async fn get_open_orders() {
     let exchange = init();
-    let resp = exchange.get_open_orders("BTCUSDT").await.unwrap();
+    let resp = exchange.get_open_orders("BNBBTC").await.unwrap();
     print!("{:?}", resp);
 }
 
@@ -27,6 +27,55 @@ async fn get_open_orders() {
 async fn get_all_open_orders() {
     let exchange = init();
     let resp = exchange.get_all_open_orders().await.unwrap();
+    print!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn order_status() {
+    let exchange = init();
+    let resp = exchange.order_status("BNBBTC", 411450260).await.unwrap();
+    print!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn limit_buy() {
+    let exchange = init();
+    let resp = exchange.limit_buy("BNBBTC", 0.1, 0.001).await.unwrap();
+    print!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn limit_sell() {
+    let exchange = init();
+    let resp = exchange.limit_sell("BNBBTC", 0.1, 0.002).await.unwrap();
+    print!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn market_buy() {
+    let exchange = init();
+    let resp = exchange.market_buy("BNBBTC", 0.1).await.unwrap();
+    print!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn market_sell() {
+    let exchange = init();
+    let resp = exchange.market_sell("BNBBTC", 0.1).await.unwrap();
+    print!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn cancel_order() {
+    let exchange = init();
+    let resp = exchange.cancel_order("BNBBTC", 411450260).await.unwrap();
+    print!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn trade_history() {
+    let exchange = init();
+    let resp = exchange.trade_history("BNBBTC").await.unwrap();
     print!("{:?}", resp);
 }
 

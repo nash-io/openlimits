@@ -86,7 +86,7 @@ impl Transport {
         D: Serialize,
     {
         let url = self.get_url::<()>(endpoint, None, false)?;
-        let request = self.client.post(url).json(&data).send().await?;
+        let request = self.client.post(url).form(&data).send().await?;
 
         Ok(self.response_handler(request).await?)
     }
@@ -97,7 +97,7 @@ impl Transport {
         D: Serialize,
     {
         let url = self.get_url::<()>(endpoint, None, false)?;
-        let request = self.client.put(url).json(&data).send().await?;
+        let request = self.client.put(url).form(&data).send().await?;
 
         Ok(self.response_handler(request).await?)
     }
@@ -108,7 +108,7 @@ impl Transport {
         Q: Serialize,
     {
         let url = self.get_url::<()>(endpoint, None, false)?;
-        let request = self.client.delete(url).json(&data).send().await?;
+        let request = self.client.delete(url).form(&data).send().await?;
 
         Ok(self.response_handler(request).await?)
     }
@@ -138,7 +138,7 @@ impl Transport {
         let (_, signature) = self.signature(&url, Some(&data))?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        let request = self.client.post(url).json(&data).send().await?;
+        let request = self.client.post(url).form(&data).send().await?;
         Ok(self.response_handler(request).await?)
     }
 
@@ -152,7 +152,7 @@ impl Transport {
         let (_, signature) = self.signature(&url, Some(&data))?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        let request = self.client.put(url).json(&data).send().await?;
+        let request = self.client.put(url).form(&data).send().await?;
 
         Ok(self.response_handler(request).await?)
     }
@@ -167,7 +167,7 @@ impl Transport {
         let (_, signature) = self.signature(&url, Some(&data))?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        let request = self.client.delete(url).json(&data).send().await?;
+        let request = self.client.delete(url).form(&data).send().await?;
 
         Ok(self.response_handler(request).await?)
     }

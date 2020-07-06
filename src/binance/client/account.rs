@@ -96,6 +96,8 @@ impl Binance {
         };
         let params = self.build_order(buy);
 
+        println!("{:?}", params);
+
         let transaction = self
             .transport
             .signed_post(API_V3_ORDER, Some(params))
