@@ -82,10 +82,6 @@ pub struct Bids {
     pub price: f64,
     #[serde(with = "string_or_float")]
     pub qty: f64,
-
-    // Never serialized.
-    #[serde(skip_serializing)]
-    ignore: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -94,10 +90,6 @@ pub struct Asks {
     pub price: f64,
     #[serde(with = "string_or_float")]
     pub qty: f64,
-
-    // Never serialized.
-    #[serde(skip_serializing)]
-    ignore: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

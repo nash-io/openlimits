@@ -59,4 +59,6 @@ pub enum OpenLimitError {
     TimestampError(#[from] std::time::SystemTimeError),
     #[error("")]
     UnkownResponse(String),
+    #[error("")]
+    NotParsableResponse(String),
 }
