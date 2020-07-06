@@ -1,7 +1,7 @@
 use serde_json::Value;
 
-use crate::binance::Binance;
 use crate::binance::model::{ExchangeInformation, ServerTime};
+use crate::binance::Binance;
 use crate::Result;
 
 impl Binance {

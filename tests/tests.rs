@@ -1,4 +1,4 @@
 mod binance {
-    mod general;
     mod account;
+    mod general;
 }

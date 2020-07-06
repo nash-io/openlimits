@@ -1,5 +1,5 @@
-use crate::binance::Binance;
 use crate::binance::model::{Success, UserDataStream};
+use crate::binance::Binance;
 use crate::Result;
 
 static USER_DATA_STREAM: &str = "/api/v1/userDataStream";

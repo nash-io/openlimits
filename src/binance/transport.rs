@@ -9,7 +9,7 @@ use serde::Serialize;
 use sha2::Sha256;
 use url::Url;
 
-use crate::errors::{OpenLimitError, BinanceContentError};
+use crate::errors::{BinanceContentError, OpenLimitError};
 use crate::Result;
 
 type HmacSha256 = Hmac<Sha256>;
@@ -75,11 +75,7 @@ impl Transport {
         S: Serialize,
     {
         let url = self.get_url(endpoint, Some(&params), false)?;
-        let request = self
-            .client
-            .get(url)
-            .send()
-            .await?;
+        let request = self.client.get(url).send().await?;
 
         Ok(self.response_handler(request).await?)
     }
@@ -90,13 +86,8 @@ impl Transport {
         D: Serialize,
     {
         let url = self.get_url::<()>(endpoint, None, false)?;
-        let request = self
-            .client
-            .post(url)
-            .json(&data)
-            .send()
-            .await?;
-        
+        let request = self.client.post(url).json(&data).send().await?;
+
         Ok(self.response_handler(request).await?)
     }
 
@@ -106,13 +97,8 @@ impl Transport {
         D: Serialize,
     {
         let url = self.get_url::<()>(endpoint, None, false)?;
-        let request = self
-            .client
-            .put(url)
-            .json(&data)
-            .send()
-            .await?;
-        
+        let request = self.client.put(url).json(&data).send().await?;
+
         Ok(self.response_handler(request).await?)
     }
 
@@ -122,15 +108,9 @@ impl Transport {
         Q: Serialize,
     {
         let url = self.get_url::<()>(endpoint, None, false)?;
-        let request = self
-            .client
-            .delete(url)
-            .json(&data)
-            .send()
-            .await?;
-        
-        Ok(self.response_handler(request).await?)
+        let request = self.client.delete(url).json(&data).send().await?;
 
+        Ok(self.response_handler(request).await?)
     }
 
     pub async fn signed_get<O, Q>(&self, endpoint: &str, params: Option<Q>) -> Result<O>
@@ -139,15 +119,11 @@ impl Transport {
         Q: Serialize,
     {
         let mut url = self.get_url(endpoint, Some(&params), true)?;
-        
+
         let (_, signature) = self.signature::<()>(&url, None)?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        let request = self
-        .client
-        .get(url)
-        .send()
-        .await?;
+        let request = self.client.get(url).send().await?;
 
         Ok(self.response_handler(request).await?)
     }
@@ -162,13 +138,8 @@ impl Transport {
         let (_, signature) = self.signature(&url, Some(&data))?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        let request = self
-            .client
-            .post(url)
-            .json(&data)
-            .send()
-            .await?;
-       Ok(self.response_handler(request).await?)
+        let request = self.client.post(url).json(&data).send().await?;
+        Ok(self.response_handler(request).await?)
     }
 
     pub async fn signed_put<O, Q>(&self, endpoint: &str, data: Option<Q>) -> Result<O>
@@ -181,12 +152,7 @@ impl Transport {
         let (_, signature) = self.signature(&url, Some(&data))?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        let request = self
-            .client
-            .put(url)
-            .json(&data)
-            .send()
-            .await?;
+        let request = self.client.put(url).json(&data).send().await?;
 
         Ok(self.response_handler(request).await?)
     }
@@ -201,21 +167,20 @@ impl Transport {
         let (_, signature) = self.signature(&url, Some(&data))?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        let request = self
-            .client
-            .delete(url)
-            .json(&data)
-            .send()
-            .await?;
-        
-        Ok(self.response_handler(request).await?)
+        let request = self.client.delete(url).json(&data).send().await?;
 
+        Ok(self.response_handler(request).await?)
     }
 
-    pub fn get_url<Q>(&self, endpoint: &str,  params: Option<&Q>, add_recv_window: bool) -> Result<Url>
+    pub fn get_url<Q>(
+        &self,
+        endpoint: &str,
+        params: Option<&Q>,
+        add_recv_window: bool,
+    ) -> Result<Url>
     where
-      Q: Serialize
-     {
+        Q: Serialize,
+    {
         let url = format!("{}{}", BASE, endpoint);
 
         let mut url = Url::parse(&url)?;
@@ -252,7 +217,7 @@ impl Transport {
         } else {
             String::from("")
         };
-        
+
         let sign_message = match url.query() {
             Some(query) => format!("{}{}", query, body),
             None => body,
@@ -265,31 +230,22 @@ impl Transport {
 
     async fn response_handler<O>(&self, response: Response) -> Result<O>
     where
-      O: DeserializeOwned,
+        O: DeserializeOwned,
     {
         match response.status() {
-            StatusCode::OK => {
-                Ok(response
-                .json::<O>()
-                .await?)
-            }
-            StatusCode::INTERNAL_SERVER_ERROR => {
-                Err(OpenLimitError::InternalServerError())
-            }
-            StatusCode::SERVICE_UNAVAILABLE => {
-                Err(OpenLimitError::ServiceUnavailable())
-            }
-            StatusCode::UNAUTHORIZED => {
-                Err(OpenLimitError::Unauthorized())
-            }
+            StatusCode::OK => Ok(response.json::<O>().await?),
+            StatusCode::INTERNAL_SERVER_ERROR => Err(OpenLimitError::InternalServerError()),
+            StatusCode::SERVICE_UNAVAILABLE => Err(OpenLimitError::ServiceUnavailable()),
+            StatusCode::UNAUTHORIZED => Err(OpenLimitError::Unauthorized()),
             StatusCode::BAD_REQUEST => {
                 let error: BinanceContentError = response.json().await?;
 
                 Err(OpenLimitError::BinanceError(error).into())
             }
-            s => {
-                Err(OpenLimitError::UnkownResponse(format!("Received response: {:?}", s)))
-            }
+            s => Err(OpenLimitError::UnkownResponse(format!(
+                "Received response: {:?}",
+                s
+            ))),
         }
     }
 }

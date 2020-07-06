@@ -311,10 +311,17 @@ pub enum SymbolFilter {
     #[serde(rename_all = "camelCase")]
     IcebergParts { limit: u64 },
     #[serde(rename_all = "camelCase")]
-    PercentPrice { multiplier_up: String, multiplier_down: String, avg_price_mins: u64 },
+    PercentPrice {
+        multiplier_up: String,
+        multiplier_down: String,
+        avg_price_mins: u64,
+    },
     #[serde(rename_all = "camelCase")]
-    MarketLotSize { min_qty: String, max_qty: String, step_size: String },
-    
+    MarketLotSize {
+        min_qty: String,
+        max_qty: String,
+        step_size: String,
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
