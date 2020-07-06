@@ -2,17 +2,19 @@ use chrono::Utc;
 use hex::encode as hexify;
 use hmac::{Hmac, Mac, NewMac};
 use reqwest::header;
+use reqwest::Response;
+use reqwest::StatusCode;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use sha2::Sha256;
 use url::Url;
 
-use crate::errors::OpenLimitError;
+use crate::errors::{BinanceContentError, OpenLimitError};
 use crate::Result;
 
 type HmacSha256 = Hmac<Sha256>;
 
-static BASE: &str = "https://www.binance.com";
+static BASE: &str = "https://api.binance.com";
 static RECV_WINDOW: usize = 5000;
 
 #[derive(Clone)]
@@ -72,15 +74,10 @@ impl Transport {
         O: DeserializeOwned,
         S: Serialize,
     {
-        let url = self.get_url(endpoint, false)?;
-        Ok(self
-            .client
-            .get(url)
-            .form(&params)
-            .send()
-            .await?
-            .json::<O>()
-            .await?)
+        let url = self.get_url(endpoint, Some(&params), false)?;
+        let request = self.client.get(url).send().await?;
+
+        Ok(self.response_handler(request).await?)
     }
 
     pub async fn post<O, D>(&self, endpoint: &str, data: Option<D>) -> Result<O>
@@ -88,15 +85,10 @@ impl Transport {
         O: DeserializeOwned,
         D: Serialize,
     {
-        let url = self.get_url(endpoint, false)?;
-        Ok(self
-            .client
-            .post(url)
-            .json(&data)
-            .send()
-            .await?
-            .json::<O>()
-            .await?)
+        let url = self.get_url::<()>(endpoint, None, false)?;
+        let request = self.client.post(url).json(&data).send().await?;
+
+        Ok(self.response_handler(request).await?)
     }
 
     pub async fn put<O, D>(&self, endpoint: &str, data: Option<D>) -> Result<O>
@@ -104,15 +96,10 @@ impl Transport {
         O: DeserializeOwned,
         D: Serialize,
     {
-        let url = self.get_url(endpoint, false)?;
-        Ok(self
-            .client
-            .put(url)
-            .json(&data)
-            .send()
-            .await?
-            .json::<O>()
-            .await?)
+        let url = self.get_url::<()>(endpoint, None, false)?;
+        let request = self.client.put(url).json(&data).send().await?;
+
+        Ok(self.response_handler(request).await?)
     }
 
     pub async fn delete<O, Q>(&self, endpoint: &str, data: Option<Q>) -> Result<O>
@@ -120,15 +107,10 @@ impl Transport {
         O: DeserializeOwned,
         Q: Serialize,
     {
-        let url = self.get_url(endpoint, false)?;
-        Ok(self
-            .client
-            .delete(url)
-            .json(&data)
-            .send()
-            .await?
-            .json::<O>()
-            .await?)
+        let url = self.get_url::<()>(endpoint, None, false)?;
+        let request = self.client.delete(url).json(&data).send().await?;
+
+        Ok(self.response_handler(request).await?)
     }
 
     pub async fn signed_get<O, Q>(&self, endpoint: &str, params: Option<Q>) -> Result<O>
@@ -136,19 +118,14 @@ impl Transport {
         O: DeserializeOwned,
         Q: Serialize,
     {
-        let mut url = self.get_url(endpoint, true)?;
+        let mut url = self.get_url(endpoint, Some(&params), true)?;
 
         let (_, signature) = self.signature::<()>(&url, None)?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        Ok(self
-            .client
-            .get(url)
-            .form(&params)
-            .send()
-            .await?
-            .json::<O>()
-            .await?)
+        let request = self.client.get(url).send().await?;
+
+        Ok(self.response_handler(request).await?)
     }
 
     pub async fn signed_post<D, O>(&self, endpoint: &str, data: Option<D>) -> Result<O>
@@ -156,19 +133,13 @@ impl Transport {
         O: DeserializeOwned,
         D: Serialize,
     {
-        let mut url = self.get_url(endpoint, true)?;
+        let mut url = self.get_url::<()>(endpoint, None, true)?;
 
         let (_, signature) = self.signature(&url, Some(&data))?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        Ok(self
-            .client
-            .post(url)
-            .json(&data)
-            .send()
-            .await?
-            .json::<O>()
-            .await?)
+        let request = self.client.post(url).json(&data).send().await?;
+        Ok(self.response_handler(request).await?)
     }
 
     pub async fn signed_put<O, Q>(&self, endpoint: &str, data: Option<Q>) -> Result<O>
@@ -176,19 +147,14 @@ impl Transport {
         O: DeserializeOwned,
         Q: Serialize,
     {
-        let mut url = self.get_url(endpoint, true)?;
+        let mut url = self.get_url::<()>(endpoint, None, true)?;
 
         let (_, signature) = self.signature(&url, Some(&data))?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        Ok(self
-            .client
-            .put(url)
-            .json(&data)
-            .send()
-            .await?
-            .json::<O>()
-            .await?)
+        let request = self.client.put(url).json(&data).send().await?;
+
+        Ok(self.response_handler(request).await?)
     }
 
     pub async fn signed_delete<O, Q>(&self, endpoint: &str, data: Option<Q>) -> Result<O>
@@ -196,24 +162,33 @@ impl Transport {
         O: DeserializeOwned,
         Q: Serialize,
     {
-        let mut url = self.get_url(endpoint, true)?;
+        let mut url = self.get_url::<()>(endpoint, None, true)?;
 
         let (_, signature) = self.signature(&url, Some(&data))?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
-        Ok(self
-            .client
-            .delete(url)
-            .json(&data)
-            .send()
-            .await?
-            .json::<O>()
-            .await?)
+        let request = self.client.delete(url).json(&data).send().await?;
+
+        Ok(self.response_handler(request).await?)
     }
 
-    pub fn get_url(&self, endpoint: &str, add_recv_window: bool) -> Result<Url> {
+    pub fn get_url<Q>(
+        &self,
+        endpoint: &str,
+        params: Option<&Q>,
+        add_recv_window: bool,
+    ) -> Result<Url>
+    where
+        Q: Serialize,
+    {
         let url = format!("{}{}", BASE, endpoint);
+
         let mut url = Url::parse(&url)?;
+
+        if params.is_some() {
+            let query = serde_urlencoded::to_string(params)?;
+            url.set_query(Some(&query));
+        };
 
         if add_recv_window {
             url.query_pairs_mut()
@@ -251,5 +226,26 @@ impl Transport {
         mac.update(sign_message.as_bytes());
         let signature = hexify(mac.finalize().into_bytes());
         Ok((key, signature))
+    }
+
+    async fn response_handler<O>(&self, response: Response) -> Result<O>
+    where
+        O: DeserializeOwned,
+    {
+        match response.status() {
+            StatusCode::OK => Ok(response.json::<O>().await?),
+            StatusCode::INTERNAL_SERVER_ERROR => Err(OpenLimitError::InternalServerError()),
+            StatusCode::SERVICE_UNAVAILABLE => Err(OpenLimitError::ServiceUnavailable()),
+            StatusCode::UNAUTHORIZED => Err(OpenLimitError::Unauthorized()),
+            StatusCode::BAD_REQUEST => {
+                let error: BinanceContentError = response.json().await?;
+
+                Err(OpenLimitError::BinanceError(error).into())
+            }
+            s => Err(OpenLimitError::UnkownResponse(format!(
+                "Received response: {:?}",
+                s
+            ))),
+        }
     }
 }

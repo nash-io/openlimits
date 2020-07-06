@@ -2,10 +2,10 @@ use serde_json::json;
 use std::collections::HashMap;
 use sugar::{convert_args, hashmap};
 
-use crate::binance::client::Binance;
 use crate::binance::model::{
     AccountInformation, Balance, Order, OrderCanceled, TradeHistory, Transaction,
 };
+use crate::binance::Binance;
 use crate::errors::OpenLimitError;
 use crate::Result;
 
@@ -55,7 +55,8 @@ impl Binance {
 
     // Current open orders for ONE symbol
     pub async fn get_open_orders(&self, symbol: &str) -> Result<Vec<Order>> {
-        let params = json! {{"symbol": symbol}};
+        let params: HashMap<&str, String> =
+            [("symbol", String::from(symbol))].iter().cloned().collect();
         let orders = self
             .transport
             .signed_get("/api/v3/openOrders", Some(params))
