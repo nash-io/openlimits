@@ -27,11 +27,11 @@ enum Either<L, R> {
 
 type WSStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
 
-pub struct BinancexWebsocket {
+pub struct BinanceWebsocket {
     pub subscriptions: HashMap<Subscription, SplitStream<WSStream>>,
 }
 
-impl BinancexWebsocket {
+impl BinanceWebsocket {
     pub fn new() -> Self {
         Self {
             subscriptions: HashMap::new(),
@@ -66,7 +66,7 @@ impl BinancexWebsocket {
     }
 }
 
-impl Stream for BinancexWebsocket {
+impl Stream for BinanceWebsocket {
     type Item = Result<BinanceWebsocketMessage>;
 
     fn poll_next(
