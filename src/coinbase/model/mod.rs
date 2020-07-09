@@ -46,6 +46,7 @@ pub trait BookLevel {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(from = "(f64, f64, usize)")]
 pub struct BookRecordL1 {
     #[serde(with = "string_or_float")]
     pub price: f64,
@@ -60,7 +61,18 @@ impl BookLevel for BookRecordL1 {
     }
 }
 
+impl From<(f64, f64, usize)> for BookRecordL1 {
+    fn from(t: (f64, f64, usize)) -> Self {
+        Self {
+            price: t.0,
+            size: t.1,
+            num_orders: t.2,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(from = "(f64, f64, usize)")]
 pub struct BookRecordL2 {
     #[serde(with = "string_or_float")]
     pub price: f64,
@@ -75,7 +87,18 @@ impl BookLevel for BookRecordL2 {
     }
 }
 
+impl From<(f64, f64, usize)> for BookRecordL2 {
+    fn from(t: (f64, f64, usize)) -> Self {
+        Self {
+            price: t.0,
+            size: t.1,
+            num_orders: t.2,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(from = "(f64, f64, String)")]
 pub struct BookRecordL3 {
     #[serde(with = "string_or_float")]
     pub price: f64,
@@ -87,6 +110,16 @@ pub struct BookRecordL3 {
 impl BookLevel for BookRecordL3 {
     fn level() -> u8 {
         3
+    }
+}
+
+impl From<(f64, f64, String)> for BookRecordL3 {
+    fn from(t: (f64, f64, String)) -> Self {
+        Self {
+            price: t.0,
+            size: t.1,
+            order_id: t.2,
+        }
     }
 }
 
