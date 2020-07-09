@@ -33,7 +33,11 @@ async fn get_all_open_orders() {
 #[tokio::test]
 async fn order_status() {
     let exchange = init();
-    let resp = exchange.order_status("BNBBTC", 411450260).await.unwrap();
+    let transaction = exchange.limit_sell("BNBBTC", 0.1, 0.002).await.unwrap();
+    let resp = exchange
+        .order_status("BNBBTC", transaction.order_id)
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
