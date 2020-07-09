@@ -10,21 +10,15 @@ pub struct Binance {
 }
 
 impl Binance {
-    pub fn new() -> Self {
+    pub fn new(sandbox: bool) -> Self {
         Binance {
-            transport: Transport::new().unwrap(),
+            transport: Transport::new(sandbox).unwrap(),
         }
     }
 
-    pub fn with_credential(api_key: &str, api_secret: &str) -> Self {
+    pub fn with_credential(api_key: &str, api_secret: &str, sandbox: bool) -> Self {
         Binance {
-            transport: Transport::with_credential(api_key, api_secret).unwrap(),
+            transport: Transport::with_credential(api_key, api_secret, sandbox).unwrap(),
         }
-    }
-}
-
-impl Default for Binance {
-    fn default() -> Self {
-        Self::new()
     }
 }

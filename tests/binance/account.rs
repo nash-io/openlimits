@@ -84,5 +84,6 @@ fn init() -> Binance {
     Binance::with_credential(
         &env::var("BINANCE_API_KEY").unwrap(),
         &env::var("BINANCE_API_SECRET").unwrap(),
+        true,
     )
 }

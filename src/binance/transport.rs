@@ -14,7 +14,6 @@ use crate::Result;
 
 type HmacSha256 = Hmac<Sha256>;
 
-static BASE: &str = "https://api.binance.com";
 static RECV_WINDOW: usize = 5000;
 
 #[derive(Clone)]
@@ -22,10 +21,11 @@ pub struct Transport {
     credential: Option<(String, String)>,
     client: reqwest::Client,
     pub recv_window: usize,
+    base_url: String,
 }
 
 impl Transport {
-    pub fn new() -> Result<Self> {
+    pub fn new(sandbox: bool) -> Result<Self> {
         let default_headers = Transport::default_headers(None);
         let client = reqwest::Client::builder()
             .default_headers(default_headers)
@@ -35,10 +35,11 @@ impl Transport {
             credential: None,
             client,
             recv_window: RECV_WINDOW,
+            base_url: Transport::get_base_url(sandbox),
         })
     }
 
-    pub fn with_credential(api_key: &str, api_secret: &str) -> Result<Self> {
+    pub fn with_credential(api_key: &str, api_secret: &str, sandbox: bool) -> Result<Self> {
         let default_headers = Transport::default_headers(Some(api_key));
         let client = reqwest::Client::builder()
             .default_headers(default_headers)
@@ -48,7 +49,16 @@ impl Transport {
             client,
             credential: Some((api_key.into(), api_secret.into())),
             recv_window: RECV_WINDOW,
+            base_url: Transport::get_base_url(sandbox),
         })
+    }
+
+    fn get_base_url(sandbox: bool) -> String {
+        if sandbox {
+            String::from("https://testnet.binance.vision")
+        } else {
+            String::from("https://api.binance.com")
+        }
     }
 
     pub fn default_headers(api_key: Option<&str>) -> header::HeaderMap<header::HeaderValue> {
@@ -181,7 +191,7 @@ impl Transport {
     where
         Q: Serialize,
     {
-        let url = format!("{}{}", BASE, endpoint);
+        let url = format!("{}{}", self.base_url, endpoint);
 
         let mut url = Url::parse(&url)?;
 
