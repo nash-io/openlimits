@@ -15,16 +15,15 @@ use url::Url;
 
 type HmacSha256 = Hmac<Sha256>;
 
-// static BASE_URI: &'static str = "https://api.coinbase.com";
-static SANDBOX_URI: &'static str = "https://api-public.sandbox.pro.coinbase.com";
 #[derive(Clone)]
 pub struct Transport {
     secret_key: Option<String>,
     client: reqwest::Client,
+    base_url: String,
 }
 
 impl Transport {
-    pub fn new() -> Result<Self> {
+    pub fn new(sandbox: bool) -> Result<Self> {
         let default_headers = Transport::default_headers();
 
         let client = reqwest::Client::builder()
@@ -34,10 +33,11 @@ impl Transport {
         Ok(Transport {
             client,
             secret_key: None,
+            base_url: Transport::get_base_url(sandbox)
         })
     }
 
-    pub fn with_credential(api_key: &str, secret_key: &str, passphrase: &str) -> Result<Self> {
+    pub fn with_credential(api_key: &str, secret_key: &str, passphrase: &str, sandbox: bool) -> Result<Self> {
         let default_headers = Transport::default_headers_with_auth(&api_key, &passphrase);
         let client = reqwest::Client::builder()
             .default_headers(default_headers)
@@ -46,8 +46,10 @@ impl Transport {
         Ok(Transport {
             secret_key: Some(String::from(secret_key)),
             client,
+            base_url: Transport::get_base_url(sandbox)
         })
     }
+
     pub fn default_headers() -> header::HeaderMap<header::HeaderValue> {
         let mut headers = header::HeaderMap::new();
         headers.insert(
@@ -56,6 +58,14 @@ impl Transport {
         );
 
         headers
+    }
+
+    fn get_base_url(sandbox: bool) -> String {
+        if sandbox {
+            String::from("https://api-public.sandbox.pro.coinbase.com")
+        } else {
+            String::from("https://api.coinbase.com")
+        }
     }
 
     pub fn default_headers_with_auth(
@@ -120,7 +130,7 @@ impl Transport {
     where
         Q: Serialize,
     {
-        let url = format!("{}{}", SANDBOX_URI, endpoint);
+        let url = format!("{}{}", self.base_url, endpoint);
 
         let mut url = Url::parse(&url)?;
 

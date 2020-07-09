@@ -11,15 +11,15 @@ pub struct Coinbase {
 }
 
 impl Coinbase {
-    pub fn new() -> Self {
+    pub fn new(sandbox: bool) -> Self {
         Coinbase {
-            transport: Transport::new().unwrap(),
+            transport: Transport::new(sandbox).unwrap(),
         }
     }
 
-    pub fn with_credential(api_key: &str, api_secret: &str, passphrase: &str) -> Self {
+    pub fn with_credential(api_key: &str, api_secret: &str, passphrase: &str, sandbox: bool) -> Self {
         Coinbase {
-            transport: Transport::with_credential(api_key, api_secret, passphrase).unwrap(),
+            transport: Transport::with_credential(api_key, api_secret, passphrase, sandbox).unwrap(),
         }
     }
 }
