@@ -19,6 +19,10 @@ jobs:
     - name: Build
       run: cargo build --verbose
     - name: Run tests
+      env:
+        BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+        BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }} 
+
       run: cargo test --verbose
 
   clippy_check:
