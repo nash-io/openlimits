@@ -68,7 +68,8 @@ async fn market_sell() {
 #[tokio::test]
 async fn cancel_order() {
     let exchange = init();
-    let resp = exchange.cancel_order("BNBBTC", 411450260).await.unwrap();
+     let transaction = exchange.limit_sell("BNBBTC", 0.1, 0.002).await.unwrap();
+    let resp = exchange.cancel_order("BNBBTC", transaction.order_id).await.unwrap();
     println!("{:?}", resp);
 }
 
