@@ -3,7 +3,7 @@ use crate::Result;
 use serde::Deserialize;
 use std::fmt::Debug;
 
-use crate::coinbase::model::{BookLevel, Product, Trade};
+use crate::coinbase::model::{Book, BookLevel, Product, Trade};
 
 impl Coinbase {
     // That is probably the same as get_exchange_info for binance.const
@@ -16,7 +16,7 @@ impl Coinbase {
         self.transport.get::<_, ()>(&endpoint, None).await
     }
 
-    pub async fn book<T>(&self, pair: &str) -> Result<T>
+    pub async fn book<T>(&self, pair: &str) -> Result<Book<T>>
     where
         T: BookLevel + Debug + 'static,
         T: for<'de> Deserialize<'de>,
