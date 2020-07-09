@@ -88,10 +88,6 @@ impl Transport {
     {
         let url = self.get_url(endpoint, Some(&params))?;
         let request = self.client.get(url).send().await?;
-        println!("{:?}", request.text().await?);
-
-        let url = self.get_url(endpoint, Some(&params))?;
-        let request = self.client.get(url).send().await?;
 
         Ok(self.response_handler(request).await?)
     }
@@ -173,7 +169,13 @@ impl Transport {
         O: DeserializeOwned,
     {
         match response.status() {
-            StatusCode::OK => Ok(response.json::<O>().await?),
+            StatusCode::OK => {
+                let text = response.text().await?;
+                serde_json::from_str::<O>(&text).map_err(move |err| {
+                    OpenLimitError::NotParsableResponse(format!("Error:{} Payload: {}", err, text))
+                })
+            }
+
             StatusCode::INTERNAL_SERVER_ERROR => Err(OpenLimitError::InternalServerError()),
             StatusCode::SERVICE_UNAVAILABLE => Err(OpenLimitError::ServiceUnavailable()),
             StatusCode::UNAUTHORIZED => Err(OpenLimitError::Unauthorized()),
