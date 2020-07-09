@@ -4,3 +4,7 @@ mod binance {
     mod market;
     mod websocket;
 }
+
+mod coinbase {
+    mod market;
+}
