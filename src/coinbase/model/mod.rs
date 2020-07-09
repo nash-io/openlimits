@@ -25,6 +25,16 @@ pub struct Product {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Candle {
+    pub time: i64,
+    pub low: f64,
+    pub high: f64,
+    pub open: f64,
+    pub close: f64,
+    pub volume: f64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Trade {
     pub trade_id: i64,
     pub time: String,
@@ -32,6 +42,22 @@ pub struct Trade {
     #[serde(with = "string_or_float")]
     pub price: f64,
     pub side: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Ticker {
+    pub trade_id: i64,
+    #[serde(with = "string_or_float")]
+    pub price: f64,
+    #[serde(with = "string_or_float")]
+    pub size: f64,
+    #[serde(with = "string_or_float")]
+    pub bid: f64,
+    #[serde(with = "string_or_float")]
+    pub ask: f64,
+    #[serde(with = "string_or_float")]
+    pub volume: f64,
+    pub time: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -3,7 +3,7 @@ use crate::Result;
 use serde::Deserialize;
 use std::fmt::Debug;
 
-use crate::coinbase::model::{Book, BookLevel, Product, Trade};
+use crate::coinbase::model::{Book, BookLevel, Candle, Product, Ticker, Trade};
 
 impl Coinbase {
     // That is probably the same as get_exchange_info for binance.const
@@ -27,6 +27,16 @@ impl Coinbase {
 
     pub async fn trades(&self, pair: &str) -> Result<Vec<Trade>> {
         let endpoint = format!("/products/{}/trades", pair);
+        self.transport.get::<_, ()>(&endpoint, None).await
+    }
+
+    pub async fn ticker(&self, pair: &str) -> Result<Ticker> {
+        let endpoint = format!("/products/{}/ticker", pair);
+        self.transport.get::<_, ()>(&endpoint, None).await
+    }
+
+    pub async fn candles(&self, pair: &str) -> Result<Vec<Candle>> {
+        let endpoint = format!("/products/{}/candles", pair);
         self.transport.get::<_, ()>(&endpoint, None).await
     }
 }
