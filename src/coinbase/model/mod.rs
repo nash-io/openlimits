@@ -34,6 +34,80 @@ pub struct Trade {
     pub side: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Book<T> {
+    pub sequence: usize,
+    pub bids: Vec<T>,
+    pub asks: Vec<T>,
+}
+
+pub trait BookLevel {
+    fn level() -> u8;
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BookRecordL1 {
+    #[serde(with = "string_or_float")]
+    pub price: f64,
+    #[serde(with = "string_or_float")]
+    pub size: f64,
+    pub num_orders: usize,
+}
+
+impl BookLevel for BookRecordL1 {
+    fn level() -> u8 {
+        1
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BookRecordL2 {
+    #[serde(with = "string_or_float")]
+    pub price: f64,
+    #[serde(with = "string_or_float")]
+    pub size: f64,
+    pub num_orders: usize,
+}
+
+impl BookLevel for BookRecordL2 {
+    fn level() -> u8 {
+        2
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BookRecordL3 {
+    #[serde(with = "string_or_float")]
+    pub price: f64,
+    #[serde(with = "string_or_float")]
+    pub size: f64,
+    pub order_id: String,
+}
+
+impl BookLevel for BookRecordL3 {
+    fn level() -> u8 {
+        3
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Bids {
+    #[serde(with = "string_or_float")]
+    pub price: f64,
+    #[serde(with = "string_or_float")]
+    pub qty: f64,
+    pub num_orders: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Asks {
+    #[serde(with = "string_or_float")]
+    pub price: f64,
+    #[serde(with = "string_or_float")]
+    pub qty: f64,
+    pub num_orders: i64,
+}
+
 mod string_or_float {
     use std::fmt;
 

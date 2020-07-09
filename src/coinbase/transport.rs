@@ -88,6 +88,10 @@ impl Transport {
     {
         let url = self.get_url(endpoint, Some(&params))?;
         let request = self.client.get(url).send().await?;
+        println!("{:?}", request.text().await?);
+
+        let url = self.get_url(endpoint, Some(&params))?;
+        let request = self.client.get(url).send().await?;
 
         Ok(self.response_handler(request).await?)
     }
