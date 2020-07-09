@@ -33,11 +33,16 @@ impl Transport {
         Ok(Transport {
             client,
             secret_key: None,
-            base_url: Transport::get_base_url(sandbox)
+            base_url: Transport::get_base_url(sandbox),
         })
     }
 
-    pub fn with_credential(api_key: &str, secret_key: &str, passphrase: &str, sandbox: bool) -> Result<Self> {
+    pub fn with_credential(
+        api_key: &str,
+        secret_key: &str,
+        passphrase: &str,
+        sandbox: bool,
+    ) -> Result<Self> {
         let default_headers = Transport::default_headers_with_auth(&api_key, &passphrase);
         let client = reqwest::Client::builder()
             .default_headers(default_headers)
@@ -46,7 +51,7 @@ impl Transport {
         Ok(Transport {
             secret_key: Some(String::from(secret_key)),
             client,
-            base_url: Transport::get_base_url(sandbox)
+            base_url: Transport::get_base_url(sandbox),
         })
     }
 
