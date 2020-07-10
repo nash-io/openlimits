@@ -95,18 +95,18 @@ impl Transport {
         headers
     }
 
-    pub async fn get<O, S>(&self, endpoint: &str, params: Option<S>) -> Result<O>
+    pub async fn get<O, S>(&self, endpoint: &str, params: Option<&S>) -> Result<O>
     where
         O: DeserializeOwned,
         S: Serialize,
     {
-        let url = self.get_url(endpoint, Some(&params))?;
+        let url = self.get_url(endpoint, params)?;
         let request = self.client.get(url).send().await?;
 
         Ok(self.response_handler(request).await?)
     }
 
-    pub async fn get_signed<O, S>(&self, endpoint: &str, params: Option<S>) -> Result<O>
+    pub async fn get_signed<O, S>(&self, endpoint: &str, params: Option<&S>) -> Result<O>
     where
         O: DeserializeOwned,
         S: Serialize,
@@ -115,17 +115,22 @@ impl Transport {
             .duration_since(SystemTime::UNIX_EPOCH)
             .expect("Invalid SystemTime.")
             .as_secs();
-        let url = self.get_url(endpoint, Some(&params))?;
+
+        let url = self.get_url(endpoint, params)?;
 
         let signature = self.signature::<()>(&url, since_epoch_seconds, Method::GET, None)?;
+
+        println!("url: {}", url);
 
         let request = self
             .client
             .get(url)
             .header("CB-ACCESS-SIGN", signature)
-            .header("CB-ACCESS-TIMESTAMP", since_epoch_seconds.to_string())
-            .send()
-            .await?;
+            .header("CB-ACCESS-TIMESTAMP", since_epoch_seconds.to_string());
+
+        println!("{:?}", request);
+
+        let request = request.send().await?;
 
         Ok(self.response_handler(request).await?)
     }
@@ -160,7 +165,7 @@ impl Transport {
             None => Err(OpenLimitError::NoApiKeySet()),
             Some(v) => Ok(v),
         }?;
-        let key = base64::decode(&secret_key).expect("Failed to base64 decode Coinbase API secret");
+        let key = base64::decode(secret_key).expect("Failed to base64 decode Coinbase API secret");
         let mut mac = HmacSha256::new_varkey(&key).unwrap();
 
         let prefix: String = String::from(timestamp.to_string() + method.as_str());
@@ -170,8 +175,12 @@ impl Transport {
         } else {
             String::from("")
         };
+        let path = match url.query() {
+            Some(q) => format!("{}?{}", url.path(), q),
+            None => url.path().to_string(),
+        };
 
-        let sign_message = format!("{}{}{}", prefix, url.path(), body);
+        let sign_message = format!("{}{}{}", prefix, path, body);
 
         println!("{}", sign_message);
 

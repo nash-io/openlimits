@@ -59,7 +59,7 @@ impl Binance {
             [("symbol", String::from(symbol))].iter().cloned().collect();
         let orders = self
             .transport
-            .signed_get("/api/v3/openOrders", Some(params))
+            .signed_get("/api/v3/openOrders", Some(&params))
             .await?;
         Ok(orders)
     }
@@ -79,7 +79,7 @@ impl Binance {
 
         let order = self
             .transport
-            .signed_get(API_V3_ORDER, Some(params))
+            .signed_get(API_V3_ORDER, Some(&params))
             .await?;
         Ok(order)
     }
@@ -177,7 +177,7 @@ impl Binance {
         let params = json! {{"symbol":symbol}};
         let trade_history = self
             .transport
-            .signed_get("/api/v3/myTrades", Some(params))
+            .signed_get("/api/v3/myTrades", Some(&params))
             .await?;
 
         Ok(trade_history)

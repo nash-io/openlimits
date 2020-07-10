@@ -14,7 +14,7 @@ use crate::Result;
 
 type HmacSha256 = Hmac<Sha256>;
 
-static RECV_WINDOW: usize = 5000;
+static RECV_WINDOW: usize = 7000;
 
 #[derive(Clone)]
 pub struct Transport {
@@ -79,12 +79,12 @@ impl Transport {
         headers
     }
 
-    pub async fn get<O, S>(&self, endpoint: &str, params: Option<S>) -> Result<O>
+    pub async fn get<O, S>(&self, endpoint: &str, params: Option<&S>) -> Result<O>
     where
         O: DeserializeOwned,
         S: Serialize,
     {
-        let url = self.get_url(endpoint, Some(&params), false)?;
+        let url = self.get_url(endpoint, params, false)?;
         let request = self.client.get(url).send().await?;
 
         Ok(self.response_handler(request).await?)
@@ -123,12 +123,12 @@ impl Transport {
         Ok(self.response_handler(request).await?)
     }
 
-    pub async fn signed_get<O, Q>(&self, endpoint: &str, params: Option<Q>) -> Result<O>
+    pub async fn signed_get<O, S>(&self, endpoint: &str, params: Option<&S>) -> Result<O>
     where
         O: DeserializeOwned,
-        Q: Serialize,
+        S: Serialize,
     {
-        let mut url = self.get_url(endpoint, Some(&params), true)?;
+        let mut url = self.get_url(endpoint, params, true)?;
 
         let (_, signature) = self.signature::<()>(&url, None)?;
         url.query_pairs_mut().append_pair("signature", &signature);

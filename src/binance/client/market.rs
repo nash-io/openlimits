@@ -21,7 +21,7 @@ impl Binance {
         let limit = limit.into().unwrap_or(100);
         let params = json! {{"symbol": symbol, "limit": limit}};
 
-        Ok(self.transport.get("/api/v1/depth", Some(params)).await?)
+        Ok(self.transport.get("/api/v1/depth", Some(&params)).await?)
     }
 
     // Latest price for ALL symbols.
@@ -73,7 +73,7 @@ impl Binance {
         let params = json! {{"symbol": symbol}};
         Ok(self
             .transport
-            .get("/api/v1/ticker/24hr", Some(params))
+            .get("/api/v1/ticker/24hr", Some(&params))
             .await?)
     }
 
@@ -110,7 +110,7 @@ impl Binance {
         let params: HashMap<&str, String> = HashMap::from_iter(params);
 
         self.transport
-            .get("/api/v1/klines", Some(params))
+            .get("/api/v1/klines", Some(&params))
             .await
             .map(|data: Vec<Vec<Value>>| {
                 KlineSummaries::AllKlineSummaries(
