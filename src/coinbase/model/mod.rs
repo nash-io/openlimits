@@ -25,6 +25,18 @@ pub struct Product {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Account {
+    pub id: String,
+    #[serde(with = "string_or_float")]
+    pub balance: f64,
+    #[serde(with = "string_or_float")]
+    pub available: f64,
+    #[serde(with = "string_or_float")]
+    pub hold: f64,
+    pub profile_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Candle {
     pub time: i64,
     pub low: f64,

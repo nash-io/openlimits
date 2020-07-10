@@ -1,6 +1,5 @@
 use crate::errors::OpenLimitError;
 use crate::Result;
-use hex::encode as hexify;
 use hmac::{Hmac, Mac, NewMac};
 use reqwest;
 use reqwest::header;
@@ -120,15 +119,15 @@ impl Transport {
 
         let signature = self.signature::<()>(&url, since_epoch_seconds, Method::GET, None)?;
 
-        Ok(self
+        let request = self
             .client
             .get(url)
             .header("CB-ACCESS-SIGN", signature)
             .header("CB-ACCESS-TIMESTAMP", since_epoch_seconds.to_string())
             .send()
-            .await?
-            .json::<O>()
-            .await?)
+            .await?;
+
+        Ok(self.response_handler(request).await?)
     }
 
     pub fn get_url<Q>(&self, endpoint: &str, params: Option<&Q>) -> Result<Url>
@@ -161,21 +160,23 @@ impl Transport {
             None => Err(OpenLimitError::NoApiKeySet()),
             Some(v) => Ok(v),
         }?;
-
-        let mut mac = HmacSha256::new_varkey(secret_key.as_bytes()).unwrap();
+        let key = base64::decode(&secret_key).expect("Failed to base64 decode Coinbase API secret");
+        let mut mac = HmacSha256::new_varkey(&key).unwrap();
 
         let prefix: String = String::from(timestamp.to_string() + method.as_str());
 
         let body = if body.is_some() {
-            serde_urlencoded::to_string(body)?
+            serde_json::to_string(&body)?
         } else {
             String::from("")
         };
 
         let sign_message = format!("{}{}{}", prefix, url.path(), body);
 
+        println!("{}", sign_message);
+
         mac.update(sign_message.as_bytes());
-        let signature = hexify(mac.finalize().into_bytes());
+        let signature = base64::encode(mac.finalize().into_bytes());
         Ok(signature)
     }
 
@@ -193,7 +194,11 @@ impl Transport {
 
             StatusCode::INTERNAL_SERVER_ERROR => Err(OpenLimitError::InternalServerError()),
             StatusCode::SERVICE_UNAVAILABLE => Err(OpenLimitError::ServiceUnavailable()),
-            StatusCode::UNAUTHORIZED => Err(OpenLimitError::Unauthorized()),
+            StatusCode::UNAUTHORIZED => {
+                let text = response.text().await?;
+                println!("{}", text);
+                Err(OpenLimitError::Unauthorized())
+            }
             // StatusCode::BAD_REQUEST => {
             //     let error: BinanceContentError = response.json().await?;
 

@@ -6,5 +6,6 @@ mod binance {
 }
 
 mod coinbase {
+    mod account;
     mod market;
 }
