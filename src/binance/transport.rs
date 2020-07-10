@@ -90,7 +90,7 @@ impl Transport {
         Ok(self.response_handler(request).await?)
     }
 
-    pub async fn post<O, D>(&self, endpoint: &str, data: Option<D>) -> Result<O>
+    pub async fn post<O, D>(&self, endpoint: &str, data: Option<&D>) -> Result<O>
     where
         O: DeserializeOwned,
         D: Serialize,
@@ -112,7 +112,7 @@ impl Transport {
         Ok(self.response_handler(request).await?)
     }
 
-    pub async fn delete<O, Q>(&self, endpoint: &str, data: Option<Q>) -> Result<O>
+    pub async fn delete<O, Q>(&self, endpoint: &str, data: Option<&Q>) -> Result<O>
     where
         O: DeserializeOwned,
         Q: Serialize,
@@ -138,28 +138,28 @@ impl Transport {
         Ok(self.response_handler(request).await?)
     }
 
-    pub async fn signed_post<D, O>(&self, endpoint: &str, data: Option<D>) -> Result<O>
+    pub async fn signed_post<D, O>(&self, endpoint: &str, data: Option<&D>) -> Result<O>
     where
         O: DeserializeOwned,
         D: Serialize,
     {
         let mut url = self.get_url::<()>(endpoint, None, true)?;
 
-        let (_, signature) = self.signature(&url, Some(&data))?;
+        let (_, signature) = self.signature(&url, data)?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
         let request = self.client.post(url).form(&data).send().await?;
         Ok(self.response_handler(request).await?)
     }
 
-    pub async fn signed_put<O, Q>(&self, endpoint: &str, data: Option<Q>) -> Result<O>
+    pub async fn signed_put<O, Q>(&self, endpoint: &str, data: Option<&Q>) -> Result<O>
     where
         O: DeserializeOwned,
         Q: Serialize,
     {
         let mut url = self.get_url::<()>(endpoint, None, true)?;
 
-        let (_, signature) = self.signature(&url, Some(&data))?;
+        let (_, signature) = self.signature(&url, data)?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
         let request = self.client.put(url).form(&data).send().await?;
@@ -167,14 +167,14 @@ impl Transport {
         Ok(self.response_handler(request).await?)
     }
 
-    pub async fn signed_delete<O, Q>(&self, endpoint: &str, data: Option<Q>) -> Result<O>
+    pub async fn signed_delete<O, Q>(&self, endpoint: &str, data: Option<&Q>) -> Result<O>
     where
         O: DeserializeOwned,
         Q: Serialize,
     {
         let mut url = self.get_url::<()>(endpoint, None, true)?;
 
-        let (_, signature) = self.signature(&url, Some(&data))?;
+        let (_, signature) = self.signature(&url, data)?;
         url.query_pairs_mut().append_pair("signature", &signature);
 
         let request = self.client.delete(url).form(&data).send().await?;

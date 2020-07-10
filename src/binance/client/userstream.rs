@@ -17,7 +17,7 @@ impl Binance {
             .transport
             .put(
                 USER_DATA_STREAM,
-                Some(vec![("listen_key", listen_key.to_string())]),
+                Some(&vec![("listen_key", listen_key.to_string())]),
             )
             .await?;
         Ok(success)
@@ -28,7 +28,7 @@ impl Binance {
             .transport
             .delete(
                 USER_DATA_STREAM,
-                Some(vec![("listen_key", listen_key.to_string())]),
+                Some(&vec![("listen_key", listen_key.to_string())]),
             )
             .await?;
         Ok(success)

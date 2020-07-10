@@ -100,7 +100,7 @@ impl Binance {
 
         let transaction = self
             .transport
-            .signed_post(API_V3_ORDER, Some(params))
+            .signed_post(API_V3_ORDER, Some(&params))
             .await?;
 
         Ok(transaction)
@@ -119,7 +119,7 @@ impl Binance {
         let params = self.build_order(sell);
         let transaction = self
             .transport
-            .signed_post(API_V3_ORDER, Some(params))
+            .signed_post(API_V3_ORDER, Some(&params))
             .await?;
 
         Ok(transaction)
@@ -138,7 +138,7 @@ impl Binance {
         let params = self.build_order(buy);
         let transaction = self
             .transport
-            .signed_post(API_V3_ORDER, Some(params))
+            .signed_post(API_V3_ORDER, Some(&params))
             .await?;
 
         Ok(transaction)
@@ -157,7 +157,7 @@ impl Binance {
         let params = self.build_order(sell);
         let transaction = self
             .transport
-            .signed_post(API_V3_ORDER, Some(params))
+            .signed_post(API_V3_ORDER, Some(&params))
             .await?;
         Ok(transaction)
     }
@@ -167,7 +167,7 @@ impl Binance {
         let params = json! {{"symbol":symbol, "orderId":order_id}};
         let order_canceled = self
             .transport
-            .signed_delete(API_V3_ORDER, Some(params))
+            .signed_delete(API_V3_ORDER, Some(&params))
             .await?;
         Ok(order_canceled)
     }
