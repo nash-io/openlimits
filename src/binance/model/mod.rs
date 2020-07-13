@@ -1,4 +1,5 @@
 pub mod websocket;
+use crate::utils::string_or_float_to_float;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -43,7 +44,7 @@ pub struct Order {
     pub symbol: String,
     pub order_id: u64,
     pub client_order_id: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price: f64,
     pub orig_qty: String,
     pub executed_qty: String,
@@ -52,7 +53,7 @@ pub struct Order {
     #[serde(rename = "type")]
     pub type_name: String,
     pub side: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub stop_price: f64,
     pub iceberg_qty: String,
     pub time: u64,
@@ -78,17 +79,17 @@ pub struct Transaction {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Bids {
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub qty: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Asks {
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub qty: f64,
 }
 
@@ -111,7 +112,7 @@ pub enum Prices {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SymbolPrice {
     pub symbol: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price: f64,
 }
 
@@ -131,13 +132,13 @@ pub enum KlineSummaries {
 #[serde(rename_all = "camelCase")]
 pub struct Ticker {
     pub symbol: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub bid_price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub bid_qty: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub ask_price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub ask_qty: f64,
 }
 
@@ -147,11 +148,11 @@ pub struct TradeHistory {
     pub symbol: String,
     pub id: u64,
     pub order_id: u64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub qty: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub commission: f64,
     pub commission_asset: String,
     pub time: u64,
@@ -164,27 +165,27 @@ pub struct TradeHistory {
 #[serde(rename_all = "camelCase")]
 pub struct PriceStats {
     pub symbol: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price_change: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price_change_percent: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub weighted_avg_price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub prev_close_price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub last_price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub bid_price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub ask_price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub open_price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub high_price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub low_price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub volume: f64,
     pub open_time: u64,
     pub close_time: u64,
@@ -394,35 +395,4 @@ pub enum OrderStatus {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OrderRejectReason {
     None,
-}
-
-mod string_or_float {
-    use std::fmt;
-
-    use serde::{de, Deserialize, Deserializer, Serializer};
-
-    pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        T: fmt::Display,
-        S: Serializer,
-    {
-        serializer.collect_str(value)
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<f64, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        #[serde(untagged)]
-        enum StringOrFloat {
-            String(String),
-            Float(f64),
-        }
-
-        match StringOrFloat::deserialize(deserializer)? {
-            StringOrFloat::String(s) => s.parse().map_err(de::Error::custom),
-            StringOrFloat::Float(i) => Ok(i),
-        }
-    }
 }

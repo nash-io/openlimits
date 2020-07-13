@@ -1,4 +1,6 @@
+use crate::utils::string_or_float_to_float;
 use serde::{Deserialize, Serialize};
+pub mod websocket;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Product {
@@ -6,13 +8,13 @@ pub struct Product {
     pub display_name: String,
     pub quote_currency: String,
     pub base_currency: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub base_increment: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub quote_increment: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub base_min_size: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub base_max_size: f64,
     pub min_market_funds: String,
     pub max_market_funds: String,
@@ -27,11 +29,11 @@ pub struct Product {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Account {
     pub id: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub balance: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub available: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub hold: f64,
     pub profile_id: String,
 }
@@ -51,7 +53,7 @@ pub struct Trade {
     pub trade_id: i64,
     pub time: String,
     pub size: String,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price: f64,
     pub side: String,
 }
@@ -59,15 +61,15 @@ pub struct Trade {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Ticker {
     pub trade_id: i64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub size: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub bid: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub ask: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub volume: f64,
     pub time: String,
 }
@@ -85,9 +87,9 @@ pub trait BookLevel {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BookRecordL1 {
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub size: f64,
     pub num_orders: usize,
 }
@@ -100,9 +102,9 @@ impl BookLevel for BookRecordL1 {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BookRecordL2 {
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub size: f64,
     pub num_orders: usize,
 }
@@ -115,9 +117,9 @@ impl BookLevel for BookRecordL2 {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BookRecordL3 {
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub size: f64,
     pub order_id: String,
 }
@@ -130,49 +132,25 @@ impl BookLevel for BookRecordL3 {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Bids {
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub qty: f64,
     pub num_orders: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Asks {
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub price: f64,
-    #[serde(with = "string_or_float")]
+    #[serde(with = "string_or_float_to_float")]
     pub qty: f64,
     pub num_orders: i64,
 }
 
-mod string_or_float {
-    use std::fmt;
-
-    use serde::{de, Deserialize, Deserializer, Serializer};
-
-    pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        T: fmt::Display,
-        S: Serializer,
-    {
-        serializer.collect_str(value)
-    }
-
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<f64, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        #[derive(Deserialize)]
-        #[serde(untagged)]
-        enum StringOrFloat {
-            String(String),
-            Float(f64),
-        }
-
-        match StringOrFloat::deserialize(deserializer)? {
-            StringOrFloat::String(s) => s.parse().map_err(de::Error::custom),
-            StringOrFloat::Float(i) => Ok(i),
-        }
-    }
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub enum OrderSide {
+    Buy,
+    Sell,
 }

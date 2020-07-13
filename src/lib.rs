@@ -24,6 +24,7 @@ pub mod client;
 pub mod coinbase;
 pub mod errors;
 pub mod exchange;
+pub mod utils;
 
 use errors::OpenLimitError;
 pub(crate) type Result<T> = std::result::Result<T, OpenLimitError>;

@@ -1,6 +1,6 @@
 mod transport;
 
-mod client;
+pub mod client;
 pub mod model;
 
 use transport::Transport;
