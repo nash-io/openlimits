@@ -26,6 +26,20 @@ async fn order_status() {
 }
 
 #[tokio::test]
+async fn limit_buy() {
+    let exchange = init();
+    let resp = exchange.limit_buy("BTC-USD", 0.01, 9000.0).await.unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn limit_sell() {
+    let exchange = init();
+    let resp = exchange.limit_sell("BTC-USD", 0.01, 10000.0).await.unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
 async fn market_buy() {
     let exchange = init();
     let resp = exchange.market_buy("BTC-USD", 0.01).await.unwrap();
@@ -33,7 +47,7 @@ async fn market_buy() {
 }
 
 #[tokio::test]
-async fn sell_buy() {
+async fn market_sell() {
     let exchange = init();
     let resp = exchange.market_sell("BTC-USD", 0.01).await.unwrap();
     println!("{:?}", resp);

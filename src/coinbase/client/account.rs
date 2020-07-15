@@ -54,4 +54,47 @@ impl Coinbase {
 
         Ok(transaction)
     }
+
+    pub async fn limit_buy(&self, product: &str, size: f64, price: f64) -> Result<Order> {
+        let params = OrderRequest {
+            product_id: product.into(),
+            client_oid: None,
+            side: OrderSide::Buy,
+            _type: OrderRequestType::Limit {
+                price,
+                size,
+                post_only: true,
+                time_in_force: None
+            },
+            stop: None,
+        };
+
+        println!("{:?}", params);
+
+        let transaction = self.transport.signed_post("/orders", Some(&params)).await?;
+
+        Ok(transaction)
+    }
+
+    pub async fn limit_sell(&self, product: &str, size: f64, price: f64) -> Result<Order> {
+        let params = OrderRequest {
+            product_id: product.into(),
+            client_oid: None,
+            side: OrderSide::Sell,
+            _type: OrderRequestType::Limit {
+                price,
+                size,
+                post_only: true,
+                time_in_force: None
+            },
+            stop: None,
+        };
+
+        println!("{:?}", params);
+
+        let transaction = self.transport.signed_post("/orders", Some(&params)).await?;
+
+        Ok(transaction)
+    }
+
 }
