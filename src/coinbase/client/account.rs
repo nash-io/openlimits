@@ -64,7 +64,7 @@ impl Coinbase {
                 price,
                 size,
                 post_only: true,
-                time_in_force: None
+                time_in_force: None,
             },
             stop: None,
         };
@@ -85,7 +85,7 @@ impl Coinbase {
                 price,
                 size,
                 post_only: true,
-                time_in_force: None
+                time_in_force: None,
             },
             stop: None,
         };
@@ -96,5 +96,4 @@ impl Coinbase {
 
         Ok(transaction)
     }
-
 }
