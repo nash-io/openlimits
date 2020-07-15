@@ -1,4 +1,4 @@
-use crate::errors::OpenLimitError;
+use crate::errors::{CoinbaseContentError, OpenLimitError};
 use crate::Result;
 use hmac::{Hmac, Mac, NewMac};
 use reqwest;
@@ -106,7 +106,7 @@ impl Transport {
         Ok(self.response_handler(request).await?)
     }
 
-    pub async fn get_signed<O, S>(&self, endpoint: &str, params: Option<&S>) -> Result<O>
+    pub async fn signed_get<O, S>(&self, endpoint: &str, params: Option<&S>) -> Result<O>
     where
         O: DeserializeOwned,
         S: Serialize,
@@ -120,15 +120,37 @@ impl Transport {
 
         let signature = self.signature::<()>(&url, since_epoch_seconds, Method::GET, None)?;
 
-        println!("url: {}", url);
-
         let request = self
             .client
             .get(url)
             .header("CB-ACCESS-SIGN", signature)
             .header("CB-ACCESS-TIMESTAMP", since_epoch_seconds.to_string());
 
-        println!("{:?}", request);
+        let request = request.send().await?;
+
+        Ok(self.response_handler(request).await?)
+    }
+
+    pub async fn signed_post<O, S>(&self, endpoint: &str, data: Option<&S>) -> Result<O>
+    where
+        O: DeserializeOwned,
+        S: Serialize,
+    {
+        let since_epoch_seconds = SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .expect("Invalid SystemTime.")
+            .as_secs();
+
+        let url = self.get_url::<()>(endpoint, None)?;
+
+        let signature = self.signature(&url, since_epoch_seconds, Method::POST, data)?;
+
+        let request = self
+            .client
+            .post(url)
+            .json(&data)
+            .header("CB-ACCESS-SIGN", signature)
+            .header("CB-ACCESS-TIMESTAMP", since_epoch_seconds.to_string());
 
         let request = request.send().await?;
 
@@ -181,8 +203,7 @@ impl Transport {
         };
 
         let sign_message = format!("{}{}{}", prefix, path, body);
-
-        println!("{}", sign_message);
+        println!("sign message: {}", sign_message);
 
         mac.update(sign_message.as_bytes());
         let signature = base64::encode(mac.finalize().into_bytes());
@@ -208,15 +229,18 @@ impl Transport {
                 println!("{}", text);
                 Err(OpenLimitError::Unauthorized())
             }
-            // StatusCode::BAD_REQUEST => {
-            //     let error: BinanceContentError = response.json().await?;
+            StatusCode::BAD_REQUEST => {
+                let error: CoinbaseContentError = response.json().await?;
 
-            //     Err(OpenLimitError::BinanceError(error).into())
-            // }
-            s => Err(OpenLimitError::UnkownResponse(format!(
-                "Received response: {:?}",
-                s
-            ))),
+                Err(OpenLimitError::CoinbaseError(error).into())
+            }
+            s => {
+                let text = response.text().await?;
+                Err(OpenLimitError::UnkownResponse(format!(
+                    "Received response: {:?}, value: {}",
+                    s, text
+                )))
+            }
         }
     }
 }

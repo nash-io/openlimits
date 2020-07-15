@@ -1,6 +1,6 @@
 extern crate serde;
 
-use crate::utils::{f64_nan_from_string, f64_opt_from_string, string_or_float_to_float};
+use crate::utils::{f64_nan_from_string, f64_opt_from_string, string_to_float};
 use serde::{Deserialize, Deserializer, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -124,18 +124,18 @@ pub enum Level2 {
 
 #[derive(Deserialize, Debug)]
 pub struct Level2SnapshotRecord {
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub price: f64,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub size: f64,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Level2UpdateRecord {
     pub side: super::OrderSide,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub price: f64,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub size: f64,
 }
 
@@ -148,10 +148,10 @@ pub enum Ticker {
         sequence: usize,
         time: String,
         product_id: String,
-        #[serde(with = "string_or_float_to_float")]
+        #[serde(with = "string_to_float")]
         price: f64,
         side: super::OrderSide,
-        #[serde(with = "string_or_float_to_float")]
+        #[serde(with = "string_to_float")]
         last_size: f64,
         #[serde(with = "f64_nan_from_string")]
         best_bid: f64,
@@ -264,9 +264,9 @@ pub enum Received {
         sequence: usize,
         order_id: String,
         client_oid: Option<String>,
-        #[serde(with = "string_or_float_to_float")]
+        #[serde(with = "string_to_float")]
         size: f64,
-        #[serde(with = "string_or_float_to_float")]
+        #[serde(with = "string_to_float")]
         price: f64,
         side: super::OrderSide,
         user_id: Option<String>,
@@ -292,9 +292,9 @@ pub struct Open {
     pub product_id: String,
     pub sequence: usize,
     pub order_id: String,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub price: f64,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub remaining_size: f64,
     pub side: super::OrderSide,
     pub user_id: Option<String>,
@@ -309,12 +309,12 @@ pub enum Done {
         time: String,
         product_id: String,
         sequence: Option<usize>,
-        #[serde(with = "string_or_float_to_float")]
+        #[serde(with = "string_to_float")]
         price: f64,
         order_id: String,
         reason: Reason,
         side: super::OrderSide,
-        #[serde(with = "string_or_float_to_float")]
+        #[serde(with = "string_to_float")]
         remaining_size: f64,
         user_id: Option<String>,
         #[serde(default)]
@@ -345,9 +345,9 @@ pub struct Match {
     pub taker_order_id: String,
     pub time: String,
     pub product_id: String,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub size: f64,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub price: f64,
     pub side: super::OrderSide,
     pub taker_user_id: Option<String>,
@@ -365,9 +365,9 @@ pub struct Change {
     pub sequence: usize,
     pub order_id: String,
     pub product_id: String,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub new_size: f64,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub old_size: f64,
     #[serde(default)]
     #[serde(with = "f64_opt_from_string")]
@@ -387,15 +387,15 @@ pub struct Change {
 #[derive(Deserialize, Debug)]
 pub struct Activate {
     pub product_id: String,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub timestamp: f64,
     pub order_id: String,
     pub stop_type: StopType,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub size: f64,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub funds: f64,
-    #[serde(with = "string_or_float_to_float")]
+    #[serde(with = "string_to_float")]
     pub taker_fee_rate: f64,
     pub private: bool,
     pub user_id: Option<String>,

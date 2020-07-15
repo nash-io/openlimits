@@ -1,4 +1,4 @@
-pub mod string_or_float_to_float {
+pub mod string_to_float {
     use std::fmt;
 
     use serde::{de, Deserialize, Deserializer, Serializer};
@@ -17,15 +17,12 @@ pub mod string_or_float_to_float {
     {
         #[derive(Deserialize)]
         #[serde(untagged)]
-        enum StringOrFloat {
+        enum StringToFloat {
             String(String),
-            Float(f64),
         }
 
-        match StringOrFloat::deserialize(deserializer)? {
-            StringOrFloat::String(s) => s.parse().map_err(de::Error::custom),
-            StringOrFloat::Float(i) => Ok(i),
-        }
+        let StringToFloat::String(s) = StringToFloat::deserialize(deserializer)?;
+        s.parse().map_err(de::Error::custom)
     }
 }
 

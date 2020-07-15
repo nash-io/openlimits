@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::utils::string_or_float_to_float;
+use crate::utils::string_to_float;
 
 use super::{
     Asks, Bids, Kline, OrderBook, OrderExecType, OrderRejectReason, OrderStatus, OrderType, Side,
@@ -51,9 +51,9 @@ pub struct TradeMessage {
     pub symbol: String,
     #[serde(rename = "t")]
     pub trade_id: u64,
-    #[serde(rename = "p", with = "string_or_float_to_float")]
+    #[serde(rename = "p", with = "string_to_float")]
     pub price: f64,
-    #[serde(rename = "q", with = "string_or_float_to_float")]
+    #[serde(rename = "q", with = "string_to_float")]
     pub qty: f64,
     #[serde(rename = "b")]
     pub buyer_order_id: u64,
@@ -78,9 +78,9 @@ pub struct AggregateTrade {
     pub symbol: String,
     #[serde(rename = "a")]
     pub aggregated_trade_id: u64,
-    #[serde(rename = "p", with = "string_or_float_to_float")]
+    #[serde(rename = "p", with = "string_to_float")]
     pub price: f64,
-    #[serde(rename = "q", with = "string_or_float_to_float")]
+    #[serde(rename = "q", with = "string_to_float")]
     pub qty: f64,
     #[serde(rename = "f")]
     pub first_break_trade_id: u64,
@@ -111,13 +111,13 @@ pub struct UserOrderUpdate {
     pub order_type: OrderType,
     #[serde(rename = "f")]
     pub time_in_force: TimeInForce,
-    #[serde(rename = "q", with = "string_or_float_to_float")]
+    #[serde(rename = "q", with = "string_to_float")]
     pub qty: f64,
-    #[serde(rename = "p", with = "string_or_float_to_float")]
+    #[serde(rename = "p", with = "string_to_float")]
     pub price: f64,
-    #[serde(rename = "P", with = "string_or_float_to_float")]
+    #[serde(rename = "P", with = "string_to_float")]
     pub stop_price: f64,
-    #[serde(rename = "F", with = "string_or_float_to_float")]
+    #[serde(rename = "F", with = "string_to_float")]
     pub iceberg_qty: f64,
     #[serde(skip_serializing)]
     pub g: i32,
@@ -131,13 +131,13 @@ pub struct UserOrderUpdate {
     pub order_reject_reason: OrderRejectReason,
     #[serde(rename = "i")]
     pub order_id: u64,
-    #[serde(rename = "l", with = "string_or_float_to_float")]
+    #[serde(rename = "l", with = "string_to_float")]
     pub qty_last_filled_trade: f64,
-    #[serde(rename = "z", with = "string_or_float_to_float")]
+    #[serde(rename = "z", with = "string_to_float")]
     pub accumulated_qty_filled_trades: f64,
-    #[serde(rename = "L", with = "string_or_float_to_float")]
+    #[serde(rename = "L", with = "string_to_float")]
     pub price_last_filled_trade: f64,
-    #[serde(rename = "n", with = "string_or_float_to_float")]
+    #[serde(rename = "n", with = "string_to_float")]
     pub commission: f64,
     #[serde(skip_serializing, rename = "N")]
     pub asset_commisioned: Option<String>,
@@ -155,7 +155,7 @@ pub struct UserOrderUpdate {
     pub m_ignore: bool,
     #[serde(skip_serializing, rename = "O")]
     pub order_creation_time: u64,
-    #[serde(skip_serializing, rename = "Z", with = "string_or_float_to_float")]
+    #[serde(skip_serializing, rename = "Z", with = "string_to_float")]
     pub cumulative_quote_asset_transacted_qty: f64,
 }
 
@@ -187,35 +187,35 @@ pub struct Ticker {
     pub event_time: u64,
     #[serde(rename = "s")]
     pub symbol: String,
-    #[serde(rename = "p", with = "string_or_float_to_float")]
+    #[serde(rename = "p", with = "string_to_float")]
     pub price_change: f64,
-    #[serde(rename = "P", with = "string_or_float_to_float")]
+    #[serde(rename = "P", with = "string_to_float")]
     pub price_change_percent: f64,
-    #[serde(rename = "w", with = "string_or_float_to_float")]
+    #[serde(rename = "w", with = "string_to_float")]
     pub average_price: f64,
-    #[serde(rename = "x", with = "string_or_float_to_float")]
+    #[serde(rename = "x", with = "string_to_float")]
     pub prev_close: f64,
-    #[serde(rename = "c", with = "string_or_float_to_float")]
+    #[serde(rename = "c", with = "string_to_float")]
     pub current_close: f64,
-    #[serde(rename = "Q", with = "string_or_float_to_float")]
+    #[serde(rename = "Q", with = "string_to_float")]
     pub current_close_qty: f64,
-    #[serde(rename = "b", with = "string_or_float_to_float")]
+    #[serde(rename = "b", with = "string_to_float")]
     pub best_bid: f64,
-    #[serde(rename = "B", with = "string_or_float_to_float")]
+    #[serde(rename = "B", with = "string_to_float")]
     pub best_bid_qty: f64,
-    #[serde(rename = "a", with = "string_or_float_to_float")]
+    #[serde(rename = "a", with = "string_to_float")]
     pub best_ask: f64,
-    #[serde(rename = "A", with = "string_or_float_to_float")]
+    #[serde(rename = "A", with = "string_to_float")]
     pub best_ask_qty: f64,
-    #[serde(rename = "o", with = "string_or_float_to_float")]
+    #[serde(rename = "o", with = "string_to_float")]
     pub open: f64,
-    #[serde(rename = "h", with = "string_or_float_to_float")]
+    #[serde(rename = "h", with = "string_to_float")]
     pub high: f64,
-    #[serde(rename = "l", with = "string_or_float_to_float")]
+    #[serde(rename = "l", with = "string_to_float")]
     pub low: f64,
-    #[serde(rename = "v", with = "string_or_float_to_float")]
+    #[serde(rename = "v", with = "string_to_float")]
     pub volume: f64,
-    #[serde(rename = "q", with = "string_or_float_to_float")]
+    #[serde(rename = "q", with = "string_to_float")]
     pub quote_volume: f64,
     #[serde(rename = "O")]
     pub open_time: u64,
@@ -274,9 +274,9 @@ pub struct AccountUpdate {
 pub struct AccountUpdateBalance {
     #[serde(rename = "a")]
     pub asset: String,
-    #[serde(rename = "f", with = "string_or_float_to_float")]
+    #[serde(rename = "f", with = "string_to_float")]
     pub free: f64,
-    #[serde(rename = "l", with = "string_or_float_to_float")]
+    #[serde(rename = "l", with = "string_to_float")]
     pub locked: f64,
 }
 
@@ -289,16 +289,16 @@ pub struct MiniTicker {
     pub event_time: u64,
     #[serde(rename = "s")]
     pub symbol: String,
-    #[serde(rename = "c", with = "string_or_float_to_float")]
+    #[serde(rename = "c", with = "string_to_float")]
     pub close: f64,
-    #[serde(rename = "o", with = "string_or_float_to_float")]
+    #[serde(rename = "o", with = "string_to_float")]
     pub open: f64,
-    #[serde(rename = "l", with = "string_or_float_to_float")]
+    #[serde(rename = "l", with = "string_to_float")]
     pub low: f64,
-    #[serde(rename = "h", with = "string_or_float_to_float")]
+    #[serde(rename = "h", with = "string_to_float")]
     pub high: f64,
-    #[serde(rename = "v", with = "string_or_float_to_float")]
+    #[serde(rename = "v", with = "string_to_float")]
     pub volume: f64,
-    #[serde(rename = "q", with = "string_or_float_to_float")]
+    #[serde(rename = "q", with = "string_to_float")]
     pub quote_volume: f64,
 }

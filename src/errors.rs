@@ -19,10 +19,23 @@ impl fmt::Display for BinanceContentError {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Error)]
+pub struct CoinbaseContentError {
+    pub message: String,
+}
+
+impl fmt::Display for CoinbaseContentError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "error message: {}", self.message)
+    }
+}
+
 #[derive(Error, Debug)]
 pub enum OpenLimitError {
     #[error("")]
     BinanceError(#[from] BinanceContentError),
+    #[error("")]
+    CoinbaseError(#[from] CoinbaseContentError),
     #[error("")]
     AssetNotFound(),
     #[error("")]
