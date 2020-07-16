@@ -5,3 +5,6 @@
     unused_imports,
     unused_import_braces
 )]
+
+extern crate serde;
+extern crate binance;
