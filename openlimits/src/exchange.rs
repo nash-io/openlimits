@@ -1,3 +1,6 @@
+use async_trait::async_trait;
+use shared::Result;
+
 use crate::model::{OrderBookRequest, OrderBookResponse};
 
 struct OpenLimits<E: Exchange> {
@@ -5,18 +8,19 @@ struct OpenLimits<E: Exchange> {
 }
 
 impl<E: Exchange> OpenLimits<E> {
-    pub fn new(sandbox: bool) -> Self {
-        Self {
-            exchange: Exchange::new(sandbox),
-        }
+    pub fn new(exchange: E) -> Self {
+        Self { exchange }
     }
 
-    pub fn order_book(&mut self, req: impl AsRef<OrderBookRequest>) -> OrderBookResponse {
-        self.exchange.order_book(req)
+    pub async fn order_book(
+        &mut self,
+        req: impl AsRef<OrderBookRequest>,
+    ) -> Result<OrderBookResponse> {
+        self.exchange.order_book(req.as_ref()).await
     }
 }
 
+#[async_trait]
 pub trait Exchange {
-    fn new(sandbox: bool) -> Self;
-    fn order_book(&mut self, req: impl AsRef<OrderBookRequest>) -> OrderBookResponse;
+    async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
 }
