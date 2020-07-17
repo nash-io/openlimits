@@ -1,30 +1,17 @@
-use binance::Binance;
-use binance::model::OrderBook as BinanceOrderBookResponse;
+use derive_more::{Deref, DerefMut};
+
 use crate::exchange::Exchange;
-use crate::model::{OrderBookResponse, OrderBookRequest};
-pub struct OpenLimitsBinance; 
+use crate::model::{OrderBookRequest, OrderBookResponse};
 
-impl Exchange for OpenLimitsBinance {
-    fn new() -> Binance {
-        Binance::new(true)
+#[derive(Deref, DerefMut)]
+pub struct Binance(binance::Binance);
+
+impl Exchange for Binance {
+    fn new(sandbox: bool) -> Binance {
+        Binance(binance::Binance::new(sandbox))
     }
 
-    fn order_book(&self, req: OrderBookRequest) -> OrderBookResponse {
-        self.exchange.get_depth(req);
-        Binance::order_book(self, req.as_ref().into()).into()
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-impl Into<OrderBookRequest> for BinanceOrderBookRequest {
-    fn into(self) -> Self {
-        BinanceOrderBookRequest
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-impl From<BinanceOrderBookResponse> for OrderBookResponse {
-    fn from(_: BinanceOrderBookResponse) -> Self {
-        OrderBookResponse
+    fn order_book(&mut self, req: impl AsRef<OrderBookRequest>) -> OrderBookResponse {
+        Default::default()
     }
 }

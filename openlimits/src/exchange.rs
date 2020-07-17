@@ -1,27 +1,22 @@
-use std::fmt;
-use crate::model::{OrderBook, OrderBookRequest};
+use crate::model::{OrderBookRequest, OrderBookResponse};
 
 struct OpenLimits<E: Exchange> {
     exchange: E,
 }
 
 impl<E: Exchange> OpenLimits<E> {
-    pub fn new(exchange: E, sandbox: bool) -> Self {
+    pub fn new(sandbox: bool) -> Self {
         Self {
-            exchange: exchange::new(sandbox),
+            exchange: Exchange::new(sandbox),
         }
     }
 
-    fn order_book(&mut self, req: impl AsRef<OrderBookRequest>) -> OrderBook {
-        let resp = self.exchange.order_book(req);
-
-        resp
+    pub fn order_book(&mut self, req: impl AsRef<OrderBookRequest>) -> OrderBookResponse {
+        self.exchange.order_book(req)
     }
 }
 
 pub trait Exchange {
-    type OrderBookRequest: for<'a> From<&'a OrderBook> + fmt::Debug;
-    type OrderBook: Into<OrderBook> + fmt::Debug;
-    fn new(sandbox: bool) -> Exchange;
-    fn order_book(&self, req: impl AsRef<OrderBookRequest>) -> OrderBook;
+    fn new(sandbox: bool) -> Self;
+    fn order_book(&mut self, req: impl AsRef<OrderBookRequest>) -> OrderBookResponse;
 }

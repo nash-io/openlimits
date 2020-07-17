@@ -6,5 +6,6 @@
     unused_import_braces
 )]
 
-extern crate binance;
-extern crate serde;
+pub mod binance;
+pub mod exchange;
+pub mod model;

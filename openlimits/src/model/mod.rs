@@ -1,6 +1,12 @@
-use serde::{Serialize, Deserialize};
+use derive_more::Constructor;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Clone, Constructor, Debug, Default, Deserialize, Serialize)]
+pub struct OrderBookRequest {
+    pub symbol: String,
+}
+
+#[derive(Clone, Constructor, Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderBookResponse {
     pub last_update_id: u64,
@@ -8,19 +14,14 @@ pub struct OrderBookResponse {
     pub asks: Vec<Asks>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Clone, Constructor, Debug, Default, Deserialize, Serialize)]
 pub struct Bids {
     pub price: f64,
     pub qty: f64,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Clone, Constructor, Debug, Default, Deserialize, Serialize)]
 pub struct Asks {
     pub price: f64,
     pub qty: f64,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct OrderBookRequest {
-    pub symbol: String
 }
