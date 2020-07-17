@@ -1,28 +1,30 @@
 use binance::Binance;
+use binance::model::OrderBook as BinanceOrderBookResponse;
+use crate::exchange::Exchange;
+use crate::model::{OrderBookResponse, OrderBookRequest};
+pub struct OpenLimitsBinance; 
 
-mod binance {
-    use crate::exchange::Exchange;
-    pub struct OpenLimitsBinance; 
-    
-    impl Exchange for OpenLimitsBinance {
-        type OrderBookRequest = BinanceOrderBookRequest;
-        type OpenLimitsBinance = BinanceOrderBookResponse;
-        fn order_book(&self, req: impl AsRef<OrderBookRequest>) -> OrderBookResponse {
-            Binance::order_book(self, req.as_ref().into()).into()
-        }
+impl Exchange for OpenLimitsBinance {
+    fn new() -> Binance {
+        Binance::new(true)
     }
-    #[derive(Debug, Deserialize, Serialize)]
-    pub struct BinanceOrderBookRequest;
-    impl<'a> From<&'a OrderBookRequest> for BinanceOrderBookRequest {
-        fn from(_: &'a OrderBookRequest) -> Self {
-            BinanceOrderBookRequest
-        }
+
+    fn order_book(&self, req: OrderBookRequest) -> OrderBookResponse {
+        self.exchange.get_depth(req);
+        Binance::order_book(self, req.as_ref().into()).into()
     }
-    #[derive(Debug, Deserialize, Serialize)]
-    pub struct BinanceOrderBookResponse;
-    impl From<BinanceOrderBookResponse> for OrderBookResponse {
-        fn from(_: BinanceOrderBookResponse) -> Self {
-            OrderBookResponse
-        }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+impl Into<OrderBookRequest> for BinanceOrderBookRequest {
+    fn into(self) -> Self {
+        BinanceOrderBookRequest
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+impl From<BinanceOrderBookResponse> for OrderBookResponse {
+    fn from(_: BinanceOrderBookResponse) -> Self {
+        OrderBookResponse
     }
 }

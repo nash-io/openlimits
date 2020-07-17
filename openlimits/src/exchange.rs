@@ -8,7 +8,7 @@ struct OpenLimits<E: Exchange> {
 impl<E: Exchange> OpenLimits<E> {
     pub fn new(exchange: E, sandbox: bool) -> Self {
         Self {
-            exchange: exchange::new(book),
+            exchange: exchange::new(sandbox),
         }
     }
 

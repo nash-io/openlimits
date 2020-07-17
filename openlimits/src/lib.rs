@@ -6,5 +6,5 @@
     unused_import_braces
 )]
 
-extern crate serde;
 extern crate binance;
+extern crate serde;

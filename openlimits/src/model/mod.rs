@@ -2,7 +2,7 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct OrderBook {
+pub struct OrderBookResponse {
     pub last_update_id: u64,
     pub bids: Vec<Bids>,
     pub asks: Vec<Asks>,
