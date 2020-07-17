@@ -3,7 +3,7 @@ use shared::Result;
 
 use crate::model::{OrderBookRequest, OrderBookResponse};
 
-struct OpenLimits<E: Exchange> {
+pub struct OpenLimits<E: Exchange> {
     exchange: E,
 }
 
