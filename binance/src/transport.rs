@@ -251,7 +251,7 @@ impl Transport {
             StatusCode::BAD_REQUEST => {
                 let error: BinanceContentError = response.json().await?;
 
-                Err(OpenLimitError::BinanceError(error).into())
+                Err(OpenLimitError::BinanceError(error))
             }
             s => Err(OpenLimitError::UnkownResponse(format!(
                 "Received response: {:?}",
