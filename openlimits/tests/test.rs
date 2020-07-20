@@ -1,10 +1,9 @@
 mod binance {
-    // mod account;
-    // mod general;
+    mod account;
     mod market;
 }
 
 mod coinbase {
-    // mod account;
+    mod account;
     mod market;
 }
