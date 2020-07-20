@@ -32,7 +32,7 @@ impl Exchange for Binance {
 impl From<binance::model::OrderBook> for OrderBookResponse {
     fn from(book: binance::model::OrderBook) -> Self {
         Self {
-            last_update_id: book.last_update_id,
+            last_update_id: Some(book.last_update_id),
             bids: book.bids.into_iter().map(Into::into).collect(),
             asks: book.asks.into_iter().map(Into::into).collect(),
         }

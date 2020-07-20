@@ -9,7 +9,7 @@ pub struct OrderBookRequest {
 #[derive(Clone, Constructor, Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderBookResponse {
-    pub last_update_id: u64,
+    pub last_update_id: Option<u64>,
     pub bids: Vec<Bids>,
     pub asks: Vec<Asks>,
 }
