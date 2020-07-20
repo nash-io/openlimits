@@ -42,7 +42,10 @@ jobs:
     - name: Run tests
       env:
         BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
-        BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }} 
+        BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }}
+        COINBASE_API_KEY: ${{ secrets.COINBASE_API_KEY }}
+        COINBASE_API_SECRET: ${{ secrets.COINBASE_API_SECRET }}
+        COINBASE_PASSPHRASE: ${{ secrets.COINBASE_PASSPHRASE }}
 
       run: cargo test --verbose
 
