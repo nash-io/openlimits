@@ -3,7 +3,8 @@ use derive_more::{Deref, DerefMut};
 use shared::Result;
 
 use crate::exchange::Exchange;
-use crate::model::{Asks, Bids, OrderBookRequest, OrderBookResponse};
+use crate::model::{Asks, Bids, OpenLimitOrderRequest, Order, OrderBookRequest, OrderBookResponse};
+use chrono::DateTime;
 
 #[derive(Deref, DerefMut)]
 pub struct Coinbase(coinbase::Coinbase);
@@ -27,8 +28,14 @@ impl Coinbase {
 
 #[async_trait]
 impl Exchange for Coinbase {
+    type IdType = String;
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.book::<coinbase::model::BookRecordL2>("BTC-USD")
+            .await
+            .map(Into::into)
+    }
+    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::IdType>> {
+        coinbase::Coinbase::limit_buy(self, &req.symbol, req.size, req.price)
             .await
             .map(Into::into)
     }
@@ -58,6 +65,19 @@ impl From<coinbase::model::BookRecordL2> for Asks {
         Self {
             price: bids.price,
             qty: bids.size,
+        }
+    }
+}
+
+impl From<coinbase::model::Order> for Order<String> {
+    fn from(order: coinbase::model::Order) -> Self {
+        Self {
+            id: order.id,
+            symbol: order.product_id,
+            client_order_id: None,
+            created_at: DateTime::parse_from_rfc3339(&order.created_at)
+                .unwrap()
+                .into(),
         }
     }
 }

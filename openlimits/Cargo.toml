@@ -10,6 +10,8 @@ edition = "2018"
 async-trait = "0.1"
 binance = { path = "../binance" }
 coinbase = { path = "../coinbase" }
+chrono = "0.4.13"
+dotenv = "0.15.0"
 derive_more = "0.99"
 serde = { version = "1.0", features = ["derive"] }
 shared = { path = "../shared" }
