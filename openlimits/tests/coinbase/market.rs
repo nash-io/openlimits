@@ -6,7 +6,7 @@ use openlimits::model::OrderBookRequest;
 async fn order_book() {
     let exchange = Coinbase::new(true);
     let req = OrderBookRequest {
-        symbol: "BNBBTC".to_string(),
+        symbol: "ETH-BTC".to_string(),
     };
     let resp = exchange.order_book(&req).await.unwrap();
     println!("{:?}", resp);
