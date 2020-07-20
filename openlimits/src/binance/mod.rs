@@ -22,7 +22,7 @@ impl Binance {
 
 #[async_trait]
 impl Exchange for Binance {
-    async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
+    async fn order_book(self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.get_depth(req.symbol.as_str(), None)
             .await
             .map(Into::into)

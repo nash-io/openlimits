@@ -13,7 +13,7 @@ impl<E: Exchange> OpenLimits<E> {
     }
 
     pub async fn order_book(
-        &mut self,
+        self,
         req: impl AsRef<OrderBookRequest>,
     ) -> Result<OrderBookResponse> {
         self.exchange.order_book(req.as_ref()).await
@@ -22,5 +22,5 @@ impl<E: Exchange> OpenLimits<E> {
 
 #[async_trait]
 pub trait Exchange {
-    async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
+    async fn order_book(self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
 }
