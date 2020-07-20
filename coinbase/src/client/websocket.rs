@@ -18,8 +18,6 @@ use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use shared::errors::OpenLimitError;
 use shared::Result;
 
-const WS_URL: &str = "wss://stream.coinbase.com:9443/ws";
-
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
 enum Either<L, R> {
@@ -51,7 +49,7 @@ impl CoinbaseWebsocket {
                 .channels
                 .to_vec()
                 .into_iter()
-                .map(|x| Channel::Name(x))
+                .map(Channel::Name)
                 .collect::<Vec<_>>(),
             product_ids: subscription.product_ids.clone(),
         };
@@ -78,7 +76,7 @@ impl Stream for CoinbaseWebsocket {
         mut self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> Poll<Option<Self::Item>> {
-        for (sub, stream) in &mut self.subscriptions.iter_mut() {
+        for (_sub, stream) in &mut self.subscriptions.iter_mut() {
             if let Poll::Ready(Some(message)) = Pin::new(stream).poll_next(cx) {
                 let message = parse_message(message?);
                 return Poll::Ready(Some(message));
