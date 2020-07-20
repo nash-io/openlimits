@@ -1,7 +1,6 @@
 use shared::errors::{CoinbaseContentError, OpenLimitError};
 
 use hmac::{Hmac, Mac, NewMac};
-use reqwest;
 use reqwest::header;
 use reqwest::Method;
 use reqwest::Response;
@@ -192,7 +191,7 @@ impl Transport {
         let key = base64::decode(secret_key).expect("Failed to base64 decode Coinbase API secret");
         let mut mac = HmacSha256::new_varkey(&key).unwrap();
 
-        let prefix: String = String::from(timestamp.to_string() + method.as_str());
+        let prefix: String = timestamp.to_string() + method.as_str();
 
         let body = if body.is_some() {
             serde_json::to_string(&body)?
@@ -234,7 +233,7 @@ impl Transport {
             StatusCode::BAD_REQUEST => {
                 let error: CoinbaseContentError = response.json().await?;
 
-                Err(OpenLimitError::CoinbaseError(error).into())
+                Err(OpenLimitError::CoinbaseError(error))
             }
             s => {
                 let text = response.text().await?;

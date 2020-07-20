@@ -65,6 +65,12 @@ impl BinanceWebsocket {
     }
 }
 
+impl Default for BinanceWebsocket {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Stream for BinanceWebsocket {
     type Item = Result<BinanceWebsocketMessage>;
 
