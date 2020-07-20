@@ -27,7 +27,7 @@ impl Coinbase {
 
 #[async_trait]
 impl Exchange for Coinbase {
-    async fn order_book(self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
+    async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.book::<coinbase::model::BookRecordL2>("BTC-USD")
             .await
             .map(Into::into)

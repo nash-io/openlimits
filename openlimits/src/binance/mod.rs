@@ -24,14 +24,14 @@ impl Binance {
 impl Exchange for Binance {
     type IdType = u64;
 
-    async fn order_book(self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
+    async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.get_depth(req.symbol.as_str(), None)
             .await
             .map(Into::into)
     }
 
-    async fn limit_buy(self, req: &OpenLimitOrderRequest) -> Result<Order<Self::IdType>> {
-        self.limit_buy(req.symbol, req.size, req.price)
+    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::IdType>> {
+        binance::Binance::limit_buy(self, &req.symbol, req.size, req.price)
             .await
             .map(Into::into)
     }
