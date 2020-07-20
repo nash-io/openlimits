@@ -130,24 +130,6 @@ impl BookLevel for BookRecordL3 {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Bids {
-    #[serde(with = "string_to_float")]
-    pub price: f64,
-    #[serde(with = "string_to_float")]
-    pub qty: f64,
-    pub num_orders: i64,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Asks {
-    #[serde(with = "string_to_float")]
-    pub price: f64,
-    #[serde(with = "string_to_float")]
-    pub qty: f64,
-    pub num_orders: i64,
-}
-
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderSide {

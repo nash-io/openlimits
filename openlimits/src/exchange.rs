@@ -1,8 +1,26 @@
+use async_trait::async_trait;
+use shared::Result;
 
+use crate::model::{OrderBookRequest, OrderBookResponse};
 
+pub struct OpenLimits<E: Exchange> {
+    exchange: E,
+}
+
+impl<E: Exchange> OpenLimits<E> {
+    pub fn new(exchange: E) -> Self {
+        Self { exchange }
+    }
+
+    pub async fn order_book(
+        self,
+        req: impl AsRef<OrderBookRequest>,
+    ) -> Result<OrderBookResponse> {
+        self.exchange.order_book(req.as_ref()).await
+    }
+}
+
+#[async_trait]
 pub trait Exchange {
-    fn ping(&self) -> Result<String>;
-    // async fn trade_history(&mut self, CurrencyPair, DateTime, DateTime) -> Result<Vec<Trades>, Box<dyn Error>>;
-    // async fn get_markets(&mut self) -> Result<Vec<Market>, Box<dyn Error>>;
-    // async fn subscribe_trades(&mut self, Callback) -> Result<Vec<Market>, Box<dyn Error>>;
+    async fn order_book(self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
 }
