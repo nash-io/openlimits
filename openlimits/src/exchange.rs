@@ -12,10 +12,7 @@ impl<E: Exchange> OpenLimits<E> {
         Self { exchange }
     }
 
-    pub async fn order_book(
-        self,
-        req: impl AsRef<OrderBookRequest>,
-    ) -> Result<OrderBookResponse> {
+    pub async fn order_book(self, req: impl AsRef<OrderBookRequest>) -> Result<OrderBookResponse> {
         self.exchange.order_book(req.as_ref()).await
     }
 }
