@@ -1,7 +1,7 @@
 use dotenv::dotenv;
 use std::env;
 
-use openlimits::binance::Binance;
+use openlimits::coinbase::Coinbase;
 use openlimits::exchange::Exchange;
 use openlimits::model::OpenLimitOrderRequest;
 
@@ -11,17 +11,18 @@ async fn limit_buy() {
     let req = OpenLimitOrderRequest {
         price: 0.001,
         size: 0.1,
-        symbol: String::from("BNBBTC"),
+        symbol: String::from("ETH-BTC"),
     };
     let resp = exchange.limit_buy(&req).await.unwrap();
     println!("{:?}", resp);
 }
 
-fn init() -> Binance {
+fn init() -> Coinbase {
     dotenv().ok();
-    Binance::with_credential(
-        &env::var("BINANCE_API_KEY").unwrap(),
-        &env::var("BINANCE_API_SECRET").unwrap(),
+    Coinbase::with_credential(
+        &env::var("COINBASE_API_KEY").unwrap(),
+        &env::var("COINBASE_API_SECRET").unwrap(),
+        &env::var("COINBASE_PASSPHRASE").unwrap(),
         true,
     )
 }
