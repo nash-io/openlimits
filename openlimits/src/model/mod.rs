@@ -25,3 +25,21 @@ pub struct Asks {
     pub price: f64,
     pub qty: f64,
 }
+
+#[derive(Clone, Constructor, Debug, Default, Deserialize, Serialize)]
+pub struct OpenLimitOrderRequest {
+    pub symbol: String,
+    pub size: f64,
+    pub price: f64,
+}
+
+pub struct Order<T> {
+    pub id: T,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Side {
+    Buy,
+    Sell,
+}

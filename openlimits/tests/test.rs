@@ -1,5 +1,5 @@
 mod binance {
-    // mod account;
+    mod account;
     // mod general;
     mod market;
 }

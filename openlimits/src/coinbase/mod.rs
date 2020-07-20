@@ -13,7 +13,12 @@ impl Coinbase {
         Coinbase(coinbase::Coinbase::new(sandbox))
     }
 
-    pub fn with_credential(api_key: &str, api_secret: &str, passphrase: &str, sandbox: bool) -> Self {
+    pub fn with_credential(
+        api_key: &str,
+        api_secret: &str,
+        passphrase: &str,
+        sandbox: bool,
+    ) -> Self {
         Coinbase(coinbase::Coinbase::with_credential(
             api_key, api_secret, passphrase, sandbox,
         ))
