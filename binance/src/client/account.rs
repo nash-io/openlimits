@@ -128,7 +128,7 @@ impl Binance {
     pub async fn market_buy(&self, symbol: &str, qty: f64) -> Result<Transaction> {
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
-            qty: qty,
+            qty,
             price: 0.0,
             order_side: ORDER_SIDE_BUY.to_string(),
             order_type: ORDER_TYPE_MARKET.to_string(),
