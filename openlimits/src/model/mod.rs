@@ -32,6 +32,13 @@ pub struct OpenLimitOrderRequest {
     pub size: f64,
     pub price: f64,
 }
+
+#[derive(Clone, Constructor, Debug, Default)]
+pub struct OpenMarketOrderRequest {
+    pub symbol: String,
+    pub size: f64,
+}
+
 #[derive(Clone, Constructor, Debug)]
 pub struct Order<T> {
     pub id: T,

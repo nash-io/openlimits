@@ -3,7 +3,10 @@ use derive_more::{Deref, DerefMut};
 use shared::Result;
 
 use crate::exchange::Exchange;
-use crate::model::{Asks, Bids, OpenLimitOrderRequest, Order, OrderBookRequest, OrderBookResponse};
+use crate::model::{
+    Asks, Bids, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
+    OrderBookResponse,
+};
 use chrono::naive::NaiveDateTime;
 use chrono::{DateTime, Utc};
 
@@ -34,6 +37,22 @@ impl Exchange for Binance {
 
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::IdType>> {
         binance::Binance::limit_buy(self, &req.symbol, req.size, req.price)
+            .await
+            .map(Into::into)
+    }
+    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::IdType>> {
+        binance::Binance::limit_sell(self, &req.symbol, req.size, req.price)
+            .await
+            .map(Into::into)
+    }
+
+    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::IdType>> {
+        binance::Binance::market_buy(self, &req.symbol, req.size)
+            .await
+            .map(Into::into)
+    }
+    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::IdType>> {
+        binance::Binance::market_sell(self, &req.symbol, req.size)
             .await
             .map(Into::into)
     }

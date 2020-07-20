@@ -3,7 +3,10 @@ use derive_more::{Deref, DerefMut};
 use shared::Result;
 
 use crate::exchange::Exchange;
-use crate::model::{Asks, Bids, OpenLimitOrderRequest, Order, OrderBookRequest, OrderBookResponse};
+use crate::model::{
+    Asks, Bids, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
+    OrderBookResponse,
+};
 use chrono::DateTime;
 
 #[derive(Deref, DerefMut)]
@@ -30,12 +33,28 @@ impl Coinbase {
 impl Exchange for Coinbase {
     type IdType = String;
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
-        self.book::<coinbase::model::BookRecordL2>("BTC-USD")
+        self.book::<coinbase::model::BookRecordL2>(&req.symbol)
             .await
             .map(Into::into)
     }
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::IdType>> {
         coinbase::Coinbase::limit_buy(self, &req.symbol, req.size, req.price)
+            .await
+            .map(Into::into)
+    }
+    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::IdType>> {
+        coinbase::Coinbase::limit_sell(self, &req.symbol, req.size, req.price)
+            .await
+            .map(Into::into)
+    }
+
+    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::IdType>> {
+        coinbase::Coinbase::market_buy(self, &req.symbol, req.size)
+            .await
+            .map(Into::into)
+    }
+    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::IdType>> {
+        coinbase::Coinbase::market_sell(self, &req.symbol, req.size)
             .await
             .map(Into::into)
     }
