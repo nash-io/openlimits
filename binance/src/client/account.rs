@@ -86,7 +86,12 @@ impl Binance {
     }
 
     // Place a LIMIT order - BUY
-    pub async fn limit_buy(&self, symbol: &str, qty: Decimal, price: Decimal) -> Result<Transaction> {
+    pub async fn limit_buy(
+        &self,
+        symbol: &str,
+        qty: Decimal,
+        price: Decimal,
+    ) -> Result<Transaction> {
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             qty,
@@ -108,7 +113,12 @@ impl Binance {
     }
 
     // Place a LIMIT order - SELL
-    pub async fn limit_sell(&self, symbol: &str, qty: Decimal, price: Decimal) -> Result<Transaction> {
+    pub async fn limit_sell(
+        &self,
+        symbol: &str,
+        qty: Decimal,
+        price: Decimal,
+    ) -> Result<Transaction> {
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             qty,
@@ -192,7 +202,7 @@ impl Binance {
             "quantity" => order.qty.to_string(),
         ));
 
-        if order.price !=  Decimal::new(0, 0) {
+        if order.price != Decimal::new(0, 0) {
             params.insert("price", order.price.to_string());
             params.insert("timeInForce", order.time_in_force);
         }

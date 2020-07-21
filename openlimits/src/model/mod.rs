@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use derive_more::Constructor;
-use serde::{Deserialize, Serialize};
 use rust_decimal::prelude::Decimal;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Constructor, Debug, Default)]
 pub struct OrderBookRequest {

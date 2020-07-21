@@ -8,8 +8,8 @@ pub type Result<T> = std::result::Result<T, errors::OpenLimitError>;
 pub mod string_to_decimal {
     use std::fmt;
 
-    use serde::{de, Deserialize, Deserializer, Serializer};
     use rust_decimal::prelude::*;
+    use serde::{de, Deserialize, Deserializer, Serializer};
 
     pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -37,8 +37,8 @@ pub mod string_to_decimal {
 pub mod string_to_opt_decimal {
     use std::fmt;
 
-    use serde::{Deserialize, Deserializer, Serializer};
     use rust_decimal::prelude::*;
+    use serde::{Deserialize, Deserializer, Serializer};
 
     pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
     where

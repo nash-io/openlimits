@@ -1,8 +1,8 @@
 extern crate serde;
 
-use serde::{Deserialize, Deserializer, Serialize};
-use shared::{string_to_opt_decimal, string_to_decimal};
 use rust_decimal::prelude::Decimal;
+use serde::{Deserialize, Deserializer, Serialize};
+use shared::{string_to_decimal, string_to_opt_decimal};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Subscription {
@@ -157,7 +157,7 @@ pub enum Ticker {
         #[serde(with = "string_to_opt_decimal")]
         best_bid: Option<Decimal>,
         #[serde(with = "string_to_opt_decimal")]
-        best_ask:Option<Decimal>,
+        best_ask: Option<Decimal>,
     },
     Empty {
         sequence: usize,
