@@ -8,6 +8,8 @@ use shared::errors::OpenLimitError;
 
 use shared::Result;
 
+use rust_decimal::prelude::*;
+
 static ORDER_TYPE_LIMIT: &str = "LIMIT";
 static ORDER_TYPE_MARKET: &str = "MARKET";
 static ORDER_SIDE_BUY: &str = "BUY";
@@ -18,8 +20,8 @@ static API_V3_ORDER: &str = "/api/v3/order";
 
 struct OrderRequest {
     pub symbol: String,
-    pub qty: f64,
-    pub price: f64,
+    pub qty: Decimal,
+    pub price: Decimal,
     pub order_side: String,
     pub order_type: String,
     pub time_in_force: String,
@@ -84,7 +86,12 @@ impl Binance {
     }
 
     // Place a LIMIT order - BUY
-    pub async fn limit_buy(&self, symbol: &str, qty: f64, price: f64) -> Result<Transaction> {
+    pub async fn limit_buy(
+        &self,
+        symbol: &str,
+        qty: Decimal,
+        price: Decimal,
+    ) -> Result<Transaction> {
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             qty,
@@ -106,7 +113,12 @@ impl Binance {
     }
 
     // Place a LIMIT order - SELL
-    pub async fn limit_sell(&self, symbol: &str, qty: f64, price: f64) -> Result<Transaction> {
+    pub async fn limit_sell(
+        &self,
+        symbol: &str,
+        qty: Decimal,
+        price: Decimal,
+    ) -> Result<Transaction> {
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             qty,
@@ -125,11 +137,11 @@ impl Binance {
     }
 
     // Place a MARKET order - BUY
-    pub async fn market_buy(&self, symbol: &str, qty: f64) -> Result<Transaction> {
+    pub async fn market_buy(&self, symbol: &str, qty: Decimal) -> Result<Transaction> {
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             qty,
-            price: 0.0,
+            price: Decimal::from_str("0.0").unwrap(),
             order_side: ORDER_SIDE_BUY.to_string(),
             order_type: ORDER_TYPE_MARKET.to_string(),
             time_in_force: TIME_IN_FORCE_GTC.to_string(),
@@ -144,11 +156,11 @@ impl Binance {
     }
 
     // Place a MARKET order - SELL
-    pub async fn market_sell(&self, symbol: &str, qty: f64) -> Result<Transaction> {
+    pub async fn market_sell(&self, symbol: &str, qty: Decimal) -> Result<Transaction> {
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             qty,
-            price: 0.0,
+            price: Decimal::new(0, 0),
             order_side: ORDER_SIDE_SELL.to_string(),
             order_type: ORDER_TYPE_MARKET.to_string(),
             time_in_force: TIME_IN_FORCE_GTC.to_string(),
@@ -190,7 +202,7 @@ impl Binance {
             "quantity" => order.qty.to_string(),
         ));
 
-        if order.price != 0.0 {
+        if order.price != Decimal::new(0, 0) {
             params.insert("price", order.price.to_string());
             params.insert("timeInForce", order.time_in_force);
         }

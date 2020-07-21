@@ -1,7 +1,8 @@
 extern crate serde;
 
+use rust_decimal::prelude::Decimal;
 use serde::{Deserialize, Deserializer, Serialize};
-use shared::{f64_nan_from_string, f64_opt_from_string, string_to_float};
+use shared::{string_to_decimal, string_to_opt_decimal};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Subscription {
@@ -124,19 +125,19 @@ pub enum Level2 {
 
 #[derive(Deserialize, Debug)]
 pub struct Level2SnapshotRecord {
-    #[serde(with = "string_to_float")]
-    pub price: f64,
-    #[serde(with = "string_to_float")]
-    pub size: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub size: Decimal,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Level2UpdateRecord {
     pub side: super::OrderSide,
-    #[serde(with = "string_to_float")]
-    pub price: f64,
-    #[serde(with = "string_to_float")]
-    pub size: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub size: Decimal,
 }
 
 #[derive(Deserialize, Debug)]
@@ -148,29 +149,29 @@ pub enum Ticker {
         sequence: usize,
         time: String,
         product_id: String,
-        #[serde(with = "string_to_float")]
-        price: f64,
+        #[serde(with = "string_to_decimal")]
+        price: Decimal,
         side: super::OrderSide,
-        #[serde(with = "string_to_float")]
-        last_size: f64,
-        #[serde(with = "f64_nan_from_string")]
-        best_bid: f64,
-        #[serde(with = "f64_nan_from_string")]
-        best_ask: f64,
+        #[serde(with = "string_to_decimal")]
+        last_size: Decimal,
+        #[serde(with = "string_to_opt_decimal")]
+        best_bid: Option<Decimal>,
+        #[serde(with = "string_to_opt_decimal")]
+        best_ask: Option<Decimal>,
     },
     Empty {
         sequence: usize,
         product_id: String,
-        #[serde(with = "f64_nan_from_string")]
-        price: f64,
+        #[serde(with = "string_to_opt_decimal")]
+        price: Option<Decimal>,
     },
 }
 
 impl Ticker {
-    pub fn price(&self) -> &f64 {
+    pub fn price(&self) -> Decimal {
         match self {
-            Ticker::Full { price, .. } => price,
-            Ticker::Empty { price, .. } => price,
+            Ticker::Full { price, .. } => price.clone(),
+            Ticker::Empty { price, .. } => price.unwrap(),
         }
     }
 
@@ -188,16 +189,16 @@ impl Ticker {
         }
     }
 
-    pub fn bid(&self) -> Option<&f64> {
+    pub fn bid(&self) -> Option<Decimal> {
         match self {
-            Ticker::Full { best_bid, .. } => Some(best_bid),
+            Ticker::Full { best_bid, .. } => Some(best_bid.unwrap()),
             Ticker::Empty { .. } => None,
         }
     }
 
-    pub fn ask(&self) -> Option<&f64> {
+    pub fn ask(&self) -> Option<Decimal> {
         match self {
-            Ticker::Full { best_ask, .. } => Some(best_ask),
+            Ticker::Full { best_ask, .. } => Some(best_ask.unwrap()),
             Ticker::Empty { .. } => None,
         }
     }
@@ -214,7 +215,7 @@ pub enum Full {
 }
 
 impl Full {
-    pub fn price(&self) -> Option<&f64> {
+    pub fn price(&self) -> Option<&Decimal> {
         match self {
             Full::Received(Received::Limit { price, .. }) => Some(price),
             Full::Received(Received::Market { .. }) => None,
@@ -264,10 +265,10 @@ pub enum Received {
         sequence: usize,
         order_id: String,
         client_oid: Option<String>,
-        #[serde(with = "string_to_float")]
-        size: f64,
-        #[serde(with = "string_to_float")]
-        price: f64,
+        #[serde(with = "string_to_decimal")]
+        size: Decimal,
+        #[serde(with = "string_to_decimal")]
+        price: Decimal,
         side: super::OrderSide,
         user_id: Option<String>,
         #[serde(default)]
@@ -280,8 +281,8 @@ pub enum Received {
         order_id: String,
         client_oid: Option<String>,
         #[serde(default)]
-        #[serde(with = "f64_opt_from_string")]
-        funds: Option<f64>,
+        #[serde(with = "string_to_opt_decimal")]
+        funds: Option<Decimal>,
         side: super::OrderSide,
     },
 }
@@ -292,10 +293,10 @@ pub struct Open {
     pub product_id: String,
     pub sequence: usize,
     pub order_id: String,
-    #[serde(with = "string_to_float")]
-    pub price: f64,
-    #[serde(with = "string_to_float")]
-    pub remaining_size: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub remaining_size: Decimal,
     pub side: super::OrderSide,
     pub user_id: Option<String>,
     #[serde(default)]
@@ -309,13 +310,13 @@ pub enum Done {
         time: String,
         product_id: String,
         sequence: Option<usize>,
-        #[serde(with = "string_to_float")]
-        price: f64,
+        #[serde(with = "string_to_decimal")]
+        price: Decimal,
         order_id: String,
         reason: Reason,
         side: super::OrderSide,
-        #[serde(with = "string_to_float")]
-        remaining_size: f64,
+        #[serde(with = "string_to_decimal")]
+        remaining_size: Decimal,
         user_id: Option<String>,
         #[serde(default)]
         profile_id: Option<String>,
@@ -345,10 +346,10 @@ pub struct Match {
     pub taker_order_id: String,
     pub time: String,
     pub product_id: String,
-    #[serde(with = "string_to_float")]
-    pub size: f64,
-    #[serde(with = "string_to_float")]
-    pub price: f64,
+    #[serde(with = "string_to_decimal")]
+    pub size: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
     pub side: super::OrderSide,
     pub taker_user_id: Option<String>,
     pub taker_profile_id: Option<String>,
@@ -365,19 +366,19 @@ pub struct Change {
     pub sequence: usize,
     pub order_id: String,
     pub product_id: String,
-    #[serde(with = "string_to_float")]
-    pub new_size: f64,
-    #[serde(with = "string_to_float")]
-    pub old_size: f64,
+    #[serde(with = "string_to_decimal")]
+    pub new_size: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub old_size: Decimal,
     #[serde(default)]
-    #[serde(with = "f64_opt_from_string")]
-    pub new_funds: Option<f64>,
+    #[serde(with = "string_to_opt_decimal")]
+    pub new_funds: Option<Decimal>,
     #[serde(default)]
-    #[serde(with = "f64_opt_from_string")]
-    pub old_funds: Option<f64>,
+    #[serde(with = "string_to_opt_decimal")]
+    pub old_funds: Option<Decimal>,
     #[serde(default)]
-    #[serde(with = "f64_opt_from_string")]
-    pub price: Option<f64>,
+    #[serde(with = "string_to_opt_decimal")]
+    pub price: Option<Decimal>,
     pub side: super::OrderSide,
     pub user_id: Option<String>,
     #[serde(default)]
@@ -387,16 +388,16 @@ pub struct Change {
 #[derive(Deserialize, Debug)]
 pub struct Activate {
     pub product_id: String,
-    #[serde(with = "string_to_float")]
-    pub timestamp: f64,
+    #[serde(with = "string_to_decimal")]
+    pub timestamp: Decimal,
     pub order_id: String,
     pub stop_type: StopType,
-    #[serde(with = "string_to_float")]
-    pub size: f64,
-    #[serde(with = "string_to_float")]
-    pub funds: f64,
-    #[serde(with = "string_to_float")]
-    pub taker_fee_rate: f64,
+    #[serde(with = "string_to_decimal")]
+    pub size: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub funds: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub taker_fee_rate: Decimal,
     pub private: bool,
     pub user_id: Option<String>,
     #[serde(default)]
