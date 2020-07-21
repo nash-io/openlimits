@@ -43,6 +43,13 @@ impl<E: Exchange> OpenLimits<E> {
     ) -> Result<Order<E::IdType>> {
         self.exchange.market_sell(req.as_ref()).await
     }
+
+    // pub async fn cancel_order(
+    //     &self,
+    //     req: impl AsRef<CancelOrderRequest>,
+    // ) -> Result<Order<E::IdType>> {
+    //     self.exchange.cancel_order(req.as_ref()).await
+    // }
 }
 
 #[async_trait]

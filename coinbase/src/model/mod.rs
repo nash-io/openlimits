@@ -172,6 +172,15 @@ pub struct OrderRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct CancelAllOrders {
+    pub product_id: Option<String>,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CancelOrder {
+    pub product_id: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "type")]
 pub enum OrderType {

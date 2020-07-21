@@ -1,5 +1,6 @@
 use crate::model::{
-    Account, Order, OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide,
+    Account, CancelAllOrders, CancelOrder, Order, OrderRequest, OrderRequestMarketType,
+    OrderRequestType, OrderSide,
 };
 use crate::Coinbase;
 
@@ -23,7 +24,7 @@ impl Coinbase {
     }
     // TODO: refactor buy and sell in order creation in commun function
     pub async fn market_buy(&self, product: &str, size: Decimal) -> Result<Order> {
-        let params = OrderRequest {
+        let data = OrderRequest {
             product_id: product.into(),
             client_oid: None,
             side: OrderSide::Buy,
@@ -33,15 +34,16 @@ impl Coinbase {
             stop: None,
         };
 
-        println!("{:?}", params);
-
-        let transaction = self.transport.signed_post("/orders", Some(&params)).await?;
+        let transaction = self
+            .transport
+            .signed_post::<_, (), _>("/orders", None, Some(&data))
+            .await?;
 
         Ok(transaction)
     }
 
     pub async fn market_sell(&self, product: &str, size: Decimal) -> Result<Order> {
-        let params = OrderRequest {
+        let data = OrderRequest {
             product_id: product.into(),
             client_oid: None,
             side: OrderSide::Sell,
@@ -51,15 +53,16 @@ impl Coinbase {
             stop: None,
         };
 
-        println!("{:?}", params);
-
-        let transaction = self.transport.signed_post("/orders", Some(&params)).await?;
+        let transaction = self
+            .transport
+            .signed_post::<_, (), _>("/orders", None, Some(&data))
+            .await?;
 
         Ok(transaction)
     }
 
     pub async fn limit_buy(&self, product: &str, size: Decimal, price: Decimal) -> Result<Order> {
-        let params = OrderRequest {
+        let data = OrderRequest {
             product_id: product.into(),
             client_oid: None,
             side: OrderSide::Buy,
@@ -72,15 +75,16 @@ impl Coinbase {
             stop: None,
         };
 
-        println!("{:?}", params);
-
-        let transaction = self.transport.signed_post("/orders", Some(&params)).await?;
+        let transaction = self
+            .transport
+            .signed_post::<_, (), _>("/orders", None, Some(&data))
+            .await?;
 
         Ok(transaction)
     }
 
     pub async fn limit_sell(&self, product: &str, size: Decimal, price: Decimal) -> Result<Order> {
-        let params = OrderRequest {
+        let data = OrderRequest {
             product_id: product.into(),
             client_oid: None,
             side: OrderSide::Sell,
@@ -93,10 +97,46 @@ impl Coinbase {
             stop: None,
         };
 
-        println!("{:?}", params);
-
-        let transaction = self.transport.signed_post("/orders", Some(&params)).await?;
+        let transaction = self
+            .transport
+            .signed_post::<_, (), _>("/orders", None, Some(&data))
+            .await?;
 
         Ok(transaction)
+    }
+
+    pub async fn cancel_order(&self, order_id: String, product_id: Option<&str>) -> Result<String> {
+        let params = if let Some(product_id) = product_id {
+            CancelOrder {
+                product_id: Some(String::from(product_id)),
+            }
+        } else {
+            CancelOrder { product_id: None }
+        };
+
+        let path = format!("/orders/{}", order_id);
+        let resp = self
+            .transport
+            .signed_delete::<_, _, ()>(&path, Some(&params), None)
+            .await?;
+
+        Ok(resp)
+    }
+
+    pub async fn cancel_all_orders(&self, product_id: Option<&str>) -> Result<Vec<String>> {
+        let params = if let Some(product_id) = product_id {
+            CancelAllOrders {
+                product_id: Some(String::from(product_id)),
+            }
+        } else {
+            CancelAllOrders { product_id: None }
+        };
+
+        let resp = self
+            .transport
+            .signed_delete::<_, _, ()>("/orders", Some(&params), None)
+            .await?;
+
+        Ok(resp)
     }
 }
