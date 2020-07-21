@@ -63,13 +63,9 @@ impl Exchange for Coinbase {
         &self,
         req: &CancelOrderRequest<Self::IdType>,
     ) -> Result<OrderCanceled<Self::IdType>> {
-        coinbase::Coinbase::cancel_order(
-            self,
-            req.id.clone(),
-            req.pair.as_deref(),
-        )
-        .await
-        .map(Into::into)
+        coinbase::Coinbase::cancel_order(self, req.id.clone(), req.pair.as_deref())
+            .await
+            .map(Into::into)
     }
 
     async fn cancel_all_orders(
