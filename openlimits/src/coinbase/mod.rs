@@ -66,7 +66,7 @@ impl Exchange for Coinbase {
         coinbase::Coinbase::cancel_order(
             self,
             req.id.clone(),
-            req.pair.as_ref().map(|s| s.as_str()),
+            req.pair.as_deref(),
         )
         .await
         .map(Into::into)
@@ -76,7 +76,7 @@ impl Exchange for Coinbase {
         &self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<Self::IdType>>> {
-        coinbase::Coinbase::cancel_all_orders(self, req.pair.as_ref().map(|s| s.as_str()))
+        coinbase::Coinbase::cancel_all_orders(self, req.pair.as_deref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
