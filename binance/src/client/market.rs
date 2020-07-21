@@ -12,6 +12,8 @@ use shared::errors::OpenLimitError;
 
 use shared::Result;
 
+use rust_decimal::prelude::Decimal;
+
 // Market Data endpoints
 impl Binance {
     // Order book (Default 100; max 100)
@@ -34,7 +36,7 @@ impl Binance {
     }
 
     // Latest price for ONE symbol.
-    pub async fn get_price(&self, symbol: &str) -> Result<f64> {
+    pub async fn get_price(&self, symbol: &str) -> Result<Decimal> {
         let symbol = symbol.to_string();
         self.get_all_prices()
             .await
@@ -118,16 +120,16 @@ impl Binance {
                     data.iter()
                         .map(|row| KlineSummary {
                             open_time: to_i64(&row[0]),
-                            open: to_f64(&row[1]),
-                            high: to_f64(&row[2]),
-                            low: to_f64(&row[3]),
-                            close: to_f64(&row[4]),
-                            volume: to_f64(&row[5]),
+                            open: to_decimal(&row[1]),
+                            high: to_decimal(&row[2]),
+                            low: to_decimal(&row[3]),
+                            close: to_decimal(&row[4]),
+                            volume: to_decimal(&row[5]),
                             close_time: to_i64(&row[6]),
-                            quote_asset_volume: to_f64(&row[7]),
+                            quote_asset_volume: to_decimal(&row[7]),
                             number_of_trades: to_i64(&row[8]),
-                            taker_buy_base_asset_volume: to_f64(&row[9]),
-                            taker_buy_quote_asset_volume: to_f64(&row[10]),
+                            taker_buy_base_asset_volume: to_decimal(&row[9]),
+                            taker_buy_quote_asset_volume: to_decimal(&row[10]),
                         })
                         .collect(),
                 )
@@ -147,6 +149,6 @@ fn to_i64(v: &Value) -> i64 {
     v.as_i64().unwrap()
 }
 
-fn to_f64(v: &Value) -> f64 {
+fn to_decimal(v: &Value) -> Decimal {
     v.as_str().unwrap().parse().unwrap()
 }

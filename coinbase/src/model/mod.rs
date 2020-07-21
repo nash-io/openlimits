@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
-use shared::string_to_float;
+use shared::string_to_decimal;
 pub mod websocket;
+use rust_decimal::prelude::Decimal;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Product {
@@ -8,14 +9,14 @@ pub struct Product {
     pub display_name: String,
     pub quote_currency: String,
     pub base_currency: String,
-    #[serde(with = "string_to_float")]
-    pub base_increment: f64,
-    #[serde(with = "string_to_float")]
-    pub quote_increment: f64,
-    #[serde(with = "string_to_float")]
-    pub base_min_size: f64,
-    #[serde(with = "string_to_float")]
-    pub base_max_size: f64,
+    #[serde(with = "string_to_decimal")]
+    pub base_increment: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub quote_increment: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub base_min_size: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub base_max_size: Decimal,
     pub min_market_funds: String,
     pub max_market_funds: String,
     pub status: String,
@@ -29,23 +30,23 @@ pub struct Product {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Account {
     pub id: String,
-    #[serde(with = "string_to_float")]
-    pub balance: f64,
-    #[serde(with = "string_to_float")]
-    pub available: f64,
-    #[serde(with = "string_to_float")]
-    pub hold: f64,
+    #[serde(with = "string_to_decimal")]
+    pub balance: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub available: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub hold: Decimal,
     pub profile_id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Candle {
     pub time: i64,
-    pub low: f64,
-    pub high: f64,
-    pub open: f64,
-    pub close: f64,
-    pub volume: f64,
+    pub low: Decimal,
+    pub high: Decimal,
+    pub open: Decimal,
+    pub close: Decimal,
+    pub volume: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -53,24 +54,24 @@ pub struct Trade {
     pub trade_id: i64,
     pub time: String,
     pub size: String,
-    #[serde(with = "string_to_float")]
-    pub price: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
     pub side: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Ticker {
     pub trade_id: i64,
-    #[serde(with = "string_to_float")]
-    pub price: f64,
-    #[serde(with = "string_to_float")]
-    pub size: f64,
-    #[serde(with = "string_to_float")]
-    pub bid: f64,
-    #[serde(with = "string_to_float")]
-    pub ask: f64,
-    #[serde(with = "string_to_float")]
-    pub volume: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub size: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub bid: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub ask: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub volume: Decimal,
     pub time: String,
 }
 
@@ -87,10 +88,10 @@ pub trait BookLevel {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BookRecordL1 {
-    #[serde(with = "string_to_float")]
-    pub price: f64,
-    #[serde(with = "string_to_float")]
-    pub size: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub size: Decimal,
     pub num_orders: usize,
 }
 
@@ -102,10 +103,10 @@ impl BookLevel for BookRecordL1 {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BookRecordL2 {
-    #[serde(with = "string_to_float")]
-    pub price: f64,
-    #[serde(with = "string_to_float")]
-    pub size: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub size: Decimal,
     pub num_orders: usize,
 }
 
@@ -117,10 +118,10 @@ impl BookLevel for BookRecordL2 {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BookRecordL3 {
-    #[serde(with = "string_to_float")]
-    pub price: f64,
-    #[serde(with = "string_to_float")]
-    pub size: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub size: Decimal,
     pub order_id: String,
 }
 
@@ -147,12 +148,12 @@ pub struct Order {
     pub _type: OrderType,
     pub post_only: bool,
     pub created_at: String,
-    #[serde(with = "string_to_float")]
-    pub fill_fees: f64,
-    #[serde(with = "string_to_float")]
-    pub filled_size: f64,
-    #[serde(with = "string_to_float")]
-    pub executed_value: f64,
+    #[serde(with = "string_to_decimal")]
+    pub fill_fees: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub filled_size: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub executed_value: Decimal,
     pub status: OrderStatus,
     pub settled: bool,
     #[serde(flatten)]
@@ -175,20 +176,20 @@ pub struct OrderRequest {
 #[serde(tag = "type")]
 pub enum OrderType {
     Limit {
-        #[serde(with = "string_to_float")]
-        size: f64,
-        #[serde(with = "string_to_float")]
-        price: f64,
+        #[serde(with = "string_to_decimal")]
+        size: Decimal,
+        #[serde(with = "string_to_decimal")]
+        price: Decimal,
         #[serde(flatten)]
         time_in_force: OrderTimeInForce,
     },
     Market {
         #[serde(default)]
-        #[serde(with = "string_to_float")]
-        size: f64,
+        #[serde(with = "string_to_decimal")]
+        size: Decimal,
         #[serde(default)]
-        #[serde(with = "string_to_float")]
-        funds: f64,
+        #[serde(with = "string_to_decimal")]
+        funds: Decimal,
     },
 }
 
@@ -197,8 +198,8 @@ pub enum OrderType {
 #[serde(rename_all = "camelCase")]
 pub enum OrderRequestType {
     Limit {
-        price: f64,
-        size: f64,
+        price: Decimal,
+        size: Decimal,
         post_only: bool,
         #[serde(flatten)]
         time_in_force: Option<OrderTimeInForce>,
@@ -213,8 +214,8 @@ pub enum OrderRequestType {
 #[serde(untagged)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderRequestMarketType {
-    Size { size: f64 },
-    Funds { funds: f64 },
+    Size { size: Decimal },
+    Funds { funds: Decimal },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -238,7 +239,7 @@ pub enum OrderStatus {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OrderStop {
-    stop_price: f64,
+    stop_price: Decimal,
     #[serde(rename = "stop")]
     _type: OrderStopType,
 }

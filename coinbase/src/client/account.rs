@@ -5,6 +5,8 @@ use crate::Coinbase;
 
 use shared::Result;
 
+use rust_decimal::prelude::Decimal;
+
 impl Coinbase {
     pub async fn get_account(&self) -> Result<Vec<Account>> {
         self.transport.signed_get::<_, ()>("/accounts", None).await
@@ -20,7 +22,7 @@ impl Coinbase {
             .await
     }
     // TODO: refactor buy and sell in order creation in commun function
-    pub async fn market_buy(&self, product: &str, size: f64) -> Result<Order> {
+    pub async fn market_buy(&self, product: &str, size: Decimal) -> Result<Order> {
         let params = OrderRequest {
             product_id: product.into(),
             client_oid: None,
@@ -38,7 +40,7 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn market_sell(&self, product: &str, size: f64) -> Result<Order> {
+    pub async fn market_sell(&self, product: &str, size: Decimal) -> Result<Order> {
         let params = OrderRequest {
             product_id: product.into(),
             client_oid: None,
@@ -56,7 +58,7 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn limit_buy(&self, product: &str, size: f64, price: f64) -> Result<Order> {
+    pub async fn limit_buy(&self, product: &str, size: Decimal, price: Decimal) -> Result<Order> {
         let params = OrderRequest {
             product_id: product.into(),
             client_oid: None,
@@ -77,7 +79,7 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn limit_sell(&self, product: &str, size: f64, price: f64) -> Result<Order> {
+    pub async fn limit_sell(&self, product: &str, size: Decimal, price: Decimal) -> Result<Order> {
         let params = OrderRequest {
             product_id: product.into(),
             client_oid: None,

@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
+use rust_decimal::prelude::Decimal;
 
 #[derive(Clone, Constructor, Debug, Default)]
 pub struct OrderBookRequest {
@@ -16,27 +17,27 @@ pub struct OrderBookResponse {
 
 #[derive(Clone, Constructor, Debug, Default)]
 pub struct Bids {
-    pub price: f64,
-    pub qty: f64,
+    pub price: Decimal,
+    pub qty: Decimal,
 }
 
 #[derive(Clone, Constructor, Debug, Default)]
 pub struct Asks {
-    pub price: f64,
-    pub qty: f64,
+    pub price: Decimal,
+    pub qty: Decimal,
 }
 
 #[derive(Clone, Constructor, Debug, Default)]
 pub struct OpenLimitOrderRequest {
     pub symbol: String,
-    pub size: f64,
-    pub price: f64,
+    pub size: Decimal,
+    pub price: Decimal,
 }
 
 #[derive(Clone, Constructor, Debug, Default)]
 pub struct OpenMarketOrderRequest {
     pub symbol: String,
-    pub size: f64,
+    pub size: Decimal,
 }
 
 #[derive(Clone, Constructor, Debug)]

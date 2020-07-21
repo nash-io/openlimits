@@ -1,6 +1,8 @@
 pub mod websocket;
 use serde::{Deserialize, Serialize};
-use shared::string_to_float;
+use shared::string_to_decimal;
+
+use rust_decimal::prelude::Decimal;
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -44,8 +46,8 @@ pub struct Order {
     pub symbol: String,
     pub order_id: u64,
     pub client_order_id: String,
-    #[serde(with = "string_to_float")]
-    pub price: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
     pub orig_qty: String,
     pub executed_qty: String,
     pub status: String,
@@ -53,8 +55,8 @@ pub struct Order {
     #[serde(rename = "type")]
     pub type_name: String,
     pub side: String,
-    #[serde(with = "string_to_float")]
-    pub stop_price: f64,
+    #[serde(with = "string_to_decimal")]
+    pub stop_price: Decimal,
     pub iceberg_qty: String,
     pub time: u64,
 }
@@ -79,18 +81,18 @@ pub struct Transaction {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Bids {
-    #[serde(with = "string_to_float")]
-    pub price: f64,
-    #[serde(with = "string_to_float")]
-    pub qty: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub qty: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Asks {
-    #[serde(with = "string_to_float")]
-    pub price: f64,
-    #[serde(with = "string_to_float")]
-    pub qty: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub qty: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -112,8 +114,8 @@ pub enum Prices {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SymbolPrice {
     pub symbol: String,
-    #[serde(with = "string_to_float")]
-    pub price: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -132,14 +134,14 @@ pub enum KlineSummaries {
 #[serde(rename_all = "camelCase")]
 pub struct Ticker {
     pub symbol: String,
-    #[serde(with = "string_to_float")]
-    pub bid_price: f64,
-    #[serde(with = "string_to_float")]
-    pub bid_qty: f64,
-    #[serde(with = "string_to_float")]
-    pub ask_price: f64,
-    #[serde(with = "string_to_float")]
-    pub ask_qty: f64,
+    #[serde(with = "string_to_decimal")]
+    pub bid_price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub bid_qty: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub ask_price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub ask_qty: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -148,12 +150,12 @@ pub struct TradeHistory {
     pub symbol: String,
     pub id: u64,
     pub order_id: u64,
-    #[serde(with = "string_to_float")]
-    pub price: f64,
-    #[serde(with = "string_to_float")]
-    pub qty: f64,
-    #[serde(with = "string_to_float")]
-    pub commission: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub qty: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub commission: Decimal,
     pub commission_asset: String,
     pub time: u64,
     pub is_buyer: bool,
@@ -165,28 +167,28 @@ pub struct TradeHistory {
 #[serde(rename_all = "camelCase")]
 pub struct PriceStats {
     pub symbol: String,
-    #[serde(with = "string_to_float")]
-    pub price_change: f64,
-    #[serde(with = "string_to_float")]
-    pub price_change_percent: f64,
-    #[serde(with = "string_to_float")]
-    pub weighted_avg_price: f64,
-    #[serde(with = "string_to_float")]
-    pub prev_close_price: f64,
-    #[serde(with = "string_to_float")]
-    pub last_price: f64,
-    #[serde(with = "string_to_float")]
-    pub bid_price: f64,
-    #[serde(with = "string_to_float")]
-    pub ask_price: f64,
-    #[serde(with = "string_to_float")]
-    pub open_price: f64,
-    #[serde(with = "string_to_float")]
-    pub high_price: f64,
-    #[serde(with = "string_to_float")]
-    pub low_price: f64,
-    #[serde(with = "string_to_float")]
-    pub volume: f64,
+    #[serde(with = "string_to_decimal")]
+    pub price_change: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub price_change_percent: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub weighted_avg_price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub prev_close_price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub last_price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub bid_price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub ask_price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub open_price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub high_price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub low_price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub volume: Decimal,
     pub open_time: u64,
     pub close_time: u64,
     pub first_id: i64, // For dummy symbol "123456", it is -1
@@ -198,25 +200,25 @@ pub struct PriceStats {
 pub struct KlineSummary {
     pub open_time: i64,
 
-    pub open: f64,
+    pub open: Decimal,
 
-    pub high: f64,
+    pub high: Decimal,
 
-    pub low: f64,
+    pub low: Decimal,
 
-    pub close: f64,
+    pub close: Decimal,
 
-    pub volume: f64,
+    pub volume: Decimal,
 
     pub close_time: i64,
 
-    pub quote_asset_volume: f64,
+    pub quote_asset_volume: Decimal,
 
     pub number_of_trades: i64,
 
-    pub taker_buy_base_asset_volume: f64,
+    pub taker_buy_base_asset_volume: Decimal,
 
-    pub taker_buy_quote_asset_volume: f64,
+    pub taker_buy_quote_asset_volume: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
