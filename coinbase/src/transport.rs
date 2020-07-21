@@ -2,9 +2,7 @@ use shared::errors::{CoinbaseContentError, OpenLimitError};
 
 use hmac::{Hmac, Mac, NewMac};
 use reqwest::header;
-use reqwest::Method;
-use reqwest::Response;
-use reqwest::StatusCode;
+use reqwest::{Method, RequestBuilder, Response, StatusCode};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use sha2::Sha256;
@@ -112,50 +110,80 @@ impl Transport {
         O: DeserializeOwned,
         S: Serialize,
     {
-        let since_epoch_seconds = SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .expect("Invalid SystemTime.")
-            .as_secs();
-
         let url = self.get_url(endpoint, params)?;
 
-        let signature = self.signature::<()>(&url, since_epoch_seconds, Method::GET, None)?;
+        let request = self.build_request::<()>(url, Method::GET, None)?;
 
-        let request = self
-            .client
-            .get(url)
-            .header("CB-ACCESS-SIGN", signature)
-            .header("CB-ACCESS-TIMESTAMP", since_epoch_seconds.to_string());
+        let resp = request.send().await?;
 
+        Ok(self.response_handler(resp).await?)
+    }
+
+    pub async fn signed_post<O, P, D>(
+        &self,
+        endpoint: &str,
+        params: Option<&P>,
+        data: Option<&D>,
+    ) -> Result<O>
+    where
+        O: DeserializeOwned,
+        P: Serialize,
+        D: Serialize,
+    {
+        let url = self.get_url(endpoint, params)?;
+        let request = self.build_request(url, Method::POST, data)?;
+        let resp = request.send().await?;
+
+        Ok(self.response_handler(resp).await?)
+    }
+
+    pub async fn signed_delete<O, P, D>(
+        &self,
+        endpoint: &str,
+        params: Option<&P>,
+        data: Option<&D>,
+    ) -> Result<O>
+    where
+        O: DeserializeOwned,
+        P: Serialize,
+        D: Serialize + std::fmt::Debug,
+    {
+        let url = self.get_url(endpoint, params)?;
+        let request = self.build_request(url, Method::DELETE, data)?;
         let request = request.send().await?;
 
         Ok(self.response_handler(request).await?)
     }
 
-    pub async fn signed_post<O, S>(&self, endpoint: &str, data: Option<&S>) -> Result<O>
+    pub fn build_request<D>(
+        &self,
+        url: Url,
+        method: Method,
+        data: Option<&D>,
+    ) -> Result<RequestBuilder>
     where
-        O: DeserializeOwned,
-        S: Serialize,
+        D: Serialize,
     {
         let since_epoch_seconds = SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
             .expect("Invalid SystemTime.")
             .as_secs();
 
-        let url = self.get_url::<()>(endpoint, None)?;
+        let signature = self.signature(&url, since_epoch_seconds, &method, data)?;
 
-        let signature = self.signature(&url, since_epoch_seconds, Method::POST, data)?;
-
-        let request = self
+        let mut request = self
             .client
-            .post(url)
-            .json(&data)
+            .request(method, url)
             .header("CB-ACCESS-SIGN", signature)
             .header("CB-ACCESS-TIMESTAMP", since_epoch_seconds.to_string());
 
-        let request = request.send().await?;
+        request = if data.is_some() {
+            request.json(&data)
+        } else {
+            request
+        };
 
-        Ok(self.response_handler(request).await?)
+        Ok(request)
     }
 
     pub fn get_url<Q>(&self, endpoint: &str, params: Option<&Q>) -> Result<Url>
@@ -178,7 +206,7 @@ impl Transport {
         &self,
         url: &Url,
         timestamp: u64,
-        method: Method,
+        method: &Method,
         body: Option<&D>,
     ) -> Result<String>
     where

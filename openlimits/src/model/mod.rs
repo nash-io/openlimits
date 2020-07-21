@@ -47,6 +47,11 @@ pub struct Order<T> {
     pub client_order_id: Option<String>,
     pub created_at: DateTime<Utc>,
 }
+#[derive(Clone, Constructor, Debug)]
+pub struct CancelOrderRequest<T> {
+    pub id: T,
+    pub pair: Option<String>,
+}
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Side {
     Buy,

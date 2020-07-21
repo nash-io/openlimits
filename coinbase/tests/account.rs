@@ -69,6 +69,47 @@ async fn market_sell() {
     println!("{:?}", resp);
 }
 
+#[tokio::test]
+async fn cancel_all_orders() {
+    let exchange = init();
+    exchange
+        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(10000, 0))
+        .await
+        .unwrap();
+    exchange
+        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(10000, 0))
+        .await
+        .unwrap();
+
+    exchange
+        .limit_buy("ETH-BTC", Decimal::new(2, 2), Decimal::new(2, 2))
+        .await
+        .unwrap();
+
+    let resp = exchange.cancel_all_orders(Some("BTC-USD")).await.unwrap();
+
+    println!("{:?}", resp);
+
+    let resp = exchange.cancel_all_orders(None).await.unwrap();
+
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn cancel_order() {
+    let exchange = init();
+    let order = exchange
+        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(10000, 0))
+        .await
+        .unwrap();
+    let resp = exchange
+        .cancel_order(order.id, Some("BTC-USD"))
+        .await
+        .unwrap();
+
+    println!("{:?}", resp);
+}
+
 fn init() -> Coinbase {
     dotenv().ok();
     Coinbase::with_credential(
