@@ -54,6 +54,11 @@ pub struct CancelOrderRequest<T> {
 }
 
 #[derive(Clone, Constructor, Debug)]
+pub struct CancelAllOrdersRequest {
+    pub pair: Option<String>,
+}
+
+#[derive(Clone, Constructor, Debug)]
 pub struct OrderCanceled<T> {
     pub id: T,
 }

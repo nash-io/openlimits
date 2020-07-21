@@ -4,8 +4,8 @@ use shared::Result;
 
 use crate::exchange::Exchange;
 use crate::model::{
-    Asks, Bids, CancelOrderRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
-    OrderBookRequest, OrderBookResponse, OrderCanceled,
+    Asks, Bids, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest,
+    OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
 };
 use chrono::DateTime;
 
@@ -70,6 +70,15 @@ impl Exchange for Coinbase {
         )
         .await
         .map(Into::into)
+    }
+
+    async fn cancel_all_orders(
+        &self,
+        req: &CancelAllOrdersRequest,
+    ) -> Result<Vec<OrderCanceled<Self::IdType>>> {
+        coinbase::Coinbase::cancel_all_orders(self, req.pair.as_ref().map(|s| s.as_str()))
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
     }
 }
 

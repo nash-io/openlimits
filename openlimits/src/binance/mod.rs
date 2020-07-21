@@ -4,8 +4,8 @@ use shared::Result;
 
 use crate::exchange::Exchange;
 use crate::model::{
-    Asks, Bids, CancelOrderRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
-    OrderBookRequest, OrderBookResponse, OrderCanceled,
+    Asks, Bids, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest,
+    OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
 };
 use chrono::naive::NaiveDateTime;
 use chrono::{DateTime, Utc};
@@ -65,6 +65,20 @@ impl Exchange for Binance {
             binance::Binance::cancel_order(self, pair.as_ref(), req.id)
                 .await
                 .map(Into::into)
+        } else {
+            Err(OpenLimitError::MissingParameter(
+                "pair parameter is required.".to_string(),
+            ))
+        }
+    }
+    async fn cancel_all_orders(
+        &self,
+        req: &CancelAllOrdersRequest,
+    ) -> Result<Vec<OrderCanceled<Self::IdType>>> {
+        if let Some(pair) = req.pair.as_ref() {
+            binance::Binance::cancel_all_orders(self, pair.as_ref())
+                .await
+                .map(|v| v.into_iter().map(Into::into).collect())
         } else {
             Err(OpenLimitError::MissingParameter(
                 "pair parameter is required.".to_string(),
