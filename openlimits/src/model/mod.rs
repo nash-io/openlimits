@@ -52,6 +52,12 @@ pub struct CancelOrderRequest<T> {
     pub id: T,
     pub pair: Option<String>,
 }
+
+#[derive(Clone, Constructor, Debug)]
+pub struct OrderCanceled<T> {
+    pub id: T,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Side {
     Buy,

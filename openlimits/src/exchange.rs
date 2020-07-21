@@ -3,7 +3,8 @@ use derive_more::Constructor;
 use shared::Result;
 
 use crate::model::{
-    OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
+    CancelOrderRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
+    OrderBookResponse, OrderCanceled,
 };
 
 #[derive(Constructor)]
@@ -44,12 +45,12 @@ impl<E: Exchange> OpenLimits<E> {
         self.exchange.market_sell(req.as_ref()).await
     }
 
-    // pub async fn cancel_order(
-    //     &self,
-    //     req: impl AsRef<CancelOrderRequest>,
-    // ) -> Result<Order<E::IdType>> {
-    //     self.exchange.cancel_order(req.as_ref()).await
-    // }
+    pub async fn cancel_order(
+        &self,
+        req: impl AsRef<CancelOrderRequest<E::IdType>>,
+    ) -> Result<OrderCanceled<E::IdType>> {
+        self.exchange.cancel_order(req.as_ref()).await
+    }
 }
 
 #[async_trait]
@@ -60,4 +61,8 @@ pub trait Exchange {
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::IdType>>;
     async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::IdType>>;
     async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::IdType>>;
+    async fn cancel_order(
+        &self,
+        req: &CancelOrderRequest<Self::IdType>,
+    ) -> Result<OrderCanceled<Self::IdType>>;
 }

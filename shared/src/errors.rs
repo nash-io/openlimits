@@ -74,4 +74,6 @@ pub enum OpenLimitError {
     UnkownResponse(String),
     #[error("")]
     NotParsableResponse(String),
+    #[error("")]
+    MissingParameter(String),
 }

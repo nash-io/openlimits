@@ -4,8 +4,8 @@ use shared::Result;
 
 use crate::exchange::Exchange;
 use crate::model::{
-    Asks, Bids, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
-    OrderBookResponse,
+    Asks, Bids, CancelOrderRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
+    OrderBookRequest, OrderBookResponse, OrderCanceled,
 };
 use chrono::DateTime;
 
@@ -58,6 +58,19 @@ impl Exchange for Coinbase {
             .await
             .map(Into::into)
     }
+
+    async fn cancel_order(
+        &self,
+        req: &CancelOrderRequest<Self::IdType>,
+    ) -> Result<OrderCanceled<Self::IdType>> {
+        coinbase::Coinbase::cancel_order(
+            self,
+            req.id.clone(),
+            req.pair.as_ref().map(|s| s.as_str()),
+        )
+        .await
+        .map(Into::into)
+    }
 }
 
 impl From<coinbase::model::Book<coinbase::model::BookRecordL2>> for OrderBookResponse {
@@ -98,5 +111,11 @@ impl From<coinbase::model::Order> for Order<String> {
                 .unwrap()
                 .into(),
         }
+    }
+}
+
+impl From<String> for OrderCanceled<String> {
+    fn from(id: String) -> Self {
+        Self { id }
     }
 }
