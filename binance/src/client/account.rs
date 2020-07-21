@@ -183,6 +183,15 @@ impl Binance {
         Ok(order_canceled)
     }
 
+    pub async fn cancel_all_orders(&self, symbol: &str) -> Result<Vec<OrderCanceled>> {
+        let params = json! {{"symbol":symbol}};
+        let orders_canceled = self
+            .transport
+            .signed_delete("/api/v3/openOrders", Some(&params))
+            .await?;
+        Ok(orders_canceled)
+    }
+
     // Trade history
     pub async fn trade_history(&self, symbol: &str) -> Result<Vec<TradeHistory>> {
         let params = json! {{"symbol":symbol}};

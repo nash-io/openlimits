@@ -4,11 +4,12 @@ use shared::Result;
 
 use crate::exchange::Exchange;
 use crate::model::{
-    Asks, Bids, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
-    OrderBookResponse,
+    Asks, Bids, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest,
+    OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
 };
 use chrono::naive::NaiveDateTime;
 use chrono::{DateTime, Utc};
+use shared::errors::OpenLimitError;
 
 #[derive(Deref, DerefMut)]
 pub struct Binance(binance::Binance);
@@ -56,6 +57,34 @@ impl Exchange for Binance {
             .await
             .map(Into::into)
     }
+    async fn cancel_order(
+        &self,
+        req: &CancelOrderRequest<Self::IdType>,
+    ) -> Result<OrderCanceled<Self::IdType>> {
+        if let Some(pair) = req.pair.as_ref() {
+            binance::Binance::cancel_order(self, pair.as_ref(), req.id)
+                .await
+                .map(Into::into)
+        } else {
+            Err(OpenLimitError::MissingParameter(
+                "pair parameter is required.".to_string(),
+            ))
+        }
+    }
+    async fn cancel_all_orders(
+        &self,
+        req: &CancelAllOrdersRequest,
+    ) -> Result<Vec<OrderCanceled<Self::IdType>>> {
+        if let Some(pair) = req.pair.as_ref() {
+            binance::Binance::cancel_all_orders(self, pair.as_ref())
+                .await
+                .map(|v| v.into_iter().map(Into::into).collect())
+        } else {
+            Err(OpenLimitError::MissingParameter(
+                "pair parameter is required.".to_string(),
+            ))
+        }
+    }
 }
 
 impl From<binance::model::OrderBook> for OrderBookResponse {
@@ -98,5 +127,11 @@ impl From<binance::model::Transaction> for Order<u64> {
             client_order_id: Some(order.client_order_id),
             created_at: DateTime::from_utc(created_at, Utc),
         }
+    }
+}
+
+impl From<binance::model::OrderCanceled> for OrderCanceled<u64> {
+    fn from(order: binance::model::OrderCanceled) -> Self {
+        Self { id: order.order_id }
     }
 }
