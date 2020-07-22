@@ -11,9 +11,9 @@ async fn get_account() {
 }
 
 #[tokio::test]
-async fn get_open_orders() {
+async fn get_all_open_orders() {
     let exchange = init();
-    let resp = exchange.get_open_orders().await.unwrap();
+    let resp = exchange.get_all_open_orders().await.unwrap();
     println!("{:?}", resp);
 }
 

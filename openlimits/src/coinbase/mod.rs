@@ -76,6 +76,12 @@ impl Exchange for Coinbase {
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
+
+    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::IdType>>> {
+        coinbase::Coinbase::get_all_open_orders(self)
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
+    }
 }
 
 impl From<coinbase::model::Book<coinbase::model::BookRecordL2>> for OrderBookResponse {

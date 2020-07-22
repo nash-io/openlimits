@@ -93,6 +93,20 @@ async fn cancel_all_orders() {
     println!("{:?}", resp);
 }
 
+#[tokio::test]
+async fn get_all_open_orders() {
+    let exchange = init();
+    let req = OpenLimitOrderRequest {
+        price: Decimal::new(1, 3),
+        size: Decimal::new(1, 1),
+        symbol: String::from("BNBBTC"),
+    };
+    exchange.limit_sell(&req).await.unwrap();
+
+    let resp = exchange.get_all_open_orders().await.unwrap();
+    println!("{:?}", resp);
+}
+
 fn init() -> Binance {
     dotenv().ok();
     Binance::with_credential(
