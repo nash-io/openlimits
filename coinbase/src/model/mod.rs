@@ -30,6 +30,7 @@ pub struct Product {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Account {
     pub id: String,
+    pub currency: String,
     #[serde(with = "string_to_decimal")]
     pub balance: Decimal,
     #[serde(with = "string_to_decimal")]

@@ -4,7 +4,7 @@ use shared::Result;
 
 use crate::exchange::Exchange;
 use crate::model::{
-    Asks, Bids, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest,
+    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest,
     OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
 };
 use chrono::naive::NaiveDateTime;
@@ -90,6 +90,12 @@ impl Exchange for Binance {
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
+
+    async fn get_account_balances(&self) -> Result<Vec<Balance>> {
+        binance::Binance::get_account(self)
+            .await
+            .map(|v| v.balances.into_iter().map(Into::into).collect())
+    }
 }
 
 impl From<binance::model::OrderBook> for OrderBookResponse {
@@ -153,5 +159,15 @@ impl From<binance::model::Order> for Order<u64> {
 impl From<binance::model::OrderCanceled> for OrderCanceled<u64> {
     fn from(order: binance::model::OrderCanceled) -> Self {
         Self { id: order.order_id }
+    }
+}
+
+impl From<binance::model::Balance> for Balance {
+    fn from(balance: binance::model::Balance) -> Self {
+        Self {
+            asset: balance.asset,
+            free: balance.free,
+            total: balance.locked + balance.free,
+        }
     }
 }
