@@ -58,6 +58,10 @@ impl<E: Exchange> OpenLimits<E> {
     ) -> Result<Vec<OrderCanceled<E::IdType>>> {
         self.exchange.cancel_all_orders(req.as_ref()).await
     }
+
+    pub async fn get_all_open_orders(&self) -> Result<Vec<Order<E::IdType>>> {
+        self.exchange.get_all_open_orders().await
+    }
 }
 
 #[async_trait]
@@ -76,4 +80,5 @@ pub trait Exchange {
         &self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<Self::IdType>>>;
+    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::IdType>>>;
 }

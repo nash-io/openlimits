@@ -13,7 +13,7 @@ impl Coinbase {
         self.transport.signed_get::<_, ()>("/accounts", None).await
     }
 
-    pub async fn get_open_orders(&self) -> Result<Vec<Order>> {
+    pub async fn get_all_open_orders(&self) -> Result<Vec<Order>> {
         self.transport.signed_get::<_, ()>("/orders", None).await
     }
 

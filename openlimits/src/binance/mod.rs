@@ -85,6 +85,11 @@ impl Exchange for Binance {
             ))
         }
     }
+    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::IdType>>> {
+        binance::Binance::get_all_open_orders(self)
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
+    }
 }
 
 impl From<binance::model::OrderBook> for OrderBookResponse {
@@ -120,6 +125,21 @@ impl From<binance::model::Transaction> for Order<u64> {
         let created_at = NaiveDateTime::from_timestamp(
             (order.transact_time / 1000) as i64,
             ((order.transact_time % 1000) * 1_000_000) as u32,
+        );
+        Self {
+            id: order.order_id,
+            symbol: order.symbol,
+            client_order_id: Some(order.client_order_id),
+            created_at: DateTime::from_utc(created_at, Utc),
+        }
+    }
+}
+
+impl From<binance::model::Order> for Order<u64> {
+    fn from(order: binance::model::Order) -> Self {
+        let created_at = NaiveDateTime::from_timestamp(
+            (order.time / 1000) as i64,
+            ((order.time % 1000) * 1_000_000) as u32,
         );
         Self {
             id: order.order_id,
