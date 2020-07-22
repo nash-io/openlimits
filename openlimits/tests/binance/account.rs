@@ -58,7 +58,7 @@ async fn market_sell() {
 async fn cancel_order() {
     let exchange = init();
     let req = OpenLimitOrderRequest {
-        price: Decimal::new(1, 3),
+        price: Decimal::new(5, 3),
         size: Decimal::new(1, 1),
         symbol: String::from("BNBBTC"),
     };
