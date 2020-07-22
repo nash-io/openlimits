@@ -106,6 +106,13 @@ async fn get_all_open_orders() {
     println!("{:?}", resp);
 }
 
+#[tokio::test]
+async fn get_account_balances() {
+    let exchange = init();
+    let resp = exchange.get_account_balances().await.unwrap();
+    println!("{:?}", resp);
+}
+
 fn init() -> Coinbase {
     dotenv().ok();
     Coinbase::with_credential(

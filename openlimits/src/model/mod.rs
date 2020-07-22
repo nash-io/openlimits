@@ -63,6 +63,12 @@ pub struct OrderCanceled<T> {
     pub id: T,
 }
 
+#[derive(Clone, Constructor, Debug)]
+pub struct Balance {
+    pub asset: String,
+    pub total: Decimal,
+    pub free: Decimal,
+}
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Side {
     Buy,

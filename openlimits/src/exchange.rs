@@ -3,8 +3,8 @@ use derive_more::Constructor;
 use shared::Result;
 
 use crate::model::{
-    CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest, OpenMarketOrderRequest,
-    Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
+    Balance, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest,
+    OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
 };
 
 #[derive(Constructor)]
@@ -62,6 +62,9 @@ impl<E: Exchange> OpenLimits<E> {
     pub async fn get_all_open_orders(&self) -> Result<Vec<Order<E::IdType>>> {
         self.exchange.get_all_open_orders().await
     }
+    pub async fn get_account_balances(&self) -> Result<Vec<Balance>> {
+        self.exchange.get_account_balances().await
+    }
 }
 
 #[async_trait]
@@ -81,4 +84,5 @@ pub trait Exchange {
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<Self::IdType>>>;
     async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::IdType>>>;
+    async fn get_account_balances(&self) -> Result<Vec<Balance>>;
 }

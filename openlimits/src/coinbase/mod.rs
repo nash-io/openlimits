@@ -4,7 +4,7 @@ use shared::Result;
 
 use crate::exchange::Exchange;
 use crate::model::{
-    Asks, Bids, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest,
+    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest,
     OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
 };
 use chrono::DateTime;
@@ -82,6 +82,12 @@ impl Exchange for Coinbase {
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
+
+    async fn get_account_balances(&self) -> Result<Vec<Balance>> {
+        coinbase::Coinbase::get_account(self)
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
+    }
 }
 
 impl From<coinbase::model::Book<coinbase::model::BookRecordL2>> for OrderBookResponse {
@@ -128,5 +134,15 @@ impl From<coinbase::model::Order> for Order<String> {
 impl From<String> for OrderCanceled<String> {
     fn from(id: String) -> Self {
         Self { id }
+    }
+}
+
+impl From<coinbase::model::Account> for Balance {
+    fn from(account: coinbase::model::Account) -> Self {
+        Self {
+            asset: account.currency,
+            free: account.available,
+            total: account.balance,
+        }
     }
 }
