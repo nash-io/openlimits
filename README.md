@@ -9,7 +9,7 @@ High performance cryptocurrency trading API with support for user defined networ
 * Open-source only, now and forever.
 
 
-The project is in developement the API might break.
+Warning: the project is still in development and a lot of breaking changes are being made.
 
 ### Community
 
