@@ -9,6 +9,8 @@ High performance cryptocurrency trading API with support for user defined networ
 * Open-source only, now and forever.
 
 
+The project is in developement the API might break.
+
 ### Community
 
 There is a project slack, [click here](https://join.slack.com/t/openlimitsworkspace/shared_invite/zt-fbtlnsva-fFaHHb2zSdc77Vrk7ayhSw) to join.
