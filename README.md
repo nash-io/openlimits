@@ -1,4 +1,4 @@
-# OpenLimits
+# openLimits
 
 A Rust high performance cryptocurrency trading API with support for multiple exchanges and language wrappers.
 
