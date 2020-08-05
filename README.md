@@ -1,6 +1,8 @@
-# openLimits
+# Welcome to openLimits
 
 A Rust high performance cryptocurrency trading API with support for multiple exchanges and language wrappers.
+
+Project goals are to be:
 
 * Based on Rust, memory safe by default.
 * Support for websockets and user defined networking.
@@ -8,8 +10,7 @@ A Rust high performance cryptocurrency trading API with support for multiple exc
 * Easy to add support for additional exchanges.
 * Open-source only, now and forever.
 
-
-Warning: the project is still in development and a lot of breaking changes are being made.
+**Warning**: the project is still in development and a lot of breaking changes are being made.
 
 
 ### Community
@@ -22,4 +23,4 @@ In order to run the tests you will have to provide environemnt variables for the
 
 ### Sponsorship
 
-[Nash](https://nash.io) is dedicating a maintainer and rewarding external contributors that close issues. Look for NEX reward labels on open issues.
+We invite industry participants to join us in sponsoring a new high quality open source standard for crypto trading APIs. [Nash](https://nash.io) is dedicating a maintainer and initial rewards for external contributors that close issues. Look for the wiki [rewards table](https://github.com/nash-io/openlimits/wiki/Rewards-sizes) and for reward size labels on open issues. 
