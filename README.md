@@ -11,9 +11,6 @@ High performance cryptocurrency trading API with support for user defined networ
 
 Warning: the project is still in development and a lot of breaking changes are being made.
 
-### Sponsorship
-
-[Nash](https://nash.io) is rewarding external contributors that close issues. Look for NEX reward labels on open issues.
 
 ### Community
 
@@ -22,3 +19,7 @@ There is a project slack, [click here](https://join.slack.com/t/openlimitsworksp
 ### Testing
 
 In order to run the tests you will have to provide environemnt variables for the sandbox API of the exchanges, you can use environment variables or use a `.env` file.
+
+### Sponsorship
+
+[Nash](https://nash.io) is dedicating a maintainer and rewarding external contributors that close issues. Look for NEX reward labels on open issues.
