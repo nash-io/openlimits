@@ -1,4 +1,6 @@
-# openLimits
+<p align="center">
+  <img width="400px" src="logo.svg" />
+</p>
 
 ![build](https://github.com/nash-io/openlimits/workflows/Rust/badge.svg) ![security](https://github.com/nash-io/openlimits/workflows/Security%20audit/badge.svg)
 
