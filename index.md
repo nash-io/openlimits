@@ -20,10 +20,9 @@ Future goals are:
 
 **Warning**: the project is still in development and a lot of breaking changes are being made.
 
+### Code
 
-### Community
-
-There is a project slack, [click here](https://join.slack.com/t/openlimitsworkspace/shared_invite/zt-fbtlnsva-fFaHHb2zSdc77Vrk7ayhSw) to join.
+See our [GitHub](https://github.com/nash-io/openlimits)
 
 ### Testing
 
