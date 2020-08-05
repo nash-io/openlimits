@@ -1,1 +1,5 @@
 theme: jekyll-theme-minimal
+title: openLimits
+description: A Rust high performance cryptocurrency trading API with support for multiple exchanges and language wrappers.
+logo: logo.svg
+google_analytics: UA-115551927-13
