@@ -1,37 +1,26 @@
-## Welcome to GitHub Pages
+# Welcome to openLimits
 
-You can use the [editor on GitHub](https://github.com/nash-io/openlimits/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+A Rust high performance cryptocurrency trading API with support for multiple exchanges and language wrappers.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+Project goals are to be:
 
-### Markdown
+* Based on Rust, memory safe by default.
+* Support for websockets and user defined networking.
+* Thin layer wrappers for Java, C#, Python and Node.js
+* Easy to add support for additional exchanges.
+* Open-source only, now and forever.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+**Warning**: the project is still in development and a lot of breaking changes are being made.
 
-```markdown
-Syntax highlighted code block
 
-# Header 1
-## Header 2
-### Header 3
+### Community
 
-- Bulleted
-- List
+There is a project slack, [click here](https://join.slack.com/t/openlimitsworkspace/shared_invite/zt-fbtlnsva-fFaHHb2zSdc77Vrk7ayhSw) to join.
 
-1. Numbered
-2. List
+### Testing
 
-**Bold** and _Italic_ and `Code` text
+In order to run the tests you will have to provide environemnt variables for the sandbox API of the exchanges, you can use environment variables or use a `.env` file.
 
-[Link](url) and ![Image](src)
-```
+### Sponsorship
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/nash-io/openlimits/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+[Nash](https://nash.io) is dedicating a maintainer and rewarding external contributors that close issues. Look for wiki rewards tables and for reward size labels on open issues. We invite other industry participants to join us in sponsoring a new high quality open source standard for crypto trading APIs.
