@@ -1,6 +1,6 @@
 # OpenLimits
 
-A Rust high performance cryptocurrency trading API with support for multiple exchanges and language wrappers..
+A Rust high performance cryptocurrency trading API with support for multiple exchanges and language wrappers.
 
 * Based on Rust, memory safe by default.
 * Support for websockets and user defined networking.
