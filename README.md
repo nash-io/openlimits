@@ -1,4 +1,6 @@
-# Welcome to openLimits
+# openLimits
+
+![build](https://github.com/nash-io/openlimits/workflows/Rust/badge.svg) ![security](https://github.com/nash-io/openlimits/workflows/Security%20audit/badge.svg)
 
 A Rust high performance cryptocurrency trading API with support for multiple exchanges and language wrappers.
 
