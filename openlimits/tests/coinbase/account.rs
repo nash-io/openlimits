@@ -3,7 +3,10 @@ use std::env;
 
 use openlimits::coinbase::Coinbase;
 use openlimits::exchange::Exchange;
-use openlimits::model::{CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, TradeHistoryRequest};
+use openlimits::model::{
+    CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest, OpenMarketOrderRequest,
+    TradeHistoryRequest,
+};
 use rust_decimal::prelude::Decimal;
 
 #[tokio::test]

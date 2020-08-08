@@ -2,7 +2,11 @@ use async_trait::async_trait;
 use derive_more::Constructor;
 use shared::Result;
 
-use crate::model::{Balance, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Trade, TradeHistoryRequest};
+use crate::model::{
+    Balance, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest,
+    OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Trade,
+    TradeHistoryRequest,
+};
 
 #[derive(Constructor)]
 pub struct OpenLimits<E: Exchange> {
@@ -92,6 +96,6 @@ pub trait Exchange {
     async fn get_account_balances(&self) -> Result<Vec<Balance>>;
     async fn get_trade_history(
         &self,
-        req: &TradeHistoryRequest<Self::OrderIdType>
+        req: &TradeHistoryRequest<Self::OrderIdType>,
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>>;
 }

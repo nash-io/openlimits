@@ -3,7 +3,11 @@ use derive_more::{Deref, DerefMut};
 use shared::Result;
 
 use crate::exchange::Exchange;
-use crate::model::{Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Trade, TradeHistoryRequest, Side, Liquidity};
+use crate::model::{
+    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Liquidity,
+    OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
+    OrderCanceled, Side, Trade, TradeHistoryRequest,
+};
 use chrono::naive::NaiveDateTime;
 use chrono::{DateTime, Utc};
 use shared::errors::OpenLimitError;
@@ -95,7 +99,10 @@ impl Exchange for Binance {
             .map(|v| v.balances.into_iter().map(Into::into).collect())
     }
 
-    async fn get_trade_history(&self, req: &TradeHistoryRequest<Self::OrderIdType>) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+    async fn get_trade_history(
+        &self,
+        req: &TradeHistoryRequest<Self::OrderIdType>,
+    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
         if let Some(pair) = req.pair.as_ref() {
             binance::Binance::trade_history(self, pair.as_ref())
                 .await
@@ -193,17 +200,19 @@ impl From<binance::model::TradeHistory> for Trade<u64, u64> {
             fees: trade_history.commission,
             side: match trade_history.is_buyer {
                 true => Side::Buy,
-                false => Side::Sell
+                false => Side::Sell,
             },
             liquidity: match trade_history.is_maker {
                 true => Some(Liquidity::Maker),
-                false => Some(Liquidity::Taker)
+                false => Some(Liquidity::Taker),
             },
             created_at: DateTime::from_utc(
                 NaiveDateTime::from_timestamp(
                     (trade_history.time / 1_000) as i64,
-                    ((trade_history.time % 1_000) * 1_000_000) as u32),
-                Utc)
+                    ((trade_history.time % 1_000) * 1_000_000) as u32,
+                ),
+                Utc,
+            ),
         }
     }
 }

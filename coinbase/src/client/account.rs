@@ -1,6 +1,9 @@
 use serde_json::json;
 
-use crate::model::{Account, CancelAllOrders, CancelOrder, Order, OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, Fill};
+use crate::model::{
+    Account, CancelAllOrders, CancelOrder, Fill, Order, OrderRequest, OrderRequestMarketType,
+    OrderRequestType, OrderSide,
+};
 use crate::Coinbase;
 
 use shared::Result;

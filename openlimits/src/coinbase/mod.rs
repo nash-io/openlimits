@@ -3,7 +3,11 @@ use derive_more::{Deref, DerefMut};
 use shared::Result;
 
 use crate::exchange::Exchange;
-use crate::model::{Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Trade, Side, Liquidity, TradeHistoryRequest};
+use crate::model::{
+    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Liquidity,
+    OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
+    OrderCanceled, Side, Trade, TradeHistoryRequest,
+};
 use chrono::DateTime;
 use shared::errors::OpenLimitError;
 
@@ -88,7 +92,10 @@ impl Exchange for Coinbase {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_trade_history(&self, req: &TradeHistoryRequest<Self::OrderIdType>) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+    async fn get_trade_history(
+        &self,
+        req: &TradeHistoryRequest<Self::OrderIdType>,
+    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
         if let Some(order_id) = req.order_id.as_ref() {
             coinbase::Coinbase::get_fills_for_order(self, order_id.as_ref())
                 .await
@@ -97,8 +104,7 @@ impl Exchange for Coinbase {
             coinbase::Coinbase::get_fills_for_product(self, product_id.as_ref())
                 .await
                 .map(|v| v.into_iter().map(Into::into).collect())
-        }
-        else {
+        } else {
             Err(OpenLimitError::MissingParameter(
                 "One of order_id or pair parameter is required.".to_string(),
             ))
@@ -174,16 +180,16 @@ impl From<coinbase::model::Fill> for Trade<u64, String> {
             fees: fill.fee,
             side: match fill.side.as_str() {
                 "buy" => Side::Buy,
-                _ => Side::Sell
+                _ => Side::Sell,
             },
             liquidity: match fill.liquidity.as_str() {
                 "M" => Some(Liquidity::Maker),
                 "T" => Some(Liquidity::Taker),
-                _ => None
+                _ => None,
             },
             created_at: DateTime::parse_from_rfc3339(&fill.created_at)
                 .unwrap()
-                .into()
+                .into(),
         }
     }
 }
