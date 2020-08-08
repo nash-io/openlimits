@@ -47,6 +47,7 @@ pub struct Order<T> {
     pub client_order_id: Option<String>,
     pub created_at: DateTime<Utc>,
 }
+
 #[derive(Clone, Constructor, Debug)]
 pub struct CancelOrderRequest<T> {
     pub id: T,
@@ -61,6 +62,31 @@ pub struct CancelAllOrdersRequest {
 #[derive(Clone, Constructor, Debug)]
 pub struct OrderCanceled<T> {
     pub id: T,
+}
+
+#[derive(Clone, Constructor, Debug)]
+pub struct Trade<T, O> {
+    pub id: T,
+    pub order_id: O,
+    pub pair: String,
+    pub price: Decimal,
+    pub qty: Decimal,
+    pub fees: Decimal,
+    pub side: Side,
+    pub liquidity: Option<Liquidity>,
+    pub created_at: DateTime<Utc>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub enum Liquidity {
+    Maker,
+    Taker,
+}
+
+#[derive(Default)]
+pub struct TradeHistoryRequest<T> {
+    pub pair: Option<String>,
+    pub order_id: Option<T>,
 }
 
 #[derive(Clone, Constructor, Debug)]

@@ -110,6 +110,27 @@ async fn cancel_order() {
     println!("{:?}", resp);
 }
 
+#[tokio::test]
+async fn get_fills_for_order() {
+    let exchange = init();
+    let order = exchange
+        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(10000, 0))
+        .await
+        .unwrap();
+    let resp = exchange
+        .get_fills_for_order(order.id.as_ref())
+        .await
+        .unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn get_fills_for_product() {
+    let exchange = init();
+    let resp = exchange.get_fills_for_product("BTC-USD").await.unwrap();
+    println!("{:?}", resp);
+}
+
 fn init() -> Coinbase {
     dotenv().ok();
     Coinbase::with_credential(

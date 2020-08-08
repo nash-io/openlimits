@@ -3,9 +3,7 @@ use std::env;
 
 use openlimits::binance::Binance;
 use openlimits::exchange::Exchange;
-use openlimits::model::{
-    CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest, OpenMarketOrderRequest,
-};
+use openlimits::model::{CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, TradeHistoryRequest};
 use rust_decimal::prelude::Decimal;
 
 #[tokio::test]
@@ -111,6 +109,18 @@ async fn get_all_open_orders() {
 async fn get_account_balances() {
     let exchange = init();
     let resp = exchange.get_account_balances().await.unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn get_trade_history() {
+    let exchange = init();
+    let req = TradeHistoryRequest {
+        pair: Some("BNBBTC".to_string()),
+        ..Default::default()
+    };
+
+    let resp = exchange.get_trade_history(&req).await.unwrap();
     println!("{:?}", resp);
 }
 

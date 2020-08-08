@@ -61,6 +61,23 @@ pub struct Trade {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Fill {
+    pub trade_id: u64,
+    pub product_id: String,
+    #[serde(with = "string_to_decimal")]
+    pub price: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub size: Decimal,
+    pub order_id: String,
+    pub created_at: String,
+    pub liquidity: String,
+    #[serde(with = "string_to_decimal")]
+    pub fee: Decimal,
+    pub settled: bool,
+    pub side: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Ticker {
     pub trade_id: i64,
     #[serde(with = "string_to_decimal")]
