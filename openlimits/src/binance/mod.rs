@@ -4,8 +4,9 @@ use shared::Result;
 
 use crate::exchange::Exchange;
 use crate::model::{
-    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest,
-    OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
+    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Liquidity,
+    OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
+    OrderCanceled, Side, Trade, TradeHistoryRequest,
 };
 use chrono::naive::NaiveDateTime;
 use chrono::{DateTime, Utc};
@@ -28,7 +29,8 @@ impl Binance {
 
 #[async_trait]
 impl Exchange for Binance {
-    type IdType = u64;
+    type OrderIdType = u64;
+    type TradeIdType = u64;
 
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.get_depth(req.symbol.as_str(), None)
@@ -36,31 +38,31 @@ impl Exchange for Binance {
             .map(Into::into)
     }
 
-    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::IdType>> {
+    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
         binance::Binance::limit_buy(self, &req.symbol, req.size, req.price)
             .await
             .map(Into::into)
     }
-    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::IdType>> {
+    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
         binance::Binance::limit_sell(self, &req.symbol, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::IdType>> {
+    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
         binance::Binance::market_buy(self, &req.symbol, req.size)
             .await
             .map(Into::into)
     }
-    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::IdType>> {
+    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
         binance::Binance::market_sell(self, &req.symbol, req.size)
             .await
             .map(Into::into)
     }
     async fn cancel_order(
         &self,
-        req: &CancelOrderRequest<Self::IdType>,
-    ) -> Result<OrderCanceled<Self::IdType>> {
+        req: &CancelOrderRequest<Self::OrderIdType>,
+    ) -> Result<OrderCanceled<Self::OrderIdType>> {
         if let Some(pair) = req.pair.as_ref() {
             binance::Binance::cancel_order(self, pair.as_ref(), req.id)
                 .await
@@ -74,7 +76,7 @@ impl Exchange for Binance {
     async fn cancel_all_orders(
         &self,
         req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled<Self::IdType>>> {
+    ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>> {
         if let Some(pair) = req.pair.as_ref() {
             binance::Binance::cancel_all_orders(self, pair.as_ref())
                 .await
@@ -85,7 +87,7 @@ impl Exchange for Binance {
             ))
         }
     }
-    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::IdType>>> {
+    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>> {
         binance::Binance::get_all_open_orders(self)
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
@@ -95,6 +97,21 @@ impl Exchange for Binance {
         binance::Binance::get_account(self)
             .await
             .map(|v| v.balances.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_trade_history(
+        &self,
+        req: &TradeHistoryRequest<Self::OrderIdType>,
+    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+        if let Some(pair) = req.pair.as_ref() {
+            binance::Binance::trade_history(self, pair.as_ref())
+                .await
+                .map(|v| v.into_iter().map(Into::into).collect())
+        } else {
+            Err(OpenLimitError::MissingParameter(
+                "pair parameter is required.".to_string(),
+            ))
+        }
     }
 }
 
@@ -168,6 +185,34 @@ impl From<binance::model::Balance> for Balance {
             asset: balance.asset,
             free: balance.free,
             total: balance.locked + balance.free,
+        }
+    }
+}
+
+impl From<binance::model::TradeHistory> for Trade<u64, u64> {
+    fn from(trade_history: binance::model::TradeHistory) -> Self {
+        Self {
+            id: trade_history.id,
+            order_id: trade_history.order_id,
+            pair: trade_history.symbol,
+            price: trade_history.price,
+            qty: trade_history.qty,
+            fees: trade_history.commission,
+            side: match trade_history.is_buyer {
+                true => Side::Buy,
+                false => Side::Sell,
+            },
+            liquidity: match trade_history.is_maker {
+                true => Some(Liquidity::Maker),
+                false => Some(Liquidity::Taker),
+            },
+            created_at: DateTime::from_utc(
+                NaiveDateTime::from_timestamp(
+                    (trade_history.time / 1_000) as i64,
+                    ((trade_history.time % 1_000) * 1_000_000) as u32,
+                ),
+                Utc,
+            ),
         }
     }
 }

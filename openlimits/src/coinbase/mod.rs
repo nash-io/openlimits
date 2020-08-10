@@ -4,10 +4,12 @@ use shared::Result;
 
 use crate::exchange::Exchange;
 use crate::model::{
-    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest,
-    OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
+    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Liquidity,
+    OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
+    OrderCanceled, Side, Trade, TradeHistoryRequest,
 };
 use chrono::DateTime;
+use shared::errors::OpenLimitError;
 
 #[derive(Deref, DerefMut)]
 pub struct Coinbase(coinbase::Coinbase);
@@ -31,29 +33,30 @@ impl Coinbase {
 
 #[async_trait]
 impl Exchange for Coinbase {
-    type IdType = String;
+    type OrderIdType = String;
+    type TradeIdType = u64;
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.book::<coinbase::model::BookRecordL2>(&req.symbol)
             .await
             .map(Into::into)
     }
-    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::IdType>> {
+    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
         coinbase::Coinbase::limit_buy(self, &req.symbol, req.size, req.price)
             .await
             .map(Into::into)
     }
-    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::IdType>> {
+    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
         coinbase::Coinbase::limit_sell(self, &req.symbol, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::IdType>> {
+    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
         coinbase::Coinbase::market_buy(self, &req.symbol, req.size)
             .await
             .map(Into::into)
     }
-    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::IdType>> {
+    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
         coinbase::Coinbase::market_sell(self, &req.symbol, req.size)
             .await
             .map(Into::into)
@@ -61,8 +64,8 @@ impl Exchange for Coinbase {
 
     async fn cancel_order(
         &self,
-        req: &CancelOrderRequest<Self::IdType>,
-    ) -> Result<OrderCanceled<Self::IdType>> {
+        req: &CancelOrderRequest<Self::OrderIdType>,
+    ) -> Result<OrderCanceled<Self::OrderIdType>> {
         coinbase::Coinbase::cancel_order(self, req.id.clone(), req.pair.as_deref())
             .await
             .map(Into::into)
@@ -71,13 +74,13 @@ impl Exchange for Coinbase {
     async fn cancel_all_orders(
         &self,
         req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled<Self::IdType>>> {
+    ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>> {
         coinbase::Coinbase::cancel_all_orders(self, req.pair.as_deref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::IdType>>> {
+    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>> {
         coinbase::Coinbase::get_all_open_orders(self)
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
@@ -87,6 +90,25 @@ impl Exchange for Coinbase {
         coinbase::Coinbase::get_account(self)
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_trade_history(
+        &self,
+        req: &TradeHistoryRequest<Self::OrderIdType>,
+    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+        if let Some(order_id) = req.order_id.as_ref() {
+            coinbase::Coinbase::get_fills_for_order(self, order_id.as_ref())
+                .await
+                .map(|v| v.into_iter().map(Into::into).collect())
+        } else if let Some(product_id) = req.pair.as_ref() {
+            coinbase::Coinbase::get_fills_for_product(self, product_id.as_ref())
+                .await
+                .map(|v| v.into_iter().map(Into::into).collect())
+        } else {
+            Err(OpenLimitError::MissingParameter(
+                "One of order_id or pair parameter is required.".to_string(),
+            ))
+        }
     }
 }
 
@@ -143,6 +165,31 @@ impl From<coinbase::model::Account> for Balance {
             asset: account.currency,
             free: account.available,
             total: account.balance,
+        }
+    }
+}
+
+impl From<coinbase::model::Fill> for Trade<u64, String> {
+    fn from(fill: coinbase::model::Fill) -> Self {
+        Self {
+            id: fill.trade_id,
+            order_id: fill.order_id,
+            pair: fill.product_id,
+            price: fill.price,
+            qty: fill.size,
+            fees: fill.fee,
+            side: match fill.side.as_str() {
+                "buy" => Side::Buy,
+                _ => Side::Sell,
+            },
+            liquidity: match fill.liquidity.as_str() {
+                "M" => Some(Liquidity::Maker),
+                "T" => Some(Liquidity::Taker),
+                _ => None,
+            },
+            created_at: DateTime::parse_from_rfc3339(&fill.created_at)
+                .unwrap()
+                .into(),
         }
     }
 }

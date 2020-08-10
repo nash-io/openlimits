@@ -1,5 +1,7 @@
+use serde_json::json;
+
 use crate::model::{
-    Account, CancelAllOrders, CancelOrder, Order, OrderRequest, OrderRequestMarketType,
+    Account, CancelAllOrders, CancelOrder, Fill, Order, OrderRequest, OrderRequestMarketType,
     OrderRequestType, OrderSide,
 };
 use crate::Coinbase;
@@ -135,6 +137,28 @@ impl Coinbase {
         let resp = self
             .transport
             .signed_delete::<_, _, ()>("/orders", Some(&params), None)
+            .await?;
+
+        Ok(resp)
+    }
+
+    pub async fn get_fills_for_order(&self, order_id: &str) -> Result<Vec<Fill>> {
+        let params = json! {{"order_id":order_id}};
+
+        let resp = self
+            .transport
+            .signed_get::<_, _>("/fills", Some(&params))
+            .await?;
+
+        Ok(resp)
+    }
+
+    pub async fn get_fills_for_product(&self, product_id: &str) -> Result<Vec<Fill>> {
+        let params = json! {{"product_id":product_id}};
+
+        let resp = self
+            .transport
+            .signed_get::<_, _>("/fills", Some(&params))
             .await?;
 
         Ok(resp)
