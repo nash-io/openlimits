@@ -4,9 +4,9 @@ use shared::Result;
 
 use crate::exchange::Exchange;
 use crate::model::{
-    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Liquidity,
-    OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
-    OrderCanceled, Side, Trade, TradeHistoryRequest,
+    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, GetPriceTickerRequest,
+    Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
+    OrderBookResponse, OrderCanceled, Side, Ticker, Trade, TradeHistoryRequest,
 };
 use chrono::naive::NaiveDateTime;
 use chrono::{DateTime, Utc};
@@ -113,6 +113,12 @@ impl Exchange for Binance {
             ))
         }
     }
+
+    async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
+        binance::Binance::get_price(self, &req.symbol)
+            .await
+            .map(Into::into)
+    }
 }
 
 impl From<binance::model::OrderBook> for OrderBookResponse {
@@ -213,6 +219,14 @@ impl From<binance::model::TradeHistory> for Trade<u64, u64> {
                 ),
                 Utc,
             ),
+        }
+    }
+}
+
+impl From<binance::model::SymbolPrice> for Ticker {
+    fn from(ticker: binance::model::SymbolPrice) -> Self {
+        Self {
+            price: ticker.price,
         }
     }
 }

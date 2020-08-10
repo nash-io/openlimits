@@ -95,6 +95,17 @@ pub struct Balance {
     pub total: Decimal,
     pub free: Decimal,
 }
+
+#[derive(Clone, Constructor, Debug)]
+pub struct Ticker {
+    pub price: Decimal,
+}
+
+#[derive(Clone, Constructor, Debug, Default)]
+pub struct GetPriceTickerRequest {
+    pub symbol: String,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Side {
     Buy,

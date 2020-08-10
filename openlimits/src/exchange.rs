@@ -3,9 +3,9 @@ use derive_more::Constructor;
 use shared::Result;
 
 use crate::model::{
-    Balance, CancelAllOrdersRequest, CancelOrderRequest, OpenLimitOrderRequest,
-    OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Trade,
-    TradeHistoryRequest,
+    Balance, CancelAllOrdersRequest, CancelOrderRequest, GetPriceTickerRequest,
+    OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
+    OrderCanceled, Ticker, Trade, TradeHistoryRequest,
 };
 
 #[derive(Constructor)]
@@ -98,4 +98,5 @@ pub trait Exchange {
         &self,
         req: &TradeHistoryRequest<Self::OrderIdType>,
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>>;
+    async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker>;
 }

@@ -4,9 +4,9 @@ use shared::Result;
 
 use crate::exchange::Exchange;
 use crate::model::{
-    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Liquidity,
-    OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
-    OrderCanceled, Side, Trade, TradeHistoryRequest,
+    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, GetPriceTickerRequest,
+    Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
+    OrderBookResponse, OrderCanceled, Side, Ticker, Trade, TradeHistoryRequest,
 };
 use chrono::DateTime;
 use shared::errors::OpenLimitError;
@@ -50,7 +50,6 @@ impl Exchange for Coinbase {
             .await
             .map(Into::into)
     }
-
     async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
         coinbase::Coinbase::market_buy(self, &req.symbol, req.size)
             .await
@@ -109,6 +108,12 @@ impl Exchange for Coinbase {
                 "One of order_id or pair parameter is required.".to_string(),
             ))
         }
+    }
+
+    async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
+        coinbase::Coinbase::ticker(self, &req.symbol)
+            .await
+            .map(Into::into)
     }
 }
 
@@ -190,6 +195,14 @@ impl From<coinbase::model::Fill> for Trade<u64, String> {
             created_at: DateTime::parse_from_rfc3339(&fill.created_at)
                 .unwrap()
                 .into(),
+        }
+    }
+}
+
+impl From<coinbase::model::Ticker> for Ticker {
+    fn from(ticker: coinbase::model::Ticker) -> Self {
+        Self {
+            price: ticker.price,
         }
     }
 }
