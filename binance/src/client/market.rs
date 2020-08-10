@@ -5,7 +5,7 @@ use serde_json::json;
 use serde_json::Value;
 
 use crate::model::{
-    BookTickers, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices, Ticker,
+    BookTickers, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices, SymbolPrice, Ticker,
 };
 use crate::Binance;
 use shared::errors::OpenLimitError;
@@ -36,17 +36,15 @@ impl Binance {
     }
 
     // Latest price for ONE symbol.
-    pub async fn get_price(&self, symbol: &str) -> Result<Decimal> {
-        let symbol = symbol.to_string();
-        self.get_all_prices()
-            .await
-            .and_then(move |Prices::AllPrices(prices)| {
-                Ok(prices
-                    .into_iter()
-                    .find(|obj| obj.symbol == symbol)
-                    .map(|par| par.price)
-                    .ok_or(OpenLimitError::SymbolNotFound())?)
-            })
+    pub async fn get_price(&self, symbol: &str) -> Result<SymbolPrice> {
+        let params = json! {{"symbol": symbol}};
+
+        let price = self
+            .transport
+            .get("/api/v3/ticker/price", Some(&params))
+            .await?;
+
+        Ok(price)
     }
 
     // Symbols order book ticker
