@@ -43,7 +43,7 @@ async fn limit_buy() {
 async fn limit_sell() {
     let exchange = init();
     let resp = exchange
-        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(10000, 0))
+        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -73,11 +73,11 @@ async fn market_sell() {
 async fn cancel_all_orders() {
     let exchange = init();
     exchange
-        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(10000, 0))
+        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
     exchange
-        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(10000, 0))
+        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
 
@@ -99,7 +99,7 @@ async fn cancel_all_orders() {
 async fn cancel_order() {
     let exchange = init();
     let order = exchange
-        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(10000, 0))
+        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
     let resp = exchange
@@ -114,7 +114,7 @@ async fn cancel_order() {
 async fn get_fills_for_order() {
     let exchange = init();
     let order = exchange
-        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(10000, 0))
+        .limit_sell("BTC-USD", Decimal::new(2, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
     let resp = exchange
