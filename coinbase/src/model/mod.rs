@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use shared::{string_to_decimal, datetime_from_string};
+use shared::{datetime_from_string, string_to_decimal};
 pub mod websocket;
 use rust_decimal::prelude::Decimal;
 
@@ -286,9 +286,9 @@ pub enum OrderStopType {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Paginator {
-    pub before: Option<i64>, 
+    pub before: Option<i64>,
     pub limit: Option<i64>,
-    pub after: Option<i64>
+    pub after: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -297,5 +297,5 @@ pub struct DateRange {
     #[serde(with = "datetime_from_string")]
     pub start: DateTime,
     #[serde(with = "datetime_from_string")]
-    pub end: DateTime
+    pub end: DateTime,
 }
