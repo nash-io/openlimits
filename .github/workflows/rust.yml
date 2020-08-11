@@ -41,11 +41,11 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       env:
-        BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
-        BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }}
-        COINBASE_API_KEY: ${{ secrets.COINBASE_API_KEY }}
-        COINBASE_API_SECRET: ${{ secrets.COINBASE_API_SECRET }}
-        COINBASE_PASSPHRASE: ${{ secrets.COINBASE_PASSPHRASE }}
+        BINANCE_API_KEY: 0jfxupurrR9GS4las3IPSCceuRXLNVIfR00LkmX40s5VIapxo67bIds0os9W0Kc0
+        BINANCE_API_SECRET: 7CknasnJSGggzqfOeqHN8Qy9afwiBYnh96Q8cW9SSAcyCd5JZyMouoBvKUdZpDE8
+        COINBASE_API_KEY: 71178a875b2e58cf722768c97cc6cbd9
+        COINBASE_API_SECRET: qWEkW67MjhHTmP0V5qOiycl8B1IWil3jumFmteYnkGH6Fycn1W5/iF9OwluACnIhby0fatCr++L+X9PJB8/jLw==
+        COINBASE_PASSPHRASE: hzy38ul8f3j
 
       run: cargo test --verbose
 
