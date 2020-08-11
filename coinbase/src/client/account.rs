@@ -1,5 +1,3 @@
-use serde_json::json;
-
 use crate::model::{
     Account, CancelAllOrders, CancelOrder, Fill, Order, OrderRequest, OrderRequestMarketType,
     OrderRequestType, OrderSide,
@@ -9,6 +7,7 @@ use crate::Coinbase;
 use shared::Result;
 
 use rust_decimal::prelude::Decimal;
+use serde_json::json;
 
 impl Coinbase {
     pub async fn get_account(&self) -> Result<Vec<Account>> {
@@ -17,6 +16,18 @@ impl Coinbase {
 
     pub async fn get_all_open_orders(&self) -> Result<Vec<Order>> {
         self.transport.signed_get::<_, ()>("/orders", None).await
+    }
+
+    pub async fn get_all_orders<'a>(&self, product_id: Option<&str>) -> Result<Vec<Order>> {
+        let mut params = json! {{"status": "all"}};
+
+        if let Some(p) = product_id {
+            params["product_id"] = json!(p);
+        }
+
+        self.transport
+            .signed_get::<_, _>("/orders", Some(&params))
+            .await
     }
 
     pub async fn order_status(&self, order_id: String) -> Result<Order> {

@@ -32,6 +32,13 @@ async fn get_all_open_orders() {
 }
 
 #[tokio::test]
+async fn get_all_orders() {
+    let exchange = init();
+    let resp = exchange.get_all_orders("BNBBTC").await.unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
 async fn order_status() {
     let exchange = init();
     let transaction = exchange

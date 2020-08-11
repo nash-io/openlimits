@@ -3,9 +3,9 @@ use derive_more::Constructor;
 use shared::Result;
 
 use crate::model::{
-    Balance, CancelAllOrdersRequest, CancelOrderRequest, GetPriceTickerRequest,
-    OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
-    OrderCanceled, Ticker, Trade, TradeHistoryRequest,
+    Balance, CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest,
+    GetPriceTickerRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
+    OrderBookResponse, OrderCanceled, Ticker, Trade, TradeHistoryRequest,
 };
 
 #[derive(Constructor)]
@@ -63,6 +63,14 @@ impl<E: Exchange> OpenLimits<E> {
     pub async fn get_all_open_orders(&self) -> Result<Vec<Order<E::OrderIdType>>> {
         self.exchange.get_all_open_orders().await
     }
+
+    pub async fn get_order_history(
+        &self,
+        req: impl AsRef<GetOrderHistoryRequest>,
+    ) -> Result<Vec<Order<E::OrderIdType>>> {
+        self.exchange.get_order_history(req.as_ref()).await
+    }
+
     pub async fn get_account_balances(&self) -> Result<Vec<Balance>> {
         self.exchange.get_account_balances().await
     }
@@ -93,6 +101,10 @@ pub trait Exchange {
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>>;
     async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>>;
+    async fn get_order_history(
+        &self,
+        req: &GetOrderHistoryRequest,
+    ) -> Result<Vec<Order<Self::OrderIdType>>>;
     async fn get_account_balances(&self) -> Result<Vec<Balance>>;
     async fn get_trade_history(
         &self,
