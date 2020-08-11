@@ -70,7 +70,7 @@ pub mod string_to_opt_decimal {
 pub mod datetime_from_string {
     use std::fmt;
     use serde::{Deserialize, Deserializer, Serializer};
-
+    
     pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
     where
         T: fmt::Display,
@@ -90,6 +90,10 @@ pub mod datetime_from_string {
         }
 
         let DatetimeFromString::String(s) = DatetimeFromString::deserialize(deserializer)?;
-        s.parse().map_err(serde::de::Error::custom)
+        match chrono::DateTime::parse_from_rfc3339(&s) {
+            Ok(d) => Ok(d.with_timezone(&chrono::Utc)),
+            Err(err) => Err(serde::de::Error::custom(err)),
+        }
+        
     }
 }
