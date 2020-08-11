@@ -3,6 +3,7 @@ pub mod errors;
 extern crate chrono;
 extern crate serde;
 extern crate serde_json;
+extern crate chrono;
 
 pub type Result<T> = std::result::Result<T, errors::OpenLimitError>;
 
