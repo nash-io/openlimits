@@ -74,6 +74,16 @@ impl Binance {
         Ok(orders)
     }
 
+    pub async fn get_all_orders(&self, symbol: &str) -> Result<Vec<Order>> {
+        let params = json! {{"symbol": symbol}};
+
+        let orders = self
+            .transport
+            .signed_get("/api/v3/allOrders", Some(&params))
+            .await?;
+        Ok(orders)
+    }
+
     // Check an order's status
     pub async fn order_status(&self, symbol: &str, order_id: u64) -> Result<Order> {
         let params = json! {{"symbol": symbol, "orderId": order_id}};

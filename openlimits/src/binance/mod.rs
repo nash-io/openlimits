@@ -93,6 +93,21 @@ impl Exchange for Binance {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
+    async fn get_order_history(
+        &self,
+        req: &crate::model::GetOrderHistoryRequest,
+    ) -> Result<Vec<Order<Self::OrderIdType>>> {
+        if let Some(symbol) = req.symbol.as_ref() {
+            binance::Binance::get_all_orders(self, symbol.as_ref())
+                .await
+                .map(|v| v.into_iter().map(Into::into).collect())
+        } else {
+            Err(OpenLimitError::MissingParameter(
+                "symbol parameter is required.".to_string(),
+            ))
+        }
+    }
+
     async fn get_account_balances(&self) -> Result<Vec<Balance>> {
         binance::Binance::get_account(self)
             .await

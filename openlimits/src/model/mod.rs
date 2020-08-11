@@ -60,6 +60,11 @@ pub struct CancelAllOrdersRequest {
 }
 
 #[derive(Clone, Constructor, Debug)]
+pub struct GetOrderHistoryRequest {
+    pub symbol: Option<String>,
+}
+
+#[derive(Clone, Constructor, Debug)]
 pub struct OrderCanceled<T> {
     pub id: T,
 }

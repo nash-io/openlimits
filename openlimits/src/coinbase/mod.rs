@@ -39,21 +39,25 @@ impl Exchange for Coinbase {
             .await
             .map(Into::into)
     }
+
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
         coinbase::Coinbase::limit_buy(self, &req.symbol, req.size, req.price)
             .await
             .map(Into::into)
     }
+
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
         coinbase::Coinbase::limit_sell(self, &req.symbol, req.size, req.price)
             .await
             .map(Into::into)
     }
+
     async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
         coinbase::Coinbase::market_buy(self, &req.symbol, req.size)
             .await
             .map(Into::into)
     }
+
     async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
         coinbase::Coinbase::market_sell(self, &req.symbol, req.size)
             .await
@@ -80,6 +84,15 @@ impl Exchange for Coinbase {
 
     async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>> {
         coinbase::Coinbase::get_all_open_orders(self)
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_order_history(
+        &self,
+        req: &crate::model::GetOrderHistoryRequest,
+    ) -> Result<Vec<Order<Self::OrderIdType>>> {
+        coinbase::Coinbase::get_all_orders(self, req.symbol.as_deref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
