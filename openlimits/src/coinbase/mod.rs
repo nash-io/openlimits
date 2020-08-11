@@ -8,7 +8,6 @@ use crate::model::{
     Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
     OrderBookResponse, OrderCanceled, Side, Ticker, Trade, TradeHistoryRequest,
 };
-use chrono::DateTime;
 use shared::errors::OpenLimitError;
 
 #[derive(Deref, DerefMut)]
@@ -151,9 +150,7 @@ impl From<coinbase::model::Order> for Order<String> {
             id: order.id,
             symbol: order.product_id,
             client_order_id: None,
-            created_at: DateTime::parse_from_rfc3339(&order.created_at)
-                .unwrap()
-                .into(),
+            created_at: order.created_at.into(),
         }
     }
 }
@@ -192,9 +189,7 @@ impl From<coinbase::model::Fill> for Trade<u64, String> {
                 "T" => Some(Liquidity::Taker),
                 _ => None,
             },
-            created_at: DateTime::parse_from_rfc3339(&fill.created_at)
-                .unwrap()
-                .into(),
+            created_at: fill.created_at.into(),
         }
     }
 }

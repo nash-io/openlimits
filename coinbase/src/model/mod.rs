@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
-use shared::string_to_decimal;
+use shared::{string_to_decimal, datetime_from_string};
 pub mod websocket;
 use rust_decimal::prelude::Decimal;
+
+pub type DateTime = chrono::DateTime<chrono::Utc>;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Product {
@@ -42,7 +44,7 @@ pub struct Account {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Candle {
-    pub time: i64,
+    pub time: u64,
     pub low: Decimal,
     pub high: Decimal,
     pub open: Decimal,
@@ -52,8 +54,9 @@ pub struct Candle {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Trade {
-    pub trade_id: i64,
-    pub time: String,
+    pub trade_id: u64,
+    #[serde(with = "datetime_from_string")]
+    pub time: DateTime,
     pub size: String,
     #[serde(with = "string_to_decimal")]
     pub price: Decimal,
@@ -69,7 +72,8 @@ pub struct Fill {
     #[serde(with = "string_to_decimal")]
     pub size: Decimal,
     pub order_id: String,
-    pub created_at: String,
+    #[serde(with = "datetime_from_string")]
+    pub created_at: DateTime,
     pub liquidity: String,
     #[serde(with = "string_to_decimal")]
     pub fee: Decimal,
@@ -90,7 +94,8 @@ pub struct Ticker {
     pub ask: Decimal,
     #[serde(with = "string_to_decimal")]
     pub volume: Decimal,
-    pub time: String,
+    #[serde(with = "datetime_from_string")]
+    pub time: DateTime,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -165,7 +170,8 @@ pub struct Order {
     #[serde(flatten)]
     pub _type: OrderType,
     pub post_only: bool,
-    pub created_at: String,
+    #[serde(with = "datetime_from_string")]
+    pub created_at: DateTime,
     #[serde(with = "string_to_decimal")]
     pub fill_fees: Decimal,
     #[serde(with = "string_to_decimal")]
@@ -276,4 +282,20 @@ pub struct OrderStop {
 pub enum OrderStopType {
     Loss,
     Entry,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Paginator {
+    pub before: Option<i64>, 
+    pub limit: Option<i64>,
+    pub after: Option<i64>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct DateRange {
+    #[serde(with = "datetime_from_string")]
+    pub start: DateTime,
+    #[serde(with = "datetime_from_string")]
+    pub end: DateTime
 }
