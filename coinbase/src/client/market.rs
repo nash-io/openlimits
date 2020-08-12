@@ -39,9 +39,9 @@ impl Coinbase {
     pub async fn candles(
         &self,
         pair: &str,
-        parms: Option<&CandleRequestParams>,
+        params: Option<&CandleRequestParams>,
     ) -> Result<Vec<Candle>> {
         let endpoint = format!("/products/{}/candles", pair);
-        self.transport.get(&endpoint, parms).await
+        self.transport.get(&endpoint, params).await
     }
 }

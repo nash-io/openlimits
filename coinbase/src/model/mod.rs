@@ -198,7 +198,7 @@ pub struct OrderRequest {
 pub struct CandleRequestParams {
     #[serde(flatten)]
     pub daterange: Option<DateRange>,
-    pub granularity: Option<i64>,
+    pub granularity: Option<u32>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

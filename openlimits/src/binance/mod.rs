@@ -4,10 +4,12 @@ use shared::Result;
 
 use crate::exchange::Exchange;
 use crate::model::{
-    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, GetPriceTickerRequest,
-    Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
-    OrderBookResponse, OrderCanceled, Side, Ticker, Trade, TradeHistoryRequest,
+    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Candle,
+    GetHistoricRatesRequest, GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest,
+    OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Side,
+    Ticker, Trade, TradeHistoryRequest,
 };
+use binance::model::KlineSummaries;
 use shared::errors::OpenLimitError;
 
 #[derive(Deref, DerefMut)]
@@ -132,6 +134,12 @@ impl Exchange for Binance {
             .await
             .map(Into::into)
     }
+
+    async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
+        binance::Binance::get_klines(self, &req.symbol, req.interval.into(), None, None, None)
+            .await
+            .map(|KlineSummaries::AllKlineSummaries(v)| v.into_iter().map(Into::into).collect())
+    }
 }
 
 impl From<binance::model::OrderBook> for OrderBookResponse {
@@ -226,6 +234,41 @@ impl From<binance::model::SymbolPrice> for Ticker {
     fn from(ticker: binance::model::SymbolPrice) -> Self {
         Self {
             price: ticker.price,
+        }
+    }
+}
+
+impl From<Interval> for &str {
+    fn from(interval: Interval) -> Self {
+        match interval {
+            Interval::OneMinute => "1m",
+            Interval::ThreeMinutes => "3m",
+            Interval::FiveMinutes => "5m",
+            Interval::FiftyMinutes => "15m",
+            Interval::ThirtyMinutes => "30m",
+            Interval::OneHour => "1h",
+            Interval::TwoHours => "2h",
+            Interval::FourHours => "4h",
+            Interval::SixHours => "6h",
+            Interval::EightHours => "8h",
+            Interval::TwelveHours => "12h",
+            Interval::OneDay => "1d",
+            Interval::ThreeDay => "3d",
+            Interval::OneWeek => "1w",
+            Interval::OneMonth => "1M",
+        }
+    }
+}
+
+impl From<binance::model::KlineSummary> for Candle {
+    fn from(kline_summary: binance::model::KlineSummary) -> Self {
+        Self {
+            time: kline_summary.open_time as u64,
+            low: kline_summary.low,
+            high: kline_summary.high,
+            open: kline_summary.open,
+            close: kline_summary.close,
+            volume: kline_summary.volume,
         }
     }
 }

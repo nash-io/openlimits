@@ -4,11 +4,13 @@ use shared::Result;
 
 use crate::exchange::Exchange;
 use crate::model::{
-    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, GetPriceTickerRequest,
-    Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
-    OrderBookResponse, OrderCanceled, Side, Ticker, Trade, TradeHistoryRequest,
+    Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Candle,
+    GetHistoricRatesRequest, GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest,
+    OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Side,
+    Ticker, Trade, TradeHistoryRequest,
 };
 use shared::errors::OpenLimitError;
+use std::convert::TryFrom;
 
 #[derive(Deref, DerefMut)]
 pub struct Coinbase(coinbase::Coinbase);
@@ -127,6 +129,15 @@ impl Exchange for Coinbase {
             .await
             .map(Into::into)
     }
+
+    async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
+        match u32::try_from(req.interval) {
+            Ok(interval) => coinbase::Coinbase::candles(self, &req.symbol, interval)
+                .await
+                .map(|v| v.into_iter().map(Into::into).collect()),
+            Err(err) => Err(err),
+        }
+    }
 }
 
 impl From<coinbase::model::Book<coinbase::model::BookRecordL2>> for OrderBookResponse {
@@ -211,6 +222,37 @@ impl From<coinbase::model::Ticker> for Ticker {
     fn from(ticker: coinbase::model::Ticker) -> Self {
         Self {
             price: ticker.price,
+        }
+    }
+}
+
+impl From<coinbase::model::Candle> for Candle {
+    fn from(candle: coinbase::model::Candle) -> Self {
+        Self {
+            time: candle.time * 1000,
+            low: candle.low,
+            high: candle.high,
+            open: candle.open,
+            close: candle.close,
+            volume: candle.volume,
+        }
+    }
+}
+
+impl TryFrom<Interval> for u32 {
+    type Error = OpenLimitError;
+    fn try_from(value: Interval) -> Result<Self> {
+        match value {
+            Interval::OneMinute => Ok(60),
+            Interval::FiveMinutes => Ok(300),
+            Interval::FiftyMinutes => Ok(900),
+            Interval::OneHour => Ok(3600),
+            Interval::SixHours => Ok(21600),
+            Interval::OneDay => Ok(86400),
+            _ => Err(OpenLimitError::MissingParameter(format!(
+                "{:?} is not supported in Coinbase",
+                value,
+            ))),
         }
     }
 }
