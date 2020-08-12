@@ -150,7 +150,7 @@ impl From<coinbase::model::Order> for Order<String> {
             id: order.id,
             symbol: order.product_id,
             client_order_id: None,
-            created_at: order.created_at.into(),
+            created_at: (order.created_at.timestamp_nanos() / 1000) as u64,
         }
     }
 }
@@ -189,7 +189,7 @@ impl From<coinbase::model::Fill> for Trade<u64, String> {
                 "T" => Some(Liquidity::Taker),
                 _ => None,
             },
-            created_at: fill.created_at.into(),
+            created_at: (fill.created_at.timestamp_nanos() / 1000) as u64,
         }
     }
 }
