@@ -8,8 +8,6 @@ use crate::model::{
     Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
     OrderBookResponse, OrderCanceled, Side, Ticker, Trade, TradeHistoryRequest,
 };
-use chrono::naive::NaiveDateTime;
-use chrono::{DateTime, Utc};
 use shared::errors::OpenLimitError;
 
 #[derive(Deref, DerefMut)]
@@ -166,30 +164,22 @@ impl From<binance::model::Asks> for Asks {
 
 impl From<binance::model::Transaction> for Order<u64> {
     fn from(order: binance::model::Transaction) -> Self {
-        let created_at = NaiveDateTime::from_timestamp(
-            (order.transact_time / 1000) as i64,
-            ((order.transact_time % 1000) * 1_000_000) as u32,
-        );
         Self {
             id: order.order_id,
             symbol: order.symbol,
             client_order_id: Some(order.client_order_id),
-            created_at: DateTime::from_utc(created_at, Utc),
+            created_at: order.transact_time,
         }
     }
 }
 
 impl From<binance::model::Order> for Order<u64> {
     fn from(order: binance::model::Order) -> Self {
-        let created_at = NaiveDateTime::from_timestamp(
-            (order.time / 1000) as i64,
-            ((order.time % 1000) * 1_000_000) as u32,
-        );
         Self {
             id: order.order_id,
             symbol: order.symbol,
             client_order_id: Some(order.client_order_id),
-            created_at: DateTime::from_utc(created_at, Utc),
+            created_at: order.time,
         }
     }
 }
@@ -227,13 +217,7 @@ impl From<binance::model::TradeHistory> for Trade<u64, u64> {
                 true => Some(Liquidity::Maker),
                 false => Some(Liquidity::Taker),
             },
-            created_at: DateTime::from_utc(
-                NaiveDateTime::from_timestamp(
-                    (trade_history.time / 1_000) as i64,
-                    ((trade_history.time % 1_000) * 1_000_000) as u32,
-                ),
-                Utc,
-            ),
+            created_at: trade_history.time,
         }
     }
 }

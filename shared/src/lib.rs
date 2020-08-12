@@ -1,8 +1,8 @@
 pub mod errors;
 
+extern crate chrono;
 extern crate serde;
 extern crate serde_json;
-extern crate chrono;
 
 pub type Result<T> = std::result::Result<T, errors::OpenLimitError>;
 
@@ -68,9 +68,9 @@ pub mod string_to_opt_decimal {
 }
 
 pub mod datetime_from_string {
-    use std::fmt;
     use serde::{Deserialize, Deserializer, Serializer};
-    
+    use std::fmt;
+
     pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
     where
         T: fmt::Display,
@@ -94,6 +94,5 @@ pub mod datetime_from_string {
             Ok(d) => Ok(d.with_timezone(&chrono::Utc)),
             Err(err) => Err(serde::de::Error::custom(err)),
         }
-        
     }
 }

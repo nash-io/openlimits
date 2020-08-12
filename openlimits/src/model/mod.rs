@@ -1,4 +1,3 @@
-use chrono::{DateTime, Utc};
 use derive_more::Constructor;
 use rust_decimal::prelude::Decimal;
 use serde::{Deserialize, Serialize};
@@ -45,7 +44,7 @@ pub struct Order<T> {
     pub id: T,
     pub symbol: String,
     pub client_order_id: Option<String>,
-    pub created_at: DateTime<Utc>,
+    pub created_at: u64,
 }
 
 #[derive(Clone, Constructor, Debug)]
@@ -79,7 +78,7 @@ pub struct Trade<T, O> {
     pub fees: Decimal,
     pub side: Side,
     pub liquidity: Option<Liquidity>,
-    pub created_at: DateTime<Utc>,
+    pub created_at: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
