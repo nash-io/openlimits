@@ -39,6 +39,6 @@ async fn ticker() {
 #[tokio::test]
 async fn candles() {
     let exchange = Coinbase::new(true);
-    let res = exchange.candles("BTC-USD").await.unwrap();
+    let res = exchange.candles("BTC-USD", 86400).await.unwrap();
     println!("{:?}", res);
 }

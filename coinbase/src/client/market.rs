@@ -1,7 +1,7 @@
 use crate::Coinbase;
 
 use serde::Deserialize;
-use std::fmt::Debug;
+use std::{collections::HashMap, fmt::Debug};
 
 use shared::Result;
 
@@ -36,8 +36,10 @@ impl Coinbase {
         self.transport.get::<_, ()>(&endpoint, None).await
     }
 
-    pub async fn candles(&self, pair: &str) -> Result<Vec<Candle>> {
+    pub async fn candles(&self, pair: &str, granularity: u32) -> Result<Vec<Candle>> {
+        let params: HashMap<&str, u32> = [("granularity", granularity)].iter().cloned().collect();
+
         let endpoint = format!("/products/{}/candles", pair);
-        self.transport.get::<_, ()>(&endpoint, None).await
+        self.transport.get(&endpoint, Some(&params)).await
     }
 }

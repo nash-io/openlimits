@@ -105,13 +105,48 @@ pub struct Ticker {
     pub price: Decimal,
 }
 
+#[derive(Clone, Constructor, Debug)]
+pub struct Candle {
+    pub time: u64,
+    pub low: Decimal,
+    pub high: Decimal,
+    pub open: Decimal,
+    pub close: Decimal,
+    pub volume: Decimal,
+}
+
 #[derive(Clone, Constructor, Debug, Default)]
 pub struct GetPriceTickerRequest {
     pub symbol: String,
+}
+
+#[derive(Clone, Constructor, Debug)]
+pub struct GetHistoricRatesRequest {
+    pub symbol: String,
+    pub interval: Interval,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub enum Side {
     Buy,
     Sell,
+}
+
+#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+pub enum Interval {
+    OneMinute,
+    ThreeMinutes,
+    FiveMinutes,
+    FiftyMinutes,
+    ThirtyMinutes,
+    OneHour,
+    TwoHours,
+    FourHours,
+    SixHours,
+    EightHours,
+    TwelveHours,
+    OneDay,
+    ThreeDay,
+    OneWeek,
+    OneMonth,
 }
