@@ -170,7 +170,7 @@ pub enum Ticker {
 impl Ticker {
     pub fn price(&self) -> Decimal {
         match self {
-            Ticker::Full { price, .. } => price.clone(),
+            Ticker::Full { price, .. } => *price,
             Ticker::Empty { price, .. } => price.unwrap(),
         }
     }
