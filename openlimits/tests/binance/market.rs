@@ -30,6 +30,7 @@ async fn get_historic_rates() {
     let req = GetHistoricRatesRequest {
         symbol: "BNBBTC".to_string(),
         interval: Interval::OneHour,
+        daterange: None,
     };
     let resp = exchange.get_historic_rates(&req).await.unwrap();
     println!("{:?}", resp);

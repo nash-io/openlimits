@@ -30,6 +30,7 @@ async fn get_historic_rates() {
     let req = GetHistoricRatesRequest {
         symbol: "ETH-BTC".to_string(),
         interval: Interval::OneHour,
+        daterange: None,
     };
     let resp = exchange.get_historic_rates(&req).await.unwrap();
     println!("{:?}", resp);
@@ -41,6 +42,7 @@ async fn get_historic_rates_invalid_interval() {
     let req = GetHistoricRatesRequest {
         symbol: "ETH-BTC".to_string(),
         interval: Interval::TwoHours,
+        daterange: None,
     };
     let resp = exchange.get_historic_rates(&req).await;
     assert!(resp.is_err());

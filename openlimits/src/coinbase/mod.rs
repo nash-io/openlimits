@@ -9,6 +9,7 @@ use crate::model::{
     OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Side,
     Ticker, Trade, TradeHistoryRequest,
 };
+use coinbase::model::CandleRequestParams;
 use shared::errors::OpenLimitError;
 use std::convert::TryFrom;
 
@@ -132,9 +133,15 @@ impl Exchange for Coinbase {
 
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
         match u32::try_from(req.interval) {
-            Ok(interval) => coinbase::Coinbase::candles(self, &req.symbol, interval)
-                .await
-                .map(|v| v.into_iter().map(Into::into).collect()),
+            Ok(interval) => {
+                let params = CandleRequestParams {
+                    daterange: req.daterange,
+                    granularity: Some(interval),
+                };
+                coinbase::Coinbase::candles(self, &req.symbol, Some(&params))
+                    .await
+                    .map(|v| v.into_iter().map(Into::into).collect())
+            }
             Err(err) => Err(err),
         }
     }

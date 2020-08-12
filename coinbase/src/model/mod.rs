@@ -300,7 +300,7 @@ pub struct Paginator {
     pub after: Option<i64>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, Copy, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct DateRange {
     #[serde(with = "opt_naive_datetime_from_string")]
