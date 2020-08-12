@@ -81,6 +81,13 @@ impl<E: Exchange> OpenLimits<E> {
     ) -> Result<Vec<Trade<E::TradeIdType, E::OrderIdType>>> {
         self.exchange.get_trade_history(req.as_ref()).await
     }
+
+    pub async fn get_historic_rates(
+        &self,
+        req: impl AsRef<GetHistoricRatesRequest>,
+    ) -> Result<Vec<Candle>> {
+        self.exchange.get_historic_rates(req.as_ref()).await
+    }
 }
 
 #[async_trait]
