@@ -3,7 +3,6 @@ pub mod errors;
 extern crate chrono;
 extern crate serde;
 extern crate serde_json;
-extern crate chrono;
 
 pub type Result<T> = std::result::Result<T, errors::OpenLimitError>;
 
@@ -68,7 +67,8 @@ pub mod string_to_opt_decimal {
     }
 }
 
-pub mod datetime_from_string {
+pub mod naive_datetime_from_string {
+    use chrono::naive::NaiveDateTime;
     use serde::{Deserialize, Deserializer, Serializer};
     use std::fmt;
 
@@ -80,7 +80,7 @@ pub mod datetime_from_string {
         serializer.collect_str(value)
     }
 
-    pub fn deserialize<'de, D>(deserializer: D) -> Result<chrono::DateTime<chrono::Utc>, D::Error>
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<NaiveDateTime, D::Error>
     where
         D: Deserializer<'de>,
     {
@@ -91,9 +91,42 @@ pub mod datetime_from_string {
         }
 
         let DatetimeFromString::String(s) = DatetimeFromString::deserialize(deserializer)?;
-        match chrono::DateTime::parse_from_rfc3339(&s) {
-            Ok(d) => Ok(d.with_timezone(&chrono::Utc)),
-            Err(err) => Err(serde::de::Error::custom(err)),
+
+        NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S.%fZ")
+            .map_err(|res| serde::de::Error::custom(res))
+    }
+}
+
+pub mod opt_naive_datetime_from_string {
+    use chrono::naive::NaiveDateTime;
+    use serde::{Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<S>(value: &Option<NaiveDateTime>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        if let Some(value) = value {
+            return serializer.collect_str(&value);
         }
+        return serializer.serialize_none();
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<NaiveDateTime>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum OptDatetimeFromString {
+            String(Option<String>),
+        }
+
+        let OptDatetimeFromString::String(s) = OptDatetimeFromString::deserialize(deserializer)?;
+        if let Some(s) = s {
+            return NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S.%fZ")
+                .map(Some)
+                .or(Ok(None));
+        }
+        Ok(None)
     }
 }

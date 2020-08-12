@@ -1,11 +1,8 @@
-use chrono;
-
 use serde::{Deserialize, Serialize};
-use shared::{datetime_from_string, string_to_decimal};
+use shared::{naive_datetime_from_string, opt_naive_datetime_from_string, string_to_decimal};
 pub mod websocket;
+use chrono::naive::NaiveDateTime;
 use rust_decimal::prelude::Decimal;
-
-pub type DateTime = chrono::DateTime<chrono::Utc>;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Product {
@@ -57,8 +54,8 @@ pub struct Candle {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Trade {
     pub trade_id: u64,
-    #[serde(with = "datetime_from_string")]
-    pub time: DateTime,
+    #[serde(with = "naive_datetime_from_string")]
+    pub time: NaiveDateTime,
     pub size: String,
     #[serde(with = "string_to_decimal")]
     pub price: Decimal,
@@ -74,8 +71,8 @@ pub struct Fill {
     #[serde(with = "string_to_decimal")]
     pub size: Decimal,
     pub order_id: String,
-    #[serde(with = "datetime_from_string")]
-    pub created_at: DateTime,
+    #[serde(with = "naive_datetime_from_string")]
+    pub created_at: NaiveDateTime,
     pub liquidity: String,
     #[serde(with = "string_to_decimal")]
     pub fee: Decimal,
@@ -96,8 +93,8 @@ pub struct Ticker {
     pub ask: Decimal,
     #[serde(with = "string_to_decimal")]
     pub volume: Decimal,
-    #[serde(with = "datetime_from_string")]
-    pub time: DateTime,
+    #[serde(with = "naive_datetime_from_string")]
+    pub time: NaiveDateTime,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -172,8 +169,8 @@ pub struct Order {
     #[serde(flatten)]
     pub _type: OrderType,
     pub post_only: bool,
-    #[serde(with = "datetime_from_string")]
-    pub created_at: DateTime,
+    #[serde(with = "naive_datetime_from_string")]
+    pub created_at: NaiveDateTime,
     #[serde(with = "string_to_decimal")]
     pub fill_fees: Decimal,
     #[serde(with = "string_to_decimal")]
@@ -195,6 +192,13 @@ pub struct OrderRequest {
     pub _type: OrderRequestType,
     #[serde(flatten)]
     pub stop: Option<OrderStop>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CandleRequestParams {
+    #[serde(flatten)]
+    pub daterange: Option<DateRange>,
+    pub granularity: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -288,16 +292,21 @@ pub enum OrderStopType {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Paginator {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub before: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub after: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct DateRange {
-    #[serde(with = "datetime_from_string")]
-    pub start: DateTime,
-    #[serde(with = "datetime_from_string")]
-    pub end: DateTime,
+    #[serde(with = "opt_naive_datetime_from_string")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start: Option<NaiveDateTime>,
+    #[serde(with = "opt_naive_datetime_from_string")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub end: Option<NaiveDateTime>,
 }

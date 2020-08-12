@@ -1,4 +1,6 @@
+use chrono::naive::NaiveDateTime;
 use coinbase::model::BookRecordL1;
+use coinbase::model::{CandleRequestParams, DateRange};
 use coinbase::Coinbase;
 
 #[tokio::test]
@@ -39,6 +41,36 @@ async fn ticker() {
 #[tokio::test]
 async fn candles() {
     let exchange = Coinbase::new(true);
-    let res = exchange.candles("BTC-USD").await.unwrap();
+    let res = exchange.candles("BTC-USD", None).await.unwrap();
+    println!("{:?}", res);
+
+    let res = exchange
+        .candles(
+            "BTC-USD",
+            Some(&CandleRequestParams {
+                granularity: Some(60),
+                daterange: None,
+            }),
+        )
+        .await
+        .unwrap();
+    println!("{:?}", res);
+    let date =
+        NaiveDateTime::parse_from_str("2020-01-20T00:00:00.642366Z", "%Y-%m-%dT%H:%M:%S.%fZ")
+            .unwrap();
+
+    let res = exchange
+        .candles(
+            "BTC-USD",
+            Some(&CandleRequestParams {
+                granularity: Some(3600),
+                daterange: Some(DateRange {
+                    start: Some(date),
+                    end: None,
+                }),
+            }),
+        )
+        .await
+        .unwrap();
     println!("{:?}", res);
 }
