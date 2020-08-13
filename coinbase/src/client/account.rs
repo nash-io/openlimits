@@ -7,6 +7,7 @@ use crate::Coinbase;
 use shared::Result;
 
 use rust_decimal::prelude::Decimal;
+use shared::exchange_info::MarketPairHandle;
 
 impl Coinbase {
     pub async fn get_account(&self, paginator: Option<&Paginator>) -> Result<Vec<Account>> {
@@ -24,9 +25,11 @@ impl Coinbase {
     }
 
     // TODO: refactor buy and sell in order creation in commun function
-    pub async fn market_buy(&self, product: &str, size: Decimal) -> Result<Order> {
+    pub async fn market_buy(&self, market_pair: &MarketPairHandle, size: Decimal) -> Result<Order> {
+        let market_pair = market_pair.inner.read().unwrap();
+
         let data = OrderRequest {
-            product_id: product.into(),
+            product_id: market_pair.symbol.clone(),
             client_oid: None,
             side: OrderSide::Buy,
             _type: OrderRequestType::Market {
@@ -43,9 +46,15 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn market_sell(&self, product: &str, size: Decimal) -> Result<Order> {
+    pub async fn market_sell(
+        &self,
+        market_pair: &MarketPairHandle,
+        size: Decimal,
+    ) -> Result<Order> {
+        let market_pair = market_pair.inner.read().unwrap();
+
         let data = OrderRequest {
-            product_id: product.into(),
+            product_id: market_pair.symbol.clone(),
             client_oid: None,
             side: OrderSide::Sell,
             _type: OrderRequestType::Market {
@@ -62,9 +71,16 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn limit_buy(&self, product: &str, size: Decimal, price: Decimal) -> Result<Order> {
+    pub async fn limit_buy(
+        &self,
+        market_pair: &MarketPairHandle,
+        size: Decimal,
+        price: Decimal,
+    ) -> Result<Order> {
+        let market_pair = market_pair.inner.read().unwrap();
+
         let data = OrderRequest {
-            product_id: product.into(),
+            product_id: market_pair.symbol.clone(),
             client_oid: None,
             side: OrderSide::Buy,
             _type: OrderRequestType::Limit {
@@ -84,9 +100,16 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn limit_sell(&self, product: &str, size: Decimal, price: Decimal) -> Result<Order> {
+    pub async fn limit_sell(
+        &self,
+        market_pair: &MarketPairHandle,
+        size: Decimal,
+        price: Decimal,
+    ) -> Result<Order> {
+        let market_pair = market_pair.inner.read().unwrap();
+
         let data = OrderRequest {
-            product_id: product.into(),
+            product_id: market_pair.symbol.clone(),
             client_oid: None,
             side: OrderSide::Sell,
             _type: OrderRequestType::Limit {
@@ -106,10 +129,16 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn cancel_order(&self, order_id: String, product_id: Option<&str>) -> Result<String> {
-        let params = if let Some(product_id) = product_id {
+    pub async fn cancel_order(
+        &self,
+        order_id: String,
+        market_pair: Option<&MarketPairHandle>,
+    ) -> Result<String> {
+        let params = if let Some(market_pair) = market_pair {
+            let market_pair = market_pair.inner.read().unwrap();
+
             CancelOrder {
-                product_id: Some(String::from(product_id)),
+                product_id: Some(market_pair.symbol.clone()),
             }
         } else {
             CancelOrder { product_id: None }
@@ -124,10 +153,15 @@ impl Coinbase {
         Ok(resp)
     }
 
-    pub async fn cancel_all_orders(&self, product_id: Option<&str>) -> Result<Vec<String>> {
-        let params = if let Some(product_id) = product_id {
+    pub async fn cancel_all_orders(
+        &self,
+        market_pair: Option<&MarketPairHandle>,
+    ) -> Result<Vec<String>> {
+        let params = if let Some(market_pair) = market_pair {
+            let market_pair = market_pair.inner.read().unwrap();
+
             CancelAllOrders {
-                product_id: Some(String::from(product_id)),
+                product_id: Some(market_pair.symbol.clone()),
             }
         } else {
             CancelAllOrders { product_id: None }

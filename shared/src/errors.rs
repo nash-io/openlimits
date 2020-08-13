@@ -76,4 +76,6 @@ pub enum OpenLimitError {
     NotParsableResponse(String),
     #[error("")]
     MissingParameter(String),
+    #[error("")]
+    CouldNotGetLockOnMarketHandle(),
 }

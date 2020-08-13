@@ -14,21 +14,26 @@ async fn products() {
 #[tokio::test]
 async fn product() {
     let exchange = Coinbase::new(true);
-    let res = exchange.product("BTC-USD").await.unwrap();
+
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
+    let res = exchange.product(&market_pair).await.unwrap();
     println!("{:?}", res);
 }
 
 #[tokio::test]
 async fn trades() {
     let exchange = Coinbase::new(true);
-    let res = exchange.trades("BTC-USD", None).await.unwrap();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
+    let res = exchange.trades(&market_pair, None).await.unwrap();
     println!("{:?}", res);
 
     let trade = res.last().unwrap();
 
     let res = exchange
         .trades(
-            "BTC-USD",
+            &market_pair,
             Some(&Paginator {
                 after: Some(trade.trade_id),
                 limit: Some(10),
@@ -43,26 +48,32 @@ async fn trades() {
 #[tokio::test]
 async fn book() {
     let exchange = Coinbase::new(true);
-    let res = exchange.book::<BookRecordL1>("BTC-USD").await.unwrap();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
+    let res = exchange.book::<BookRecordL1>(&market_pair).await.unwrap();
     println!("{:?}", res);
 }
 
 #[tokio::test]
 async fn ticker() {
     let exchange = Coinbase::new(true);
-    let res = exchange.ticker("BTC-USD").await.unwrap();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
+    let res = exchange.ticker(&market_pair).await.unwrap();
     println!("{:?}", res);
 }
 
 #[tokio::test]
 async fn candles() {
     let exchange = Coinbase::new(true);
-    let res = exchange.candles("BTC-USD", None).await.unwrap();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
+    let res = exchange.candles(&market_pair, None).await.unwrap();
     println!("{:?}", res);
 
     let res = exchange
         .candles(
-            "BTC-USD",
+            &market_pair,
             Some(&CandleRequestParams {
                 granularity: Some(60),
                 daterange: None,
@@ -77,7 +88,7 @@ async fn candles() {
 
     let res = exchange
         .candles(
-            "BTC-USD",
+            &market_pair,
             Some(&CandleRequestParams {
                 granularity: Some(3600),
                 daterange: Some(DateRange {
@@ -94,6 +105,7 @@ async fn candles() {
 #[tokio::test]
 async fn pair() {
     let exchange = Coinbase::new(true);
+
     let res = exchange.pair("BTC-USD", true).await.unwrap();
     println!("{:?}", res);
 }

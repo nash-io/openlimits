@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use serde_json::Value;
 
 use shared::{
-    exchange_info::{get_pair, ExchangeInfoRetrieval, TradePair, TradePairHandle},
+    exchange_info::{get_pair, ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     Result,
 };
 
@@ -28,14 +28,14 @@ impl Binance {
             .await
     }
 
-    pub async fn get_pair(&self, name: &str, refresh: bool) -> Result<Option<TradePairHandle>> {
+    pub async fn get_pair(&self, name: &str, refresh: bool) -> Result<Option<MarketPairHandle>> {
         get_pair(name, &self.exchange_info, self, refresh).await
     }
 }
 
 #[async_trait]
 impl ExchangeInfoRetrieval for Binance {
-    async fn retrieve_pairs(&self) -> Result<Vec<(String, TradePair)>> {
+    async fn retrieve_pairs(&self) -> Result<Vec<(String, MarketPair)>> {
         self.get_exchange_info().await.map(|v| {
             v.symbols
                 .into_iter()
@@ -68,7 +68,7 @@ impl ExchangeInfoRetrieval for Binance {
 
                     return (
                         symbol.symbol,
-                        TradePair {
+                        MarketPair {
                             base: symbol.base_asset,
                             quote: symbol.quote_asset,
                             symbol: symbol,

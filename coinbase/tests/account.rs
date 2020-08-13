@@ -41,10 +41,12 @@ async fn get_all_orders() {
 async fn get_all_orders_for_a_given_product() {
     let exchange = init();
 
+    let market_pair = exchange.pair("ETH-BTC", false).await.unwrap().unwrap();
+
     let params = GetOrderRequest {
         status: None,
         paginator: None,
-        product_id: Some(String::from("ETH-BTC")),
+        product_id: &market_pair,
     };
 
     let resp = exchange.get_orders(Some(&params)).await.unwrap();
@@ -54,8 +56,10 @@ async fn get_all_orders_for_a_given_product() {
 #[tokio::test]
 async fn order_status() {
     let exchange = init();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
     let order = exchange
-        .market_buy("BTC-USD", Decimal::new(1, 3))
+        .market_buy(&market_pair, Decimal::new(1, 3))
         .await
         .unwrap();
 
@@ -66,8 +70,10 @@ async fn order_status() {
 #[tokio::test]
 async fn limit_buy() {
     let exchange = init();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
     let resp = exchange
-        .limit_buy("BTC-USD", Decimal::new(1, 3), Decimal::new(5000, 0))
+        .limit_buy(&market_pair, Decimal::new(1, 3), Decimal::new(5000, 0))
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -76,8 +82,10 @@ async fn limit_buy() {
 #[tokio::test]
 async fn limit_sell() {
     let exchange = init();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
     let resp = exchange
-        .limit_sell("BTC-USD", Decimal::new(1, 3), Decimal::new(20000, 0))
+        .limit_sell(&market_pair, Decimal::new(1, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -86,8 +94,10 @@ async fn limit_sell() {
 #[tokio::test]
 async fn market_buy() {
     let exchange = init();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
     let resp = exchange
-        .market_buy("BTC-USD", Decimal::new(1, 3))
+        .market_buy(&market_pair, Decimal::new(1, 3))
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -96,8 +106,10 @@ async fn market_buy() {
 #[tokio::test]
 async fn market_sell() {
     let exchange = init();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
     let resp = exchange
-        .market_sell("BTC-USD", Decimal::new(1, 3))
+        .market_sell(&market_pair, Decimal::new(1, 3))
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -106,21 +118,28 @@ async fn market_sell() {
 #[tokio::test]
 async fn cancel_all_orders() {
     let exchange = init();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
     exchange
-        .limit_sell("BTC-USD", Decimal::new(1, 3), Decimal::new(20000, 0))
+        .limit_sell(&market_pair, Decimal::new(1, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
     exchange
-        .limit_sell("BTC-USD", Decimal::new(1, 3), Decimal::new(20000, 0))
+        .limit_sell(&market_pair, Decimal::new(1, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
 
+    let market_pair = exchange.pair("ETH-BTC", false).await.unwrap().unwrap();
+
     exchange
-        .limit_buy("ETH-BTC", Decimal::new(2, 2), Decimal::new(2, 2))
+        .limit_buy(&market_pair, Decimal::new(2, 2), Decimal::new(2, 2))
         .await
         .unwrap();
 
-    let resp = exchange.cancel_all_orders(Some("BTC-USD")).await.unwrap();
+    let resp = exchange
+        .cancel_all_orders(Some(&market_pair))
+        .await
+        .unwrap();
 
     println!("{:?}", resp);
 
@@ -132,12 +151,14 @@ async fn cancel_all_orders() {
 #[tokio::test]
 async fn cancel_order() {
     let exchange = init();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
     let order = exchange
-        .limit_sell("BTC-USD", Decimal::new(1, 3), Decimal::new(20000, 0))
+        .limit_sell(&market_pair, Decimal::new(1, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
     let resp = exchange
-        .cancel_order(order.id, Some("BTC-USD"))
+        .cancel_order(order.id, Some(&market_pair))
         .await
         .unwrap();
 
@@ -147,8 +168,10 @@ async fn cancel_order() {
 #[tokio::test]
 async fn get_fills_for_order() {
     let exchange = init();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
+
     let order = exchange
-        .market_sell("BTC-USD", Decimal::new(1, 3))
+        .market_sell(&market_pair, Decimal::new(1, 3))
         .await
         .unwrap();
 
@@ -165,10 +188,11 @@ async fn get_fills_for_order() {
 #[tokio::test]
 async fn get_fills_for_product() {
     let exchange = init();
+    let market_pair = exchange.pair("BTC-USD", false).await.unwrap().unwrap();
 
     let params = GetFillsReq {
         order_id: None,
-        product_id: Some(String::from("BTC-USD")),
+        product_id: Some(String::from(&market_pair)),
         paginator: None,
     };
 
