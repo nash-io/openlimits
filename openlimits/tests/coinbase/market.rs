@@ -1,6 +1,8 @@
 use openlimits::coinbase::Coinbase;
 use openlimits::exchange::Exchange;
-use openlimits::model::{GetPriceTickerRequest, OrderBookRequest};
+use openlimits::model::{
+    GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest,
+};
 
 #[tokio::test]
 async fn order_book() {
@@ -20,4 +22,28 @@ async fn get_price_ticker() {
     };
     let resp = exchange.get_price_ticker(&req).await.unwrap();
     println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn get_historic_rates() {
+    let exchange = Coinbase::new(true);
+    let req = GetHistoricRatesRequest {
+        symbol: "ETH-BTC".to_string(),
+        interval: Interval::OneHour,
+        daterange: None,
+    };
+    let resp = exchange.get_historic_rates(&req).await.unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn get_historic_rates_invalid_interval() {
+    let exchange = Coinbase::new(true);
+    let req = GetHistoricRatesRequest {
+        symbol: "ETH-BTC".to_string(),
+        interval: Interval::TwoHours,
+        daterange: None,
+    };
+    let resp = exchange.get_historic_rates(&req).await;
+    assert!(resp.is_err());
 }
