@@ -15,5 +15,6 @@ async fn get_server_time() {
 #[tokio::test]
 async fn get_exchange_info() {
     let exchange = Binance::new(true);
-    exchange.get_exchange_info().await.unwrap();
+    let resp = exchange.get_exchange_info().await.unwrap();
+    println!("{:?}", resp);
 }

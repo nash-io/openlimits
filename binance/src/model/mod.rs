@@ -16,6 +16,7 @@ pub struct ExchangeInformation {
     pub timezone: String,
     pub server_time: u64,
     pub rate_limits: Vec<RateLimit>,
+    pub exchange_filters: Vec<ExchangeFilter>,
     pub symbols: Vec<Symbol>,
 }
 
@@ -294,6 +295,7 @@ pub enum Interval {
     Minute,
     Day,
 }
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "filterType", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SymbolFilter {
@@ -334,8 +336,10 @@ pub enum SymbolFilter {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "filterType", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ExchangeFilter {
-    ExchangeMaxNumOrders { limit: u64 },
-    ExchangeMaxAlgoOrders { limit: u64 },
+    #[serde(rename_all = "camelCase")]
+    ExchangeMaxNumOrders { max_num_orders: u64 },
+    #[serde(rename_all = "camelCase")]
+    ExchangeMaxNumAlgoOrders { max_num_algo_orders: u64 },
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
