@@ -3,6 +3,8 @@ use dotenv::dotenv;
 use rust_decimal::prelude::Decimal;
 use std::env;
 
+use binance::model::{AllOrderReq, TradeHistoryReq};
+
 #[tokio::test]
 async fn get_account() {
     let exchange = init();
@@ -34,7 +36,11 @@ async fn get_all_open_orders() {
 #[tokio::test]
 async fn get_all_orders() {
     let exchange = init();
-    let resp = exchange.get_all_orders("BNBBTC").await.unwrap();
+    let params = AllOrderReq {
+        paginator: None,
+        symbol: String::from("BNBBTC"),
+    };
+    let resp = exchange.get_all_orders(&params).await.unwrap();
     println!("{:?}", resp);
 }
 
@@ -109,7 +115,12 @@ async fn cancel_order() {
 #[tokio::test]
 async fn trade_history() {
     let exchange = init();
-    let resp = exchange.trade_history("BNBBTC").await.unwrap();
+    let params = TradeHistoryReq {
+        paginator: None,
+        symbol: String::from("BNBBTC"),
+    };
+
+    let resp = exchange.trade_history(&params).await.unwrap();
     println!("{:?}", resp);
 }
 

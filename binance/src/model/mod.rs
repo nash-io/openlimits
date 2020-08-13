@@ -148,6 +148,16 @@ pub struct Ticker {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct KlineParams {
+    pub symbol: String,
+    pub interval: String,
+    #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paginator: Option<Paginator>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct TradeHistory {
     pub symbol: String,
     pub id: u64,
@@ -399,4 +409,37 @@ pub enum OrderStatus {
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OrderRejectReason {
     None,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct AllOrderReq {
+    pub symbol: String,
+    #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paginator: Option<Paginator>,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct TradeHistoryReq {
+    pub symbol: String,
+    #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paginator: Option<Paginator>,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct Paginator {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start_time: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub end_time: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub from_id: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order_id: Option<u64>,
 }

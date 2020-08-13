@@ -1,11 +1,9 @@
-use std::collections::HashMap;
-use std::iter::FromIterator;
-
 use serde_json::json;
 use serde_json::Value;
 
 use crate::model::{
-    BookTickers, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices, SymbolPrice, Ticker,
+    BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
+    SymbolPrice, Ticker,
 };
 use crate::Binance;
 use shared::errors::OpenLimitError;
@@ -24,14 +22,14 @@ impl Binance {
         let limit = limit.into().unwrap_or(100);
         let params = json! {{"symbol": symbol, "limit": limit}};
 
-        Ok(self.transport.get("/api/v1/depth", Some(&params)).await?)
+        Ok(self.transport.get("/api/v3/depth", Some(&params)).await?)
     }
 
     // Latest price for ALL symbols.
     pub async fn get_all_prices(&self) -> Result<Prices> {
         Ok(self
             .transport
-            .get::<_, ()>("/api/v1/ticker/allPrices", None)
+            .get::<_, ()>("/api/v3/ticker/price", None)
             .await?)
     }
 
@@ -52,7 +50,7 @@ impl Binance {
     pub async fn get_all_book_tickers(&self) -> Result<BookTickers> {
         Ok(self
             .transport
-            .get::<_, ()>("/api/v1/ticker/allBookTickers", None)
+            .get::<_, ()>("/api/v3/ticker/bookTicker", None)
             .await?)
     }
 
@@ -74,44 +72,15 @@ impl Binance {
         let params = json! {{"symbol": symbol}};
         Ok(self
             .transport
-            .get("/api/v1/ticker/24hr", Some(&params))
+            .get("/api/v3/ticker/24hr", Some(&params))
             .await?)
     }
 
     // Returns up to 'limit' klines for given symbol and interval ("1m", "5m", ...)
     // https://github.com/binance-exchange/binance-official-api-docs/blob/master/rest-api.md#klinecandlestick-data
-    pub async fn get_klines<S3, S4, S5>(
-        &self,
-        symbol: &str,
-        interval: &str,
-        limit: S3,
-        start_time: S4,
-        end_time: S5,
-    ) -> Result<KlineSummaries>
-    where
-        S3: Into<Option<u16>>,
-        S4: Into<Option<u64>>,
-        S5: Into<Option<u64>>,
-    {
-        let mut params = vec![
-            ("symbol", symbol.to_string()),
-            ("interval", interval.to_string()),
-        ];
-
-        // Add three optional parameters
-        if let Some(lt) = limit.into() {
-            params.push(("limit", lt.to_string()));
-        }
-        if let Some(st) = start_time.into() {
-            params.push(("startTime", st.to_string()));
-        }
-        if let Some(et) = end_time.into() {
-            params.push(("endTime", et.to_string()));
-        }
-        let params: HashMap<&str, String> = HashMap::from_iter(params);
-
+    pub async fn get_klines(&self, params: &KlineParams) -> Result<KlineSummaries> {
         self.transport
-            .get("/api/v1/klines", Some(&params))
+            .get("/api/v3/klines", Some(params))
             .await
             .map(|data: Vec<Vec<Value>>| {
                 KlineSummaries::AllKlineSummaries(
@@ -138,7 +107,7 @@ impl Binance {
     pub async fn get_24h_price_stats_all(&self) -> Result<Vec<PriceStats>> {
         Ok(self
             .transport
-            .get::<_, ()>("/api/v1/ticker/24hr", None)
+            .get::<_, ()>("/api/v3/ticker/24hr", None)
             .await?)
     }
 }

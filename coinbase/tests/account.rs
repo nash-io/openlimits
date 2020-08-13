@@ -3,31 +3,51 @@ use dotenv::dotenv;
 use rust_decimal::prelude::Decimal;
 use std::env;
 
+use coinbase::model::{GetFillsReq, GetOrderRequest};
+
 #[tokio::test]
 async fn get_account() {
     let exchange = init();
-    let resp = exchange.get_account().await.unwrap();
+    let resp = exchange.get_account(None).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_all_open_orders() {
     let exchange = init();
-    let resp = exchange.get_all_open_orders().await.unwrap();
+    let params = GetOrderRequest {
+        status: Some(String::from("open")),
+        paginator: None,
+        product_id: None,
+    };
+    let resp = exchange.get_orders(Some(&params)).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_all_orders() {
     let exchange = init();
-    let resp = exchange.get_all_orders(None).await.unwrap();
+    let resp = exchange.get_orders(None).await.unwrap();
     println!("{:?}", resp);
+
+    // let params = GetOrderRequest{
+    //     status: Some(String::from("open")),
+    //     paginator: None,
+    //     product_id: None
+    // };
 }
 
 #[tokio::test]
 async fn get_all_orders_for_a_given_product() {
     let exchange = init();
-    let resp = exchange.get_all_orders(Some("ETH-BTC")).await.unwrap();
+
+    let params = GetOrderRequest {
+        status: None,
+        paginator: None,
+        product_id: Some(String::from("ETH-BTC")),
+    };
+
+    let resp = exchange.get_orders(Some(&params)).await.unwrap();
     println!("{:?}", resp);
 }
 
@@ -128,20 +148,31 @@ async fn cancel_order() {
 async fn get_fills_for_order() {
     let exchange = init();
     let order = exchange
-        .limit_sell("BTC-USD", Decimal::new(1, 3), Decimal::new(20000, 0))
+        .market_sell("BTC-USD", Decimal::new(1, 3))
         .await
         .unwrap();
-    let resp = exchange
-        .get_fills_for_order(order.id.as_ref())
-        .await
-        .unwrap();
+
+    let params = GetFillsReq {
+        order_id: Some(order.id),
+        product_id: None,
+        paginator: None,
+    };
+
+    let resp = exchange.get_fills(Some(&params)).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_fills_for_product() {
     let exchange = init();
-    let resp = exchange.get_fills_for_product("BTC-USD").await.unwrap();
+
+    let params = GetFillsReq {
+        order_id: None,
+        product_id: Some(String::from("BTC-USD")),
+        paginator: None,
+    };
+
+    let resp = exchange.get_fills(Some(&params)).await.unwrap();
     println!("{:?}", resp);
 }
 

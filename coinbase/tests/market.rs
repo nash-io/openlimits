@@ -3,6 +3,8 @@ use coinbase::model::BookRecordL1;
 use coinbase::model::{CandleRequestParams, DateRange};
 use coinbase::Coinbase;
 
+use coinbase::model::Paginator;
+
 #[tokio::test]
 async fn products() {
     let exchange = Coinbase::new(true);
@@ -20,7 +22,22 @@ async fn product() {
 #[tokio::test]
 async fn trades() {
     let exchange = Coinbase::new(true);
-    let res = exchange.trades("BTC-USD").await.unwrap();
+    let res = exchange.trades("BTC-USD", None).await.unwrap();
+    println!("{:?}", res);
+
+    let trade = res.last().unwrap();
+
+    let res = exchange
+        .trades(
+            "BTC-USD",
+            Some(&Paginator {
+                after: Some(trade.trade_id),
+                limit: Some(10),
+                before: None,
+            }),
+        )
+        .await
+        .unwrap();
     println!("{:?}", res);
 }
 
