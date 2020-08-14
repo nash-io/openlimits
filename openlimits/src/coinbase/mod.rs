@@ -5,11 +5,11 @@ use shared::Result;
 use crate::exchange::Exchange;
 use crate::model::{
     Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Candle,
-    GetHistoricRatesRequest, GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest,
-    OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Side,
-    Ticker, Trade, TradeHistoryRequest,
+    GetHistoricRatesRequest, GetOrderHistoryRequest, GetPriceTickerRequest, Interval, Liquidity,
+    OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
+    OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
 };
-use coinbase::model::CandleRequestParams;
+use coinbase::model::{CandleRequestParams, GetOrderRequest};
 use shared::errors::OpenLimitError;
 use std::convert::TryFrom;
 
@@ -86,22 +86,34 @@ impl Exchange for Coinbase {
     }
 
     async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>> {
-        coinbase::Coinbase::get_all_open_orders(self)
+        let params = GetOrderRequest {
+            status: Some(String::from("open")),
+            paginator: None,
+            product_id: None,
+        };
+
+        coinbase::Coinbase::get_orders(self, Some(&params))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
     async fn get_order_history(
         &self,
-        req: &crate::model::GetOrderHistoryRequest,
+        req: &GetOrderHistoryRequest,
     ) -> Result<Vec<Order<Self::OrderIdType>>> {
-        coinbase::Coinbase::get_all_orders(self, req.symbol.as_deref())
+        let req: GetOrderRequest = req.into();
+
+        coinbase::Coinbase::get_orders(self, Some(&req))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_account_balances(&self) -> Result<Vec<Balance>> {
-        coinbase::Coinbase::get_account(self)
+    async fn get_account_balances(&self, paginator: Option<&Paginator>) -> Result<Vec<Balance>> {
+        let paginator: Option<coinbase::model::Paginator> = paginator.map(|p| p.into());
+
+        // Transform a Option<T> to Option<&T>
+
+        coinbase::Coinbase::get_account(self, paginator)
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -110,19 +122,11 @@ impl Exchange for Coinbase {
         &self,
         req: &TradeHistoryRequest<Self::OrderIdType>,
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
-        if let Some(order_id) = req.order_id.as_ref() {
-            coinbase::Coinbase::get_fills_for_order(self, order_id.as_ref())
-                .await
-                .map(|v| v.into_iter().map(Into::into).collect())
-        } else if let Some(product_id) = req.pair.as_ref() {
-            coinbase::Coinbase::get_fills_for_product(self, product_id.as_ref())
-                .await
-                .map(|v| v.into_iter().map(Into::into).collect())
-        } else {
-            Err(OpenLimitError::MissingParameter(
-                "One of order_id or pair parameter is required.".to_string(),
-            ))
-        }
+        let req = req.into();
+
+        coinbase::Coinbase::get_fills(self, Some(&req))
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
     }
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
@@ -260,6 +264,46 @@ impl TryFrom<Interval> for u32 {
                 "{:?} is not supported in Coinbase",
                 value,
             ))),
+        }
+    }
+}
+
+impl From<&GetOrderHistoryRequest> for coinbase::model::GetOrderRequest {
+    fn from(req: &GetOrderHistoryRequest) -> Self {
+        Self {
+            product_id: req.symbol,
+            paginator: req.paginator.map(|p| p.into()),
+            status: None,
+        }
+    }
+}
+
+impl From<Paginator> for coinbase::model::Paginator {
+    fn from(paginator: Paginator) -> Self {
+        Self {
+            after: paginator.after,
+            before: paginator.before,
+            limit: paginator.limit,
+        }
+    }
+}
+
+impl From<&Paginator> for coinbase::model::Paginator {
+    fn from(paginator: &Paginator) -> Self {
+        Self {
+            after: paginator.after,
+            before: paginator.before,
+            limit: paginator.limit,
+        }
+    }
+}
+
+impl From<&TradeHistoryRequest<String>> for coinbase::model::GetFillsReq {
+    fn from(req: &TradeHistoryRequest<String>) -> Self {
+        Self {
+            order_id: req.order_id,
+            paginator: req.paginator.map(|p| p.into()),
+            product_id: req.pair,
         }
     }
 }

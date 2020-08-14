@@ -5,7 +5,8 @@ use shared::Result;
 use crate::model::{
     Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
     GetOrderHistoryRequest, GetPriceTickerRequest, OpenLimitOrderRequest, OpenMarketOrderRequest,
-    Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Ticker, Trade, TradeHistoryRequest,
+    Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Paginator, Ticker, Trade,
+    TradeHistoryRequest,
 };
 
 #[derive(Constructor)]
@@ -71,8 +72,11 @@ impl<E: Exchange> OpenLimits<E> {
         self.exchange.get_order_history(req.as_ref()).await
     }
 
-    pub async fn get_account_balances(&self) -> Result<Vec<Balance>> {
-        self.exchange.get_account_balances().await
+    pub async fn get_account_balances(
+        &self,
+        paginator: Option<&Paginator>,
+    ) -> Result<Vec<Balance>> {
+        self.exchange.get_account_balances(paginator).await
     }
 
     pub async fn get_trade_history(
@@ -112,7 +116,7 @@ pub trait Exchange {
         &self,
         req: &GetOrderHistoryRequest,
     ) -> Result<Vec<Order<Self::OrderIdType>>>;
-    async fn get_account_balances(&self) -> Result<Vec<Balance>>;
+    async fn get_account_balances(&self, paginator: Option<&Paginator>) -> Result<Vec<Balance>>;
     async fn get_trade_history(
         &self,
         req: &TradeHistoryRequest<Self::OrderIdType>,
