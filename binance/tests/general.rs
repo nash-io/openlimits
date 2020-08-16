@@ -18,3 +18,10 @@ async fn get_exchange_info() {
     let resp = exchange.get_exchange_info().await.unwrap();
     println!("{:?}", resp);
 }
+
+#[tokio::test]
+async fn get_pair() {
+    let exchange = Binance::new(true);
+    let res = exchange.get_pair("BNBBTC", true).await.unwrap();
+    println!("{:?}", res);
+}

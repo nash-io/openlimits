@@ -24,16 +24,19 @@ pub mod client;
 pub mod model;
 mod transport;
 
+use shared::exchange_info::ExchangeInfo;
 use transport::Transport;
 
 #[derive(Clone)]
 pub struct Coinbase {
-    pub transport: Transport,
+    exchange_info: ExchangeInfo,
+    transport: Transport,
 }
 
 impl Coinbase {
     pub fn new(sandbox: bool) -> Self {
         Coinbase {
+            exchange_info: ExchangeInfo::new(),
             transport: Transport::new(sandbox).unwrap(),
         }
     }
@@ -45,6 +48,7 @@ impl Coinbase {
         sandbox: bool,
     ) -> Self {
         Coinbase {
+            exchange_info: ExchangeInfo::new(),
             transport: Transport::with_credential(api_key, api_secret, passphrase, sandbox)
                 .unwrap(),
         }

@@ -301,18 +301,27 @@ pub enum Interval {
 pub enum SymbolFilter {
     #[serde(rename_all = "camelCase")]
     LotSize {
-        min_qty: String,
-        max_qty: String,
-        step_size: String,
+        #[serde(with = "string_to_decimal")]
+        min_qty: Decimal,
+        #[serde(with = "string_to_decimal")]
+        max_qty: Decimal,
+        #[serde(with = "string_to_decimal")]
+        step_size: Decimal,
     },
     #[serde(rename_all = "camelCase")]
     PriceFilter {
-        min_price: String,
-        max_price: String,
-        tick_size: String,
+        #[serde(with = "string_to_decimal")]
+        min_price: Decimal,
+        #[serde(with = "string_to_decimal")]
+        max_price: Decimal,
+        #[serde(with = "string_to_decimal")]
+        tick_size: Decimal,
     },
     #[serde(rename_all = "camelCase")]
-    MinNotional { min_notional: String },
+    MinNotional {
+        #[serde(with = "string_to_decimal")]
+        min_notional: Decimal,
+    },
     #[serde(rename_all = "camelCase")]
     MaxNumAlgoOrders { max_num_algo_orders: u64 },
     #[serde(rename_all = "camelCase")]
@@ -321,15 +330,20 @@ pub enum SymbolFilter {
     IcebergParts { limit: u64 },
     #[serde(rename_all = "camelCase")]
     PercentPrice {
-        multiplier_up: String,
-        multiplier_down: String,
+        #[serde(with = "string_to_decimal")]
+        multiplier_up: Decimal,
+        #[serde(with = "string_to_decimal")]
+        multiplier_down: Decimal,
         avg_price_mins: u64,
     },
     #[serde(rename_all = "camelCase")]
     MarketLotSize {
-        min_qty: String,
-        max_qty: String,
-        step_size: String,
+        #[serde(with = "string_to_decimal")]
+        min_qty: Decimal,
+        #[serde(with = "string_to_decimal")]
+        max_qty: Decimal,
+        #[serde(with = "string_to_decimal")]
+        step_size: Decimal,
     },
 }
 
@@ -348,9 +362,9 @@ pub struct Symbol {
     pub symbol: String,
     pub status: String,
     pub base_asset: String,
-    pub base_asset_precision: u64,
+    pub base_asset_precision: u32,
     pub quote_asset: String,
-    pub quote_precision: u64,
+    pub quote_precision: u32,
     pub order_types: Vec<String>,
     pub iceberg_allowed: bool,
     pub filters: Vec<SymbolFilter>,
