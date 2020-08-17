@@ -98,6 +98,7 @@ async fn get_order_history() {
     let exchange = init();
     let req = GetOrderHistoryRequest {
         symbol: Some(String::from("ETH-BTC")),
+        paginator: None,
     };
 
     let resp = exchange.get_order_history(&req).await.unwrap();
@@ -121,7 +122,7 @@ async fn get_all_open_orders() {
 #[tokio::test]
 async fn get_account_balances() {
     let exchange = init();
-    let resp = exchange.get_account_balances().await.unwrap();
+    let resp = exchange.get_account_balances(None).await.unwrap();
     println!("{:?}", resp);
 }
 

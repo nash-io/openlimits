@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
-use shared::Result;
+use shared::{timestamp_to_datetime, Result};
 
 use crate::exchange::Exchange;
 use crate::model::{
@@ -9,7 +9,7 @@ use crate::model::{
     OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
     OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
 };
-use coinbase::model::{CandleRequestParams, GetOrderRequest};
+use coinbase::model::GetOrderRequest;
 use shared::errors::OpenLimitError;
 use std::convert::TryFrom;
 
@@ -111,9 +111,7 @@ impl Exchange for Coinbase {
     async fn get_account_balances(&self, paginator: Option<&Paginator>) -> Result<Vec<Balance>> {
         let paginator: Option<coinbase::model::Paginator> = paginator.map(|p| p.into());
 
-        // Transform a Option<T> to Option<&T>
-
-        coinbase::Coinbase::get_account(self, paginator)
+        coinbase::Coinbase::get_account(self, paginator.as_ref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -136,18 +134,10 @@ impl Exchange for Coinbase {
     }
 
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
-        match u32::try_from(req.interval) {
-            Ok(interval) => {
-                let params = CandleRequestParams {
-                    daterange: req.daterange,
-                    granularity: Some(interval),
-                };
-                coinbase::Coinbase::candles(self, &req.symbol, Some(&params))
-                    .await
-                    .map(|v| v.into_iter().map(Into::into).collect())
-            }
-            Err(err) => Err(err),
-        }
+        let params = coinbase::model::CandleRequestParams::try_from(req)?;
+        coinbase::Coinbase::candles(self, &req.symbol, Some(&params))
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
     }
 }
 
@@ -268,11 +258,22 @@ impl TryFrom<Interval> for u32 {
     }
 }
 
+impl TryFrom<&GetHistoricRatesRequest> for coinbase::model::CandleRequestParams {
+    type Error = OpenLimitError;
+    fn try_from(params: &GetHistoricRatesRequest) -> Result<Self> {
+        let granularity = u32::try_from(params.interval)?;
+        Ok(Self {
+            daterange: params.paginator.clone().map(|p| p.into()),
+            granularity: Some(granularity),
+        })
+    }
+}
+
 impl From<&GetOrderHistoryRequest> for coinbase::model::GetOrderRequest {
     fn from(req: &GetOrderHistoryRequest) -> Self {
         Self {
-            product_id: req.symbol,
-            paginator: req.paginator.map(|p| p.into()),
+            product_id: req.symbol.clone(),
+            paginator: req.paginator.clone().map(|p| p.into()),
             status: None,
         }
     }
@@ -298,12 +299,30 @@ impl From<&Paginator> for coinbase::model::Paginator {
     }
 }
 
+impl From<Paginator> for coinbase::model::DateRange {
+    fn from(paginator: Paginator) -> Self {
+        Self {
+            start: paginator.start_time.map(|t| timestamp_to_datetime(t)),
+            end: paginator.end_time.map(|t| timestamp_to_datetime(t)),
+        }
+    }
+}
+
+impl From<&Paginator> for coinbase::model::DateRange {
+    fn from(paginator: &Paginator) -> Self {
+        Self {
+            start: paginator.start_time.map(|t| timestamp_to_datetime(t)),
+            end: paginator.end_time.map(|t| timestamp_to_datetime(t)),
+        }
+    }
+}
+
 impl From<&TradeHistoryRequest<String>> for coinbase::model::GetFillsReq {
     fn from(req: &TradeHistoryRequest<String>) -> Self {
         Self {
-            order_id: req.order_id,
-            paginator: req.paginator.map(|p| p.into()),
-            product_id: req.pair,
+            order_id: req.order_id.clone(),
+            paginator: req.paginator.clone().map(|p| p.into()),
+            product_id: req.pair.clone(),
         }
     }
 }

@@ -1,4 +1,3 @@
-use coinbase::model::DateRange;
 use derive_more::Constructor;
 use rust_decimal::prelude::Decimal;
 use serde::{Deserialize, Serialize};
@@ -126,7 +125,7 @@ pub struct GetPriceTickerRequest {
 #[derive(Clone, Constructor, Debug)]
 pub struct GetHistoricRatesRequest {
     pub symbol: String,
-    pub daterange: Option<DateRange>,
+    pub paginator: Option<Paginator>,
     pub interval: Interval,
 }
 

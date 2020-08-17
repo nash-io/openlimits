@@ -130,3 +130,10 @@ pub mod opt_naive_datetime_from_string {
         Ok(None)
     }
 }
+
+pub fn timestamp_to_datetime(timestamp: u64) -> chrono::naive::NaiveDateTime {
+    let seconds = (timestamp / 1000) as i64;
+    let nanos = ((timestamp % 1000) * 1_000_000) as u32;
+
+    chrono::NaiveDateTime::from_timestamp(seconds, nanos)
+}
