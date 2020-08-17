@@ -108,7 +108,7 @@ pub mod opt_naive_datetime_from_string {
         if let Some(value) = value {
             return serializer.collect_str(&value);
         }
-        return serializer.serialize_none();
+        serializer.serialize_none()
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<NaiveDateTime>, D::Error>
