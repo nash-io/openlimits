@@ -5,9 +5,9 @@ use shared::Result;
 use crate::exchange::Exchange;
 use crate::model::{
     Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Candle,
-    GetHistoricRatesRequest, GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest,
-    OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Side,
-    Ticker, Trade, TradeHistoryRequest,
+    GetHistoricRatesRequest, GetOrderHistoryRequest, GetPriceTickerRequest, Interval, Liquidity,
+    OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
+    OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
 };
 use binance::model::KlineSummaries;
 use shared::errors::OpenLimitError;
@@ -95,20 +95,15 @@ impl Exchange for Binance {
 
     async fn get_order_history(
         &self,
-        req: &crate::model::GetOrderHistoryRequest,
+        req: &GetOrderHistoryRequest,
     ) -> Result<Vec<Order<Self::OrderIdType>>> {
-        if let Some(symbol) = req.symbol.as_ref() {
-            binance::Binance::get_all_orders(self, symbol.as_ref())
-                .await
-                .map(|v| v.into_iter().map(Into::into).collect())
-        } else {
-            Err(OpenLimitError::MissingParameter(
-                "symbol parameter is required.".to_string(),
-            ))
-        }
+        let req = req.into();
+        binance::Binance::get_all_orders(self, &req)
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_account_balances(&self) -> Result<Vec<Balance>> {
+    async fn get_account_balances(&self, _paginator: Option<&Paginator>) -> Result<Vec<Balance>> {
         binance::Binance::get_account(self)
             .await
             .map(|v| v.balances.into_iter().map(Into::into).collect())
@@ -118,15 +113,10 @@ impl Exchange for Binance {
         &self,
         req: &TradeHistoryRequest<Self::OrderIdType>,
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
-        if let Some(pair) = req.pair.as_ref() {
-            binance::Binance::trade_history(self, pair.as_ref())
-                .await
-                .map(|v| v.into_iter().map(Into::into).collect())
-        } else {
-            Err(OpenLimitError::MissingParameter(
-                "pair parameter is required.".to_string(),
-            ))
-        }
+        let req = req.into();
+        binance::Binance::trade_history(self, &req)
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
     }
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
@@ -136,7 +126,9 @@ impl Exchange for Binance {
     }
 
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
-        binance::Binance::get_klines(self, &req.symbol, req.interval.into(), None, None, None)
+        let params = req.into();
+
+        binance::Binance::get_klines(self, &params)
             .await
             .map(|KlineSummaries::AllKlineSummaries(v)| v.into_iter().map(Into::into).collect())
     }
@@ -238,6 +230,36 @@ impl From<binance::model::SymbolPrice> for Ticker {
     }
 }
 
+impl From<&GetOrderHistoryRequest> for binance::model::AllOrderReq {
+    fn from(req: &GetOrderHistoryRequest) -> Self {
+        Self {
+            paginator: req.paginator.clone().map(|p| p.into()),
+            symbol: req.symbol.clone().unwrap(),
+        }
+    }
+}
+
+impl From<&TradeHistoryRequest<u64>> for binance::model::TradeHistoryReq {
+    fn from(trade_history: &TradeHistoryRequest<u64>) -> Self {
+        Self {
+            paginator: trade_history.paginator.clone().map(|p| p.into()),
+            symbol: trade_history.pair.clone().unwrap(),
+        }
+    }
+}
+
+impl From<&GetHistoricRatesRequest> for binance::model::KlineParams {
+    fn from(req: &GetHistoricRatesRequest) -> Self {
+        let interval: &str = req.interval.into();
+
+        Self {
+            interval: String::from(interval),
+            paginator: req.paginator.clone().map(|d| d.into()),
+            symbol: req.symbol.clone(),
+        }
+    }
+}
+
 impl From<Interval> for &str {
     fn from(interval: Interval) -> Self {
         match interval {
@@ -269,6 +291,18 @@ impl From<binance::model::KlineSummary> for Candle {
             open: kline_summary.open,
             close: kline_summary.close,
             volume: kline_summary.volume,
+        }
+    }
+}
+
+impl From<Paginator> for binance::model::Paginator {
+    fn from(paginator: Paginator) -> Self {
+        Self {
+            from_id: paginator.after,
+            order_id: paginator.after,
+            end_time: paginator.end_time,
+            start_time: paginator.start_time,
+            limit: paginator.limit,
         }
     }
 }

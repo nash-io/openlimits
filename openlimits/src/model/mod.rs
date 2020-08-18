@@ -1,4 +1,3 @@
-use coinbase::model::DateRange;
 use derive_more::Constructor;
 use rust_decimal::prelude::Decimal;
 use serde::{Deserialize, Serialize};
@@ -62,6 +61,7 @@ pub struct CancelAllOrdersRequest {
 #[derive(Clone, Constructor, Debug)]
 pub struct GetOrderHistoryRequest {
     pub symbol: Option<String>,
+    pub paginator: Option<Paginator>,
 }
 
 #[derive(Clone, Constructor, Debug)]
@@ -92,6 +92,7 @@ pub enum Liquidity {
 pub struct TradeHistoryRequest<T> {
     pub pair: Option<String>,
     pub order_id: Option<T>,
+    pub paginator: Option<Paginator>,
 }
 
 #[derive(Clone, Constructor, Debug)]
@@ -124,7 +125,7 @@ pub struct GetPriceTickerRequest {
 #[derive(Clone, Constructor, Debug)]
 pub struct GetHistoricRatesRequest {
     pub symbol: String,
-    pub daterange: Option<DateRange>,
+    pub paginator: Option<Paginator>,
     pub interval: Interval,
 }
 
@@ -151,4 +152,14 @@ pub enum Interval {
     ThreeDay,
     OneWeek,
     OneMonth,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct Paginator {
+    pub start_time: Option<u64>,
+    pub end_time: Option<u64>,
+    pub limit: Option<u64>,
+    pub after: Option<u64>,
+    pub before: Option<u64>,
 }

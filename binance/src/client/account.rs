@@ -2,7 +2,10 @@ use serde_json::json;
 use std::collections::HashMap;
 use sugar::{convert_args, hashmap};
 
-use crate::model::{AccountInformation, Balance, Order, OrderCanceled, TradeHistory, Transaction};
+use crate::model::{
+    AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, TradeHistory, TradeHistoryReq,
+    Transaction,
+};
 use crate::Binance;
 use shared::errors::OpenLimitError;
 
@@ -15,8 +18,6 @@ static ORDER_TYPE_MARKET: &str = "MARKET";
 static ORDER_SIDE_BUY: &str = "BUY";
 static ORDER_SIDE_SELL: &str = "SELL";
 static TIME_IN_FORCE_GTC: &str = "GTC";
-
-static API_V3_ORDER: &str = "/api/v3/order";
 
 struct OrderRequest {
     pub symbol: String,
@@ -74,12 +75,10 @@ impl Binance {
         Ok(orders)
     }
 
-    pub async fn get_all_orders(&self, symbol: &str) -> Result<Vec<Order>> {
-        let params = json! {{"symbol": symbol}};
-
+    pub async fn get_all_orders(&self, params: &AllOrderReq) -> Result<Vec<Order>> {
         let orders = self
             .transport
-            .signed_get("/api/v3/allOrders", Some(&params))
+            .signed_get("/api/v3/allOrders", Some(params))
             .await?;
         Ok(orders)
     }
@@ -90,7 +89,7 @@ impl Binance {
 
         let order = self
             .transport
-            .signed_get(API_V3_ORDER, Some(&params))
+            .signed_get("/api/v3/order", Some(&params))
             .await?;
         Ok(order)
     }
@@ -116,7 +115,7 @@ impl Binance {
 
         let transaction = self
             .transport
-            .signed_post(API_V3_ORDER, Some(&params))
+            .signed_post("/api/v3/order", Some(&params))
             .await?;
 
         Ok(transaction)
@@ -140,7 +139,7 @@ impl Binance {
         let params = self.build_order(sell);
         let transaction = self
             .transport
-            .signed_post(API_V3_ORDER, Some(&params))
+            .signed_post("/api/v3/order", Some(&params))
             .await?;
 
         Ok(transaction)
@@ -159,7 +158,7 @@ impl Binance {
         let params = self.build_order(buy);
         let transaction = self
             .transport
-            .signed_post(API_V3_ORDER, Some(&params))
+            .signed_post("/api/v3/order", Some(&params))
             .await?;
 
         Ok(transaction)
@@ -178,7 +177,7 @@ impl Binance {
         let params = self.build_order(sell);
         let transaction = self
             .transport
-            .signed_post(API_V3_ORDER, Some(&params))
+            .signed_post("/api/v3/order", Some(&params))
             .await?;
         Ok(transaction)
     }
@@ -188,7 +187,7 @@ impl Binance {
         let params = json! {{"symbol":symbol, "orderId":order_id}};
         let order_canceled = self
             .transport
-            .signed_delete(API_V3_ORDER, Some(&params))
+            .signed_delete("/api/v3/order", Some(&params))
             .await?;
         Ok(order_canceled)
     }
@@ -203,11 +202,10 @@ impl Binance {
     }
 
     // Trade history
-    pub async fn trade_history(&self, symbol: &str) -> Result<Vec<TradeHistory>> {
-        let params = json! {{"symbol":symbol}};
+    pub async fn trade_history(&self, params: &TradeHistoryReq) -> Result<Vec<TradeHistory>> {
         let trade_history = self
             .transport
-            .signed_get("/api/v3/myTrades", Some(&params))
+            .signed_get("/api/v3/myTrades", Some(params))
             .await?;
 
         Ok(trade_history)

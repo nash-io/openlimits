@@ -5,7 +5,9 @@ use std::fmt::Debug;
 
 use shared::Result;
 
-use crate::model::{Book, BookLevel, Candle, CandleRequestParams, Product, Ticker, Trade};
+use crate::model::{
+    Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade,
+};
 
 impl Coinbase {
     pub async fn products(&self) -> Result<Vec<Product>> {
@@ -26,9 +28,9 @@ impl Coinbase {
         self.transport.get::<_, ()>(&endpoint, None).await
     }
 
-    pub async fn trades(&self, pair: &str) -> Result<Vec<Trade>> {
+    pub async fn trades(&self, pair: &str, paginator: Option<&Paginator>) -> Result<Vec<Trade>> {
         let endpoint = format!("/products/{}/trades", pair);
-        self.transport.get::<_, ()>(&endpoint, None).await
+        self.transport.get(&endpoint, paginator).await
     }
 
     pub async fn ticker(&self, pair: &str) -> Result<Ticker> {

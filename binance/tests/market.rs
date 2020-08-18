@@ -1,3 +1,4 @@
+use binance::model::KlineParams;
 use binance::Binance;
 
 #[tokio::test]
@@ -45,10 +46,12 @@ async fn get_24h_price_stats() {
 #[tokio::test]
 async fn get_klines() {
     let exchange = Binance::new(true);
-    let resp = exchange
-        .get_klines("BNBBTC", "5m", 2, None, None)
-        .await
-        .unwrap();
+    let params = KlineParams {
+        symbol: String::from("BNBBTC"),
+        interval: String::from("5m"),
+        paginator: None,
+    };
+    let resp = exchange.get_klines(&params).await.unwrap();
     println!("{:?}", resp);
 }
 

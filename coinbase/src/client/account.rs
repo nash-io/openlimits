@@ -1,33 +1,20 @@
 use crate::model::{
-    Account, CancelAllOrders, CancelOrder, Fill, Order, OrderRequest, OrderRequestMarketType,
-    OrderRequestType, OrderSide,
+    Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order, OrderRequest,
+    OrderRequestMarketType, OrderRequestType, OrderSide, Paginator,
 };
 use crate::Coinbase;
 
 use shared::Result;
 
 use rust_decimal::prelude::Decimal;
-use serde_json::json;
 
 impl Coinbase {
-    pub async fn get_account(&self) -> Result<Vec<Account>> {
-        self.transport.signed_get::<_, ()>("/accounts", None).await
+    pub async fn get_account(&self, paginator: Option<&Paginator>) -> Result<Vec<Account>> {
+        self.transport.signed_get("/accounts", paginator).await
     }
 
-    pub async fn get_all_open_orders(&self) -> Result<Vec<Order>> {
-        self.transport.signed_get::<_, ()>("/orders", None).await
-    }
-
-    pub async fn get_all_orders<'a>(&self, product_id: Option<&str>) -> Result<Vec<Order>> {
-        let mut params = json! {{"status": "all"}};
-
-        if let Some(p) = product_id {
-            params["product_id"] = json!(p);
-        }
-
-        self.transport
-            .signed_get::<_, _>("/orders", Some(&params))
-            .await
+    pub async fn get_orders(&self, params: Option<&GetOrderRequest>) -> Result<Vec<Order>> {
+        self.transport.signed_get::<_, _>("/orders", params).await
     }
 
     pub async fn order_status(&self, order_id: String) -> Result<Order> {
@@ -35,6 +22,7 @@ impl Coinbase {
             .signed_get::<_, ()>(&format!("/orders/{}", order_id), None)
             .await
     }
+
     // TODO: refactor buy and sell in order creation in commun function
     pub async fn market_buy(&self, product: &str, size: Decimal) -> Result<Order> {
         let data = OrderRequest {
@@ -153,24 +141,8 @@ impl Coinbase {
         Ok(resp)
     }
 
-    pub async fn get_fills_for_order(&self, order_id: &str) -> Result<Vec<Fill>> {
-        let params = json! {{"order_id":order_id}};
-
-        let resp = self
-            .transport
-            .signed_get::<_, _>("/fills", Some(&params))
-            .await?;
-
-        Ok(resp)
-    }
-
-    pub async fn get_fills_for_product(&self, product_id: &str) -> Result<Vec<Fill>> {
-        let params = json! {{"product_id":product_id}};
-
-        let resp = self
-            .transport
-            .signed_get::<_, _>("/fills", Some(&params))
-            .await?;
+    pub async fn get_fills(&self, params: Option<&GetFillsReq>) -> Result<Vec<Fill>> {
+        let resp = self.transport.signed_get::<_, _>("/fills", params).await?;
 
         Ok(resp)
     }

@@ -233,8 +233,8 @@ pub enum OrderType {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(tag = "type")]
 #[serde(rename_all = "camelCase")]
+#[serde(tag = "type")]
 pub enum OrderRequestType {
     Limit {
         price: Decimal,
@@ -250,11 +250,31 @@ pub enum OrderRequestType {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(untagged)]
 #[serde(rename_all = "camelCase")]
+#[serde(untagged)]
 pub enum OrderRequestMarketType {
     Size { size: Decimal },
     Funds { funds: Decimal },
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct GetOrderRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paginator: Option<Paginator>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct GetFillsReq {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub product_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paginator: Option<Paginator>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -293,15 +313,14 @@ pub enum OrderStopType {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Paginator {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub before: Option<i64>,
+    pub before: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub limit: Option<i64>,
+    pub limit: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub after: Option<i64>,
+    pub after: Option<u64>,
 }
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
 pub struct DateRange {
     #[serde(with = "opt_naive_datetime_from_string")]
     #[serde(skip_serializing_if = "Option::is_none")]
