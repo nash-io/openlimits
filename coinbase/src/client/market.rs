@@ -62,6 +62,7 @@ impl ExchangeInfoRetrieval for Coinbase {
                     (
                         product.id,
                         TradePair {
+                            symbol: product.id,
                             base: product.base_currency,
                             quote: product.quote_currency,
                             base_increment: product.base_increment,

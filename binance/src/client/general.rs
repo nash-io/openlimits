@@ -71,6 +71,7 @@ impl ExchangeInfoRetrieval for Binance {
                         TradePair {
                             base: symbol.base_asset,
                             quote: symbol.quote_asset,
+                            symbol: symbol,
                             base_increment: lot_size.clone(),
                             quote_increment: tick_size.clone(),
                         },

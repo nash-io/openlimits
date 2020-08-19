@@ -31,6 +31,7 @@ pub trait ExchangeInfoRetrieval: Sync {
 pub struct TradePair {
     pub base: String,
     pub quote: String,
+    pub symbol: String,
     pub base_increment: Decimal,
     pub quote_increment: Decimal,
 }
