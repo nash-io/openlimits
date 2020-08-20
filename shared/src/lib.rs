@@ -1,4 +1,5 @@
 pub mod errors;
+pub mod exchange_info;
 
 extern crate chrono;
 extern crate serde;

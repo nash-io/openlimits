@@ -1,9 +1,8 @@
 use chrono::naive::NaiveDateTime;
 use coinbase::model::BookRecordL1;
+use coinbase::model::Paginator;
 use coinbase::model::{CandleRequestParams, DateRange};
 use coinbase::Coinbase;
-
-use coinbase::model::Paginator;
 
 #[tokio::test]
 async fn products() {
@@ -89,5 +88,12 @@ async fn candles() {
         )
         .await
         .unwrap();
+    println!("{:?}", res);
+}
+
+#[tokio::test]
+async fn pair() {
+    let exchange = Coinbase::new(true);
+    let res = exchange.pair("BTC-USD", true).await.unwrap();
     println!("{:?}", res);
 }

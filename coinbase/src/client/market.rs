@@ -1,9 +1,10 @@
 use crate::Coinbase;
 
+use async_trait::async_trait;
 use serde::Deserialize;
-use std::fmt::Debug;
-
+use shared::exchange_info::{get_pair, ExchangeInfoRetrieval, TradePair, TradePairHandle};
 use shared::Result;
+use std::fmt::Debug;
 
 use crate::model::{
     Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade,
@@ -45,5 +46,31 @@ impl Coinbase {
     ) -> Result<Vec<Candle>> {
         let endpoint = format!("/products/{}/candles", pair);
         self.transport.get(&endpoint, params).await
+    }
+
+    pub async fn pair(&self, name: &str, refresh: bool) -> Result<Option<TradePairHandle>> {
+        get_pair(name, &self.exchange_info, self, refresh).await
+    }
+}
+
+#[async_trait]
+impl ExchangeInfoRetrieval for Coinbase {
+    async fn retrieve_pairs(&self) -> Result<Vec<(String, TradePair)>> {
+        self.products().await.map(|v| {
+            v.into_iter()
+                .map(|product| {
+                    (
+                        product.id,
+                        TradePair {
+                            symbol: product.id,
+                            base: product.base_currency,
+                            quote: product.quote_currency,
+                            base_increment: product.base_increment,
+                            quote_increment: product.quote_increment,
+                        },
+                    )
+                })
+                .collect()
+        })
     }
 }
