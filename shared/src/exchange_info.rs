@@ -4,15 +4,15 @@ use rust_decimal::Decimal;
 
 use std::{
     collections::HashMap,
-    sync::{Arc, RwLock},
+    sync::{Arc, RwLockReadGuard, RwLock},
 };
 
-pub async fn get_pair(
+pub async fn get_pair<'a>(
     name: &str,
-    exchange_info: &ExchangeInfo,
+    exchange_info: &'a ExchangeInfo,
     retrieval: &dyn ExchangeInfoRetrieval,
     refresh: bool,
-) -> Result<Option<MarketPairHandle>> {
+) -> Result<Option<MarketPairHandle<'a>>> {
     if refresh {
         if let Err(err) = exchange_info.refresh(retrieval).await {
             return Err(err);
@@ -36,26 +36,23 @@ pub struct MarketPair {
     pub quote_increment: Decimal,
 }
 
-#[derive(Clone, Debug)]
-pub struct MarketPairHandle {
-    pub inner: Arc<RwLock<MarketPair>>,
+#[derive(Debug)]
+pub struct MarketPairHandle<'a> {
+    pub inner: RwLockReadGuard<'a, MarketPair>,
 }
 
-impl MarketPairHandle {
-    fn new(inner: Arc<RwLock<MarketPair>>) -> Self {
+impl<'a> MarketPairHandle<'a> {
+    fn new(inner: RwLockReadGuard<'a, MarketPair>) -> Self {
         Self { inner }
     }
 }
 
-impl serde::Serialize for MarketPairHandle {
+impl<'a> serde::Serialize for MarketPairHandle<'a> {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
-        if let Ok(handle) = self.inner.read() {
-            return serializer.collect_str(&handle.symbol);
-        }
-        return Err(serde::ser::Error::custom("Could not get the lock"));
+        return serializer.collect_str(&self.inner.symbol );
     }
 }
 
@@ -76,8 +73,9 @@ impl ExchangeInfo {
             .read()
             .unwrap()
             .get(name)
-            .map(|pair| MarketPairHandle::new(pair.clone()))
-    }
+            .map(|pair| pair.read())
+            .map(|inner| MarketPairHandle::new(inner.unwrap()))
+        }
 
     pub async fn refresh(&self, retrieval: &dyn ExchangeInfoRetrieval) -> Result<()> {
         match retrieval.retrieve_pairs().await {
