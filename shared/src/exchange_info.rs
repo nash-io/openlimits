@@ -9,7 +9,7 @@ use std::{
 
 pub async fn get_pair<'a>(
     name: &str,
-    exchange_info: &'a ExchangeInfo,
+    exchange_info: &'a mut ExchangeInfo,
     retrieval: &dyn ExchangeInfoRetrieval,
     refresh: bool,
 ) -> Result<Option<MarketPairHandle<'a>>> {
@@ -58,36 +58,32 @@ impl<'a> serde::Serialize for MarketPairHandle<'a> {
 
 #[derive(Clone)]
 pub struct ExchangeInfo {
-    pairs: Arc<RwLock<HashMap<String, Arc<RwLock<MarketPair>>>>>,
+    pairs: HashMap<String, Arc<RwLock<MarketPair>>>,
 }
 
 impl ExchangeInfo {
     pub fn new() -> Self {
         Self {
-            pairs: Arc::new(RwLock::new(HashMap::default())),
+            pairs: HashMap::default(),
         }
     }
 
     pub fn get_pair(&self, name: &str) -> Option<MarketPairHandle> {
         self.pairs
-            .read()
-            .unwrap()
             .get(name)
             .map(|pair| pair.read())
             .map(|inner| MarketPairHandle::new(inner.unwrap()))
-        }
+    }
 
-    pub async fn refresh(&self, retrieval: &dyn ExchangeInfoRetrieval) -> Result<()> {
+    pub async fn refresh(&mut self, retrieval: &dyn ExchangeInfoRetrieval) -> Result<()> {
         match retrieval.retrieve_pairs().await {
             Ok(pairs) => {
-                if let Ok(mut writable_pairs) = self.pairs.write() {
-                    for (id, pair) in pairs {
-                        let entry = writable_pairs
-                            .entry(id)
-                            .or_insert_with(|| Arc::new(RwLock::new(pair.clone())));
-                        if let Ok(mut entry) = entry.write() {
-                            *entry = pair;
-                        }
+                for (id, pair) in pairs {
+                    let entry = self.pairs
+                        .entry(id)
+                        .or_insert_with(|| Arc::new(RwLock::new(pair.clone())));
+                    if let Ok(mut entry) = entry.write() {
+                        *entry = pair;
                     }
                 }
             }
