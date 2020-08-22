@@ -1,99 +1,49 @@
-use chrono::naive::NaiveDateTime;
-use openlimits::coinbase::{
-    model::{BookRecordL1, CandleRequestParams, DateRange, Paginator},
-    Coinbase,
+use openlimits::{
+    coinbase::Coinbase,
+    exchange::Exchange,
+    model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
 };
 
 #[tokio::test]
-async fn products() {
+async fn order_book() {
     let exchange = Coinbase::new(true);
-    let res = exchange.products().await.unwrap();
-    println!("{:?}", res);
+    let req = OrderBookRequest {
+        symbol: "ETH-BTC".to_string(),
+    };
+    let resp = exchange.order_book(&req).await.unwrap();
+    println!("{:?}", resp);
 }
 
 #[tokio::test]
-async fn product() {
+async fn get_price_ticker() {
     let exchange = Coinbase::new(true);
-    let res = exchange.product("BTC-USD").await.unwrap();
-    println!("{:?}", res);
+    let req = GetPriceTickerRequest {
+        symbol: "ETH-BTC".to_string(),
+    };
+    let resp = exchange.get_price_ticker(&req).await.unwrap();
+    println!("{:?}", resp);
 }
 
 #[tokio::test]
-async fn trades() {
+async fn get_historic_rates() {
     let exchange = Coinbase::new(true);
-    let res = exchange.trades("BTC-USD", None).await.unwrap();
-    println!("{:?}", res);
-
-    let trade = res.last().unwrap();
-
-    let res = exchange
-        .trades(
-            "BTC-USD",
-            Some(&Paginator {
-                after: Some(trade.trade_id),
-                limit: Some(10),
-                before: None,
-            }),
-        )
-        .await
-        .unwrap();
-    println!("{:?}", res);
+    let req = GetHistoricRatesRequest {
+        symbol: "ETH-BTC".to_string(),
+        interval: Interval::OneHour,
+        paginator: None,
+    };
+    let resp = exchange.get_historic_rates(&req).await.unwrap();
+    println!("{:?}", resp);
 }
 
 #[tokio::test]
-async fn book() {
+async fn get_historic_rates_invalid_interval() {
     let exchange = Coinbase::new(true);
-    let res = exchange.book::<BookRecordL1>("BTC-USD").await.unwrap();
-    println!("{:?}", res);
-}
-
-#[tokio::test]
-async fn ticker() {
-    let exchange = Coinbase::new(true);
-    let res = exchange.ticker("BTC-USD").await.unwrap();
-    println!("{:?}", res);
-}
-
-#[tokio::test]
-async fn candles() {
-    let exchange = Coinbase::new(true);
-    let res = exchange.candles("BTC-USD", None).await.unwrap();
-    println!("{:?}", res);
-
-    let res = exchange
-        .candles(
-            "BTC-USD",
-            Some(&CandleRequestParams {
-                granularity: Some(60),
-                daterange: None,
-            }),
-        )
-        .await
-        .unwrap();
-    println!("{:?}", res);
-    let date =
-        NaiveDateTime::parse_from_str("2020-01-20T00:00:00.642366Z", "%Y-%m-%dT%H:%M:%S.%fZ")
-            .unwrap();
-
-    let res = exchange
-        .candles(
-            "BTC-USD",
-            Some(&CandleRequestParams {
-                granularity: Some(3600),
-                daterange: Some(DateRange {
-                    start: Some(date),
-                    end: None,
-                }),
-            }),
-        )
-        .await
-        .unwrap();
-    println!("{:?}", res);
-}
-
-#[tokio::test]
-async fn pair() {
-    let exchange = Coinbase::new(true);
-    let res = exchange.pair("BTC-USD", true).await.unwrap();
-    println!("{:?}", res);
+    let req = GetHistoricRatesRequest {
+        symbol: "ETH-BTC".to_string(),
+        interval: Interval::TwoHours,
+        paginator: None,
+    };
+    let resp = exchange.get_historic_rates(&req).await;
+    assert!(resp.is_err());
 }

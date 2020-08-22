@@ -1,5 +1,3 @@
-extern crate openlimits as ol;
+extern crate openlimits;
 
-mod binance;
-mod coinbase;
-mod openlimits;
+mod apis;

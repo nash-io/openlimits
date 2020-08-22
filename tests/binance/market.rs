@@ -1,62 +1,37 @@
-use openlimits::binance::{model::KlineParams, Binance};
+use openlimits::{
+    binance::Binance,
+    exchange::Exchange,
+    model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
+};
 
 #[tokio::test]
-async fn get_depth() {
+async fn order_book() {
     let exchange = Binance::new(true);
-    let resp = exchange.get_depth("BNBBTC", 50).await.unwrap();
+    let req = OrderBookRequest {
+        symbol: "BNBBTC".to_string(),
+    };
+    let resp = exchange.order_book(&req).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
-async fn get_all_prices() {
+async fn get_price_ticker() {
     let exchange = Binance::new(true);
-    let resp = exchange.get_all_prices().await.unwrap();
+    let req = GetPriceTickerRequest {
+        symbol: "BNBBTC".to_string(),
+    };
+    let resp = exchange.get_price_ticker(&req).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
-async fn get_price() {
+async fn get_historic_rates() {
     let exchange = Binance::new(true);
-    let resp = exchange.get_price("BNBBTC").await.unwrap();
-    println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn get_all_book_tickers() {
-    let exchange = Binance::new(true);
-    let resp = exchange.get_all_book_tickers().await.unwrap();
-    println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn get_book_ticker() {
-    let exchange = Binance::new(true);
-    let resp = exchange.get_book_ticker("BNBBTC").await.unwrap();
-    println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn get_24h_price_stats() {
-    let exchange = Binance::new(true);
-    let resp = exchange.get_24h_price_stats("BNBBTC").await.unwrap();
-    println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn get_klines() {
-    let exchange = Binance::new(true);
-    let params = KlineParams {
-        symbol: String::from("BNBBTC"),
-        interval: String::from("5m"),
+    let req = GetHistoricRatesRequest {
+        symbol: "BNBBTC".to_string(),
+        interval: Interval::OneHour,
         paginator: None,
     };
-    let resp = exchange.get_klines(&params).await.unwrap();
-    println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn get_24h_price_stats_all() {
-    let exchange = Binance::new(true);
-    let resp = exchange.get_24h_price_stats_all().await.unwrap();
+    let resp = exchange.get_historic_rates(&req).await.unwrap();
     println!("{:?}", resp);
 }
