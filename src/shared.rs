@@ -1,11 +1,4 @@
-pub mod errors;
-pub mod exchange_info;
-
-extern crate chrono;
-extern crate serde;
-extern crate serde_json;
-
-pub type Result<T> = std::result::Result<T, errors::OpenLimitError>;
+pub type Result<T> = std::result::Result<T, crate::errors::OpenLimitError>;
 
 pub mod string_to_decimal {
     use std::fmt;

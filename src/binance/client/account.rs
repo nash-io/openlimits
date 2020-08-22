@@ -10,7 +10,8 @@ use crate::{
         },
         Binance,
     },
-    shared::{errors::OpenLimitError, Result},
+    errors::OpenLimitError,
+    shared::Result,
 };
 
 use rust_decimal::prelude::*;

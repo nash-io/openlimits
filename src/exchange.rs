@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use derive_more::Constructor;
 
 use crate::{
-    openlimits::model::{
+    model::{
         Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
         GetOrderHistoryRequest, GetPriceTickerRequest, OpenLimitOrderRequest,
         OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,

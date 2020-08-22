@@ -1,6 +1,6 @@
-use crate::shared::{
+use crate::{
+    shared::Result,
     errors::{CoinbaseContentError, OpenLimitError},
-    Result,
 };
 
 use hmac::{Hmac, Mac, NewMac};

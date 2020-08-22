@@ -16,7 +16,8 @@ use crate::{
     coinbase::model::websocket::{
         Channel, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd, Subscription,
     },
-    shared::{errors::OpenLimitError, Result},
+    shared::Result,
+    errors::OpenLimitError
 };
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

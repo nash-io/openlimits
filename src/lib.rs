@@ -20,7 +20,10 @@ extern crate tokio_tungstenite;
 extern crate tungstenite;
 extern crate url;
 
+pub mod model;
 pub mod binance;
 pub mod coinbase;
-pub mod openlimits;
 pub mod shared;
+pub mod exchange;
+pub mod errors;
+pub mod exchange_info;
