@@ -1,8 +1,8 @@
+use futures::StreamExt;
 use openlimits::coinbase::{
     client::websocket::CoinbaseWebsocket,
     model::websocket::{ChannelType, Subscription},
 };
-use futures::StreamExt;
 
 #[tokio::test]
 async fn aggregate_trade() {

@@ -1,9 +1,6 @@
+use crate::shared::{string_to_decimal, string_to_opt_decimal};
 use rust_decimal::prelude::Decimal;
 use serde::{Deserialize, Deserializer, Serialize};
-use crate::shared::{
-    string_to_decimal,
-    string_to_opt_decimal,
-};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Subscription {

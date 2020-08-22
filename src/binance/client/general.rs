@@ -1,25 +1,15 @@
 use crate::{
-    shared::{
-        exchange_info::{
-            get_pair,
-            ExchangeInfoRetrieval,
-            TradePair,
-            TradePairHandle
-        },
-        Result,
-    },
     binance::{
+        model::{ExchangeInformation, ServerTime, SymbolFilter},
         Binance,
-        model::{
-            ExchangeInformation,
-            ServerTime,
-            SymbolFilter,
-        },
+    },
+    shared::{
+        exchange_info::{get_pair, ExchangeInfoRetrieval, TradePair, TradePairHandle},
+        Result,
     },
 };
 use async_trait::async_trait;
 use serde_json::Value;
-
 
 impl Binance {
     // Test connectivity
@@ -79,7 +69,7 @@ impl ExchangeInfoRetrieval for Binance {
                         })
                         .unwrap();
 
-                    return (
+                    (
                         symbol.symbol.clone(),
                         TradePair {
                             base: symbol.base_asset,
@@ -88,7 +78,7 @@ impl ExchangeInfoRetrieval for Binance {
                             base_increment: lot_size.clone(),
                             quote_increment: tick_size.clone(),
                         },
-                    );
+                    )
                 })
                 .collect()
         })

@@ -1,22 +1,12 @@
 use crate::{
-    shared::Result,
     coinbase::{
-        Coinbase,
         model::{
-            Account,
-            CancelAllOrders,
-            CancelOrder,
-            Fill,
-            GetFillsReq,
-            GetOrderRequest,
-            Order,
-            OrderRequest,
-            OrderRequestMarketType,
-            OrderRequestType,
-            OrderSide,
-            Paginator,
+            Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
+            OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, Paginator,
         },
+        Coinbase,
     },
+    shared::Result,
 };
 
 use rust_decimal::prelude::Decimal;

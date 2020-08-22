@@ -4,22 +4,13 @@ use sugar::{convert_args, hashmap};
 
 use crate::{
     binance::{
-        Binance,
         model::{
-            AccountInformation,
-            AllOrderReq,
-            Balance,
-            Order,
-            OrderCanceled,
-            TradeHistory,
-            TradeHistoryReq,
-            Transaction,
+            AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, TradeHistory,
+            TradeHistoryReq, Transaction,
         },
+        Binance,
     },
-    shared::{
-        Result,
-        errors::OpenLimitError,
-    }
+    shared::{errors::OpenLimitError, Result},
 };
 
 use rust_decimal::prelude::*;

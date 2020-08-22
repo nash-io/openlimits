@@ -1,8 +1,5 @@
-use openlimits::binance::{
-    client::websocket::BinanceWebsocket,
-    model::websocket::Subscription,
-};
 use futures::StreamExt;
+use openlimits::binance::{client::websocket::BinanceWebsocket, model::websocket::Subscription};
 
 #[tokio::test]
 async fn aggregate_trade() {

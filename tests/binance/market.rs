@@ -1,7 +1,4 @@
-use openlimits::binance::{
-    Binance,
-    model::KlineParams,
-};
+use openlimits::binance::{model::KlineParams, Binance};
 
 #[tokio::test]
 async fn get_depth() {

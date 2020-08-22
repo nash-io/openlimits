@@ -3,11 +3,8 @@ use rust_decimal::prelude::Decimal;
 use std::env;
 
 use openlimits::binance::{
+    model::{AllOrderReq, TradeHistoryReq},
     Binance,
-    model::{
-        AllOrderReq,
-        TradeHistoryReq,
-    },
 };
 
 #[tokio::test]

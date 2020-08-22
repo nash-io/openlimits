@@ -1,12 +1,9 @@
 use crate::{
-    shared::Result,
     binance::{
+        model::{Success, UserDataStream},
         Binance,
-        model::{
-            Success,
-            UserDataStream,
-        },
     },
+    shared::Result,
 };
 
 static USER_DATA_STREAM: &str = "/api/v3/userDataStream";

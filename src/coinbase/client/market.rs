@@ -3,22 +3,13 @@ use serde::Deserialize;
 use std::fmt::Debug;
 
 use crate::{
-    shared::{
-        Result,
-        exchange_info::{get_pair, ExchangeInfoRetrieval, TradePair, TradePairHandle},
-    },
     coinbase::{
+        model::{Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade},
         Coinbase,
-        model::{
-            Book,
-            BookLevel,
-            Candle,
-            CandleRequestParams,
-            Paginator,
-            Product,
-            Ticker,
-            Trade,
-        },
+    },
+    shared::{
+        exchange_info::{get_pair, ExchangeInfoRetrieval, TradePair, TradePairHandle},
+        Result,
     },
 };
 

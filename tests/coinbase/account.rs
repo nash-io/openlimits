@@ -3,11 +3,8 @@ use rust_decimal::prelude::Decimal;
 use std::env;
 
 use openlimits::coinbase::{
+    model::{GetFillsReq, GetOrderRequest},
     Coinbase,
-    model::{
-        GetFillsReq,
-        GetOrderRequest,
-    },
 };
 
 #[tokio::test]

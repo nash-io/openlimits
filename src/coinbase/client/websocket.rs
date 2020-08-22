@@ -13,13 +13,10 @@ use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 
 use crate::{
-    shared::{
-        Result,
-        errors::OpenLimitError,
-    },
     coinbase::model::websocket::{
         Channel, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd, Subscription,
     },
+    shared::{errors::OpenLimitError, Result},
 };
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

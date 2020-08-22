@@ -1,9 +1,6 @@
 use crate::shared::{
+    errors::{CoinbaseContentError, OpenLimitError},
     Result,
-    errors::{
-        CoinbaseContentError,
-        OpenLimitError,
-    },
 };
 
 use hmac::{Hmac, Mac, NewMac};

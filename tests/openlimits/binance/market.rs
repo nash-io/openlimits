@@ -1,12 +1,7 @@
 use openlimits::openlimits::{
     binance::Binance,
     exchange::Exchange,
-    model::{
-        GetHistoricRatesRequest,
-        GetPriceTickerRequest,
-        Interval,
-        OrderBookRequest,
-    },
+    model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
 };
 
 #[tokio::test]

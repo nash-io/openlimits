@@ -1,6 +1,6 @@
 pub mod websocket;
-use serde::{Deserialize, Serialize};
 use crate::shared::string_to_decimal;
+use serde::{Deserialize, Serialize};
 
 use rust_decimal::prelude::Decimal;
 

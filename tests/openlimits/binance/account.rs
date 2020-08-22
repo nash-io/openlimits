@@ -5,12 +5,8 @@ use openlimits::openlimits::{
     binance::Binance,
     exchange::Exchange,
     model::{
-        CancelAllOrdersRequest,
-        CancelOrderRequest,
-        GetOrderHistoryRequest,
-        OpenLimitOrderRequest,
-        OpenMarketOrderRequest,
-        TradeHistoryRequest,
+        CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
+        OpenMarketOrderRequest, TradeHistoryRequest,
     },
 };
 use rust_decimal::prelude::Decimal;

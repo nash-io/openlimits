@@ -10,8 +10,8 @@ use sha2::Sha256;
 use url::Url;
 
 use crate::shared::{
-    Result,
     errors::{BinanceContentError, OpenLimitError},
+    Result,
 };
 
 type HmacSha256 = Hmac<Sha256>;

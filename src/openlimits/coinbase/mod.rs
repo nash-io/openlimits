@@ -2,24 +2,17 @@ use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
 
 use crate::{
-    shared::{
-        timestamp_to_datetime,
-        errors::OpenLimitError,
-        Result,
-    },
-    coinbase::{
-        self,
-        model::GetOrderRequest,
-    },
+    coinbase::{self, model::GetOrderRequest},
     openlimits::{
         exchange::Exchange,
         model::{
             Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Candle,
-            GetHistoricRatesRequest, GetOrderHistoryRequest, GetPriceTickerRequest, Interval, Liquidity,
-            OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
-            OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
+            GetHistoricRatesRequest, GetOrderHistoryRequest, GetPriceTickerRequest, Interval,
+            Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
+            OrderBookResponse, OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
         },
-    }
+    },
+    shared::{errors::OpenLimitError, timestamp_to_datetime, Result},
 };
 use std::convert::TryFrom;
 

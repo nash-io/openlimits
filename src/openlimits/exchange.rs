@@ -2,26 +2,13 @@ use async_trait::async_trait;
 use derive_more::Constructor;
 
 use crate::{
-    shared::Result,
     openlimits::model::{
-        Balance,
-        CancelAllOrdersRequest,
-        CancelOrderRequest,
-        Candle,
-        GetHistoricRatesRequest,
-        GetOrderHistoryRequest,
-        GetPriceTickerRequest,
-        OpenLimitOrderRequest,
-        OpenMarketOrderRequest,
-        Order,
-        OrderBookRequest,
-        OrderBookResponse,
-        OrderCanceled,
-        Paginator,
-        Ticker,
-        Trade,
-        TradeHistoryRequest,
+        Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
+        GetOrderHistoryRequest, GetPriceTickerRequest, OpenLimitOrderRequest,
+        OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
+        Paginator, Ticker, Trade, TradeHistoryRequest,
     },
+    shared::Result,
 };
 
 #[derive(Constructor)]

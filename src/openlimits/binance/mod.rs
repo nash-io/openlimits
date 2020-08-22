@@ -2,23 +2,17 @@ use async_trait::async_trait;
 use derive_more::{Deref, DerefMut};
 
 use crate::{
-    binance::{
-        self,
-        model::KlineSummaries,
-    },
-    shared::{
-        Result,
-        errors::OpenLimitError,
-    },
+    binance::{self, model::KlineSummaries},
     openlimits::{
         exchange::Exchange,
         model::{
             Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Candle,
-            GetHistoricRatesRequest, GetOrderHistoryRequest, GetPriceTickerRequest, Interval, Liquidity,
-            OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
-            OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
+            GetHistoricRatesRequest, GetOrderHistoryRequest, GetPriceTickerRequest, Interval,
+            Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
+            OrderBookResponse, OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
         },
     },
+    shared::{errors::OpenLimitError, Result},
 };
 
 #[derive(Deref, DerefMut)]

@@ -1,11 +1,8 @@
 use crate::{
-    shared::Result,
     binance::model::websocket::{
-        AccountUpdate,
-        BinanceWebsocketMessage,
-        Subscription,
-        UserOrderUpdate,
+        AccountUpdate, BinanceWebsocketMessage, Subscription, UserOrderUpdate,
     },
+    shared::Result,
 };
 
 use std::{collections::HashMap, pin::Pin, task::Poll};

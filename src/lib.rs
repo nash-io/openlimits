@@ -7,6 +7,7 @@
 )]
 
 extern crate chrono;
+extern crate derive_more;
 extern crate hex;
 extern crate hmac;
 extern crate log;
@@ -18,7 +19,6 @@ extern crate tokio;
 extern crate tokio_tungstenite;
 extern crate tungstenite;
 extern crate url;
-extern crate derive_more;
 
 pub mod binance;
 pub mod coinbase;

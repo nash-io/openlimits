@@ -2,24 +2,14 @@ use serde_json::json;
 use serde_json::Value;
 
 use crate::{
-    shared::{
-        Result,
-        errors::OpenLimitError,
-    },
     binance::{
-        Binance,
         model::{
-            BookTickers,
-            KlineParams,
-            KlineSummaries,
-            KlineSummary,
-            OrderBook,
-            PriceStats,
-            Prices,
-            SymbolPrice,
-            Ticker,
+            BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
+            SymbolPrice, Ticker,
         },
+        Binance,
     },
+    shared::{errors::OpenLimitError, Result},
 };
 
 use rust_decimal::prelude::Decimal;

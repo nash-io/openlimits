@@ -1,12 +1,7 @@
 use chrono::naive::NaiveDateTime;
 use openlimits::coinbase::{
+    model::{BookRecordL1, CandleRequestParams, DateRange, Paginator},
     Coinbase,
-    model::{
-        BookRecordL1,
-        Paginator,
-        CandleRequestParams,
-        DateRange,
-    },
 };
 
 #[tokio::test]

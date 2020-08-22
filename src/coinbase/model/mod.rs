@@ -1,9 +1,7 @@
-use serde::{Deserialize, Serialize};
 use crate::shared::{
-    naive_datetime_from_string,
-    opt_naive_datetime_from_string,
-    string_to_decimal,
+    naive_datetime_from_string, opt_naive_datetime_from_string, string_to_decimal,
 };
+use serde::{Deserialize, Serialize};
 pub mod websocket;
 use chrono::naive::NaiveDateTime;
 use rust_decimal::prelude::Decimal;
