@@ -2,29 +2,23 @@ pub mod client;
 pub mod model;
 mod transport;
 
-use async_trait::async_trait;
 use crate::{
     errors::OpenLimitError,
-    shared::{
-        Result,
-        timestamp_to_datetime,
-    },
-    exchange_info::ExchangeInfo,
     exchange::Exchange,
+    exchange_info::ExchangeInfo,
     model::{
         Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetOrderHistoryRequest, GetPriceTickerRequest, Interval,
         Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
         OrderBookResponse, OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
     },
+    shared::{timestamp_to_datetime, Result},
 };
+use async_trait::async_trait;
 
-use model::{
-    GetOrderRequest,
-    CandleRequestParams,
-};
-use transport::Transport;
+use model::{CandleRequestParams, GetOrderRequest};
 use std::convert::TryFrom;
+use transport::Transport;
 
 #[derive(Clone)]
 pub struct Coinbase {
@@ -149,9 +143,7 @@ impl Exchange for Coinbase {
     }
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
-        Coinbase::ticker(self, &req.symbol)
-            .await
-            .map(Into::into)
+        Coinbase::ticker(self, &req.symbol).await.map(Into::into)
     }
 
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {

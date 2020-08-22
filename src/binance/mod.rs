@@ -2,19 +2,19 @@ pub mod client;
 pub mod model;
 mod transport;
 
-use async_trait::async_trait;
 use crate::{
-    shared::Result,
     errors::OpenLimitError,
-    exchange_info::ExchangeInfo,
     exchange::Exchange,
+    exchange_info::ExchangeInfo,
     model::{
         Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetOrderHistoryRequest, GetPriceTickerRequest, Interval,
         Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
         OrderBookResponse, OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
     },
+    shared::Result,
 };
+use async_trait::async_trait;
 use model::KlineSummaries;
 use transport::Transport;
 
@@ -133,9 +133,7 @@ impl Exchange for Binance {
     }
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
-        Binance::get_price(self, &req.symbol)
-            .await
-            .map(Into::into)
+        Binance::get_price(self, &req.symbol).await.map(Into::into)
     }
 
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
