@@ -67,11 +67,11 @@ impl ExchangeInfoRetrieval for Binance {
                         .unwrap();
 
                     return (
-                        symbol.symbol,
+                        symbol.symbol.clone(),
                         MarketPair {
                             base: symbol.base_asset,
                             quote: symbol.quote_asset,
-                            symbol: symbol,
+                            symbol: symbol.symbol,
                             base_increment: lot_size.clone(),
                             quote_increment: tick_size.clone(),
                         },

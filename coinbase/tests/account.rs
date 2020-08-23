@@ -46,7 +46,7 @@ async fn get_all_orders_for_a_given_product() {
     let params = GetOrderRequest {
         status: None,
         paginator: None,
-        product_id: &market_pair,
+        product_id: Some(market_pair.inner.read().unwrap().symbol.clone()),
     };
 
     let resp = exchange.get_orders(Some(&params)).await.unwrap();
@@ -192,7 +192,7 @@ async fn get_fills_for_product() {
 
     let params = GetFillsReq {
         order_id: None,
-        product_id: Some(String::from(&market_pair)),
+        product_id: Some(market_pair.inner.read().unwrap().symbol.clone()),
         paginator: None,
     };
 

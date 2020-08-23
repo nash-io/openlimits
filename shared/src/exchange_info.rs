@@ -4,7 +4,7 @@ use rust_decimal::Decimal;
 
 use std::{
     collections::HashMap,
-    sync::{Arc, RwLockReadGuard, RwLock},
+    sync::{Arc, RwLock},
 };
 
 pub async fn get_pair<'a>(
@@ -36,7 +36,7 @@ pub struct MarketPair {
     pub quote_increment: Decimal,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct MarketPairHandle {
     pub inner: Arc<RwLock<MarketPair>>,
 }
@@ -52,7 +52,7 @@ impl<'a> serde::Serialize for MarketPairHandle {
     where
         S: serde::Serializer,
     {
-        return serializer.collect_str(&self.inner.read().unwrap().symbol );
+        return serializer.collect_str(&self.inner.read().unwrap().symbol);
     }
 }
 
@@ -79,7 +79,7 @@ impl ExchangeInfo {
         //     .get(name)
         //     .map(|pair| pair.read())
         //     .map(|inner| MarketPairHandle::new(inner.unwrap()))
-        }
+    }
 
     pub async fn refresh(&self, retrieval: &dyn ExchangeInfoRetrieval) -> Result<()> {
         match retrieval.retrieve_pairs().await {

@@ -1,8 +1,5 @@
 use serde::{Deserialize, Serialize};
-use shared::{
-    exchange_info::MarketPairHandle, naive_datetime_from_string, opt_naive_datetime_from_string,
-    string_to_decimal,
-};
+use shared::{naive_datetime_from_string, opt_naive_datetime_from_string, string_to_decimal};
 pub mod websocket;
 use chrono::naive::NaiveDateTime;
 use rust_decimal::prelude::Decimal;
@@ -190,7 +187,7 @@ pub struct Order {
 pub struct OrderRequest {
     pub side: OrderSide,
     pub client_oid: Option<String>,
-    pub product_id: MarketPairHandle,
+    pub product_id: String,
     #[serde(flatten)]
     pub _type: OrderRequestType,
     #[serde(flatten)]
