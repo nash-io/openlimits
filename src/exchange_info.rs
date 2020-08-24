@@ -4,15 +4,15 @@ use rust_decimal::Decimal;
 
 use std::{
     collections::HashMap,
-    sync::{Arc, RwLock},
+    sync::{Arc, RwLockReadGuard, RwLock},
 };
 
-pub async fn get_pair(
+pub async fn get_pair<'a>(
     name: &str,
-    exchange_info: &ExchangeInfo,
+    exchange_info: &'a mut ExchangeInfo,
     retrieval: &dyn ExchangeInfoRetrieval,
     refresh: bool,
-) -> Result<Option<TradePairHandle>> {
+) -> Result<Option<MarketPairHandle<'a>>> {
     if refresh {
         if let Err(err) = exchange_info.refresh(retrieval).await {
             return Err(err);
@@ -24,11 +24,11 @@ pub async fn get_pair(
 
 #[async_trait]
 pub trait ExchangeInfoRetrieval: Sync {
-    async fn retrieve_pairs(&self) -> Result<Vec<(String, TradePair)>>;
+    async fn retrieve_pairs(&self) -> Result<Vec<(String, MarketPair)>>;
 }
 
 #[derive(Debug, Clone)]
-pub struct TradePair {
+pub struct MarketPair {
     pub base: String,
     pub quote: String,
     pub symbol: String,
@@ -36,48 +36,54 @@ pub struct TradePair {
     pub quote_increment: Decimal,
 }
 
-#[derive(Clone, Debug)]
-pub struct TradePairHandle {
-    inner: Arc<RwLock<TradePair>>,
+#[derive(Debug)]
+pub struct MarketPairHandle<'a> {
+    pub inner: RwLockReadGuard<'a, MarketPair>,
 }
 
-impl TradePairHandle {
-    fn new(inner: Arc<RwLock<TradePair>>) -> Self {
+impl<'a> MarketPairHandle<'a> {
+    fn new(inner: RwLockReadGuard<'a, MarketPair>) -> Self {
         Self { inner }
+    }
+}
+
+impl<'a> serde::Serialize for MarketPairHandle<'a> {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        return serializer.collect_str(&self.inner.symbol );
     }
 }
 
 #[derive(Clone)]
 pub struct ExchangeInfo {
-    pairs: Arc<RwLock<HashMap<String, Arc<RwLock<TradePair>>>>>,
+    pairs: HashMap<String, Arc<RwLock<MarketPair>>>,
 }
 
 impl ExchangeInfo {
     pub fn new() -> Self {
         Self {
-            pairs: Arc::new(RwLock::new(HashMap::default())),
+            pairs: HashMap::default(),
         }
     }
 
-    pub fn get_pair(&self, name: &str) -> Option<TradePairHandle> {
+    pub fn get_pair(&self, name: &str) -> Option<MarketPairHandle> {
         self.pairs
-            .read()
-            .unwrap()
             .get(name)
-            .map(|pair| TradePairHandle::new(pair.clone()))
+            .map(|pair| pair.read())
+            .map(|inner| MarketPairHandle::new(inner.unwrap()))
     }
 
-    pub async fn refresh(&self, retrieval: &dyn ExchangeInfoRetrieval) -> Result<()> {
+    pub async fn refresh(&mut self, retrieval: &dyn ExchangeInfoRetrieval) -> Result<()> {
         match retrieval.retrieve_pairs().await {
             Ok(pairs) => {
-                if let Ok(mut writable_pairs) = self.pairs.write() {
-                    for (id, pair) in pairs {
-                        let entry = writable_pairs
-                            .entry(id)
-                            .or_insert_with(|| Arc::new(RwLock::new(pair.clone())));
-                        if let Ok(mut entry) = entry.write() {
-                            *entry = pair;
-                        }
+                for (id, pair) in pairs {
+                    let entry = self.pairs
+                        .entry(id)
+                        .or_insert_with(|| Arc::new(RwLock::new(pair.clone())));
+                    if let Ok(mut entry) = entry.write() {
+                        *entry = pair;
                     }
                 }
             }

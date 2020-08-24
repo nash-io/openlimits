@@ -7,7 +7,7 @@ use crate::{
         model::{Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade},
         Coinbase,
     },
-    exchange_info::{get_pair, ExchangeInfoRetrieval, TradePair, TradePairHandle},
+    exchange_info::{get_pair, ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     shared::Result,
 };
 
@@ -49,20 +49,20 @@ impl Coinbase {
         self.transport.get(&endpoint, params).await
     }
 
-    pub async fn pair(&self, name: &str, refresh: bool) -> Result<Option<TradePairHandle>> {
-        get_pair(name, &self.exchange_info, self, refresh).await
+    pub async fn pair<'a>(&'a mut self, name: &str, refresh: bool) -> Result<Option<MarketPairHandle<'a>>> {
+        get_pair(name, &mut self.exchange_info, self, refresh).await
     }
 }
 
 #[async_trait]
 impl ExchangeInfoRetrieval for Coinbase {
-    async fn retrieve_pairs(&self) -> Result<Vec<(String, TradePair)>> {
+    async fn retrieve_pairs(&self) -> Result<Vec<(String, MarketPair)>> {
         self.products().await.map(|v| {
             v.into_iter()
                 .map(|product| {
                     (
                         product.id.clone(),
-                        TradePair {
+                        MarketPair {
                             symbol: product.id,
                             base: product.base_currency,
                             quote: product.quote_currency,
