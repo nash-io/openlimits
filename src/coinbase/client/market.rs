@@ -49,8 +49,8 @@ impl Coinbase {
         self.transport.get(&endpoint, params).await
     }
 
-    pub async fn pair<'a>(&'a mut self, name: &str, refresh: bool) -> Result<Option<MarketPairHandle<'a>>> {
-        get_pair(name, &mut self.exchange_info, self, refresh).await
+    pub async fn pair(&self, name: &str, refresh: bool) -> Result<Option<MarketPairHandle>> {
+        get_pair(name, &self.exchange_info, self, refresh).await
     }
 }
 
