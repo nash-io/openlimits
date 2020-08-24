@@ -3,10 +3,8 @@ use crate::{
         model::{ExchangeInformation, ServerTime, SymbolFilter},
         Binance,
     },
-    shared::{
-        exchange_info::{get_pair, ExchangeInfoRetrieval, TradePair, TradePairHandle},
-        Result,
-    },
+    exchange_info::{get_pair, ExchangeInfoRetrieval, TradePair, TradePairHandle},
+    shared::Result,
 };
 use async_trait::async_trait;
 use serde_json::Value;

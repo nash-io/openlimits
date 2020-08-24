@@ -9,9 +9,9 @@ use serde::Serialize;
 use sha2::Sha256;
 use url::Url;
 
-use crate::shared::{
+use crate::{
     errors::{BinanceContentError, OpenLimitError},
-    Result,
+    shared::Result,
 };
 
 type HmacSha256 = Hmac<Sha256>;

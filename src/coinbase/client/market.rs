@@ -7,10 +7,8 @@ use crate::{
         model::{Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade},
         Coinbase,
     },
-    shared::{
-        exchange_info::{get_pair, ExchangeInfoRetrieval, TradePair, TradePairHandle},
-        Result,
-    },
+    exchange_info::{get_pair, ExchangeInfoRetrieval, TradePair, TradePairHandle},
+    shared::Result,
 };
 
 impl Coinbase {

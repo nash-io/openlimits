@@ -1,4 +1,4 @@
-use super::Result;
+use crate::shared::Result;
 use async_trait::async_trait;
 use rust_decimal::Decimal;
 

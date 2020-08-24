@@ -1,128 +1,144 @@
 use dotenv::dotenv;
-use rust_decimal::prelude::Decimal;
 use std::env;
 
-use openlimits::binance::{
-    model::{AllOrderReq, TradeHistoryReq},
-    Binance,
+use openlimits::{
+    binance::Binance,
+    exchange::Exchange,
+    model::{
+        CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
+        OpenMarketOrderRequest, TradeHistoryRequest,
+    },
 };
-
-#[tokio::test]
-async fn get_account() {
-    let exchange = init();
-    let resp = exchange.get_account().await.unwrap();
-    println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn get_balance() {
-    let exchange = init();
-    let resp = exchange.get_balance("BTC").await.unwrap();
-    println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn get_open_orders() {
-    let exchange = init();
-    let resp = exchange.get_open_orders("BNBBTC").await.unwrap();
-    println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn get_all_open_orders() {
-    let exchange = init();
-    let resp = exchange.get_all_open_orders().await.unwrap();
-    println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn get_all_orders() {
-    let exchange = init();
-    let params = AllOrderReq {
-        paginator: None,
-        symbol: String::from("BNBBTC"),
-    };
-    let resp = exchange.get_all_orders(&params).await.unwrap();
-    println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn order_status() {
-    let exchange = init();
-    let transaction = exchange
-        .limit_sell("BNBBTC", Decimal::new(1, 1), Decimal::new(2, 3))
-        .await
-        .unwrap();
-    let resp = exchange
-        .order_status("BNBBTC", transaction.order_id)
-        .await
-        .unwrap();
-    println!("{:?}", resp);
-}
+use rust_decimal::prelude::Decimal;
 
 #[tokio::test]
 async fn limit_buy() {
     let exchange = init();
-    let resp = exchange
-        .limit_buy("BNBBTC", Decimal::new(1, 1), Decimal::new(1, 3))
-        .await
-        .unwrap();
+    let req = OpenLimitOrderRequest {
+        price: Decimal::new(1, 3),
+        size: Decimal::new(1, 1),
+        symbol: String::from("BNBBTC"),
+    };
+    let resp = exchange.limit_buy(&req).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn limit_sell() {
     let exchange = init();
-    let resp = exchange
-        .limit_sell("BNBBTC", Decimal::new(1, 1), Decimal::new(2, 3))
-        .await
-        .unwrap();
+    let req = OpenLimitOrderRequest {
+        price: Decimal::new(1, 3),
+        size: Decimal::new(1, 1),
+        symbol: String::from("BNBBTC"),
+    };
+    let resp = exchange.limit_sell(&req).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn market_buy() {
     let exchange = init();
-    let resp = exchange
-        .market_buy("BNBBTC", Decimal::new(1, 1))
-        .await
-        .unwrap();
+    let req = OpenMarketOrderRequest {
+        size: Decimal::new(1, 1),
+        symbol: String::from("BNBBTC"),
+    };
+    let resp = exchange.market_buy(&req).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn market_sell() {
     let exchange = init();
-    let resp = exchange
-        .market_sell("BNBBTC", Decimal::new(1, 1))
-        .await
-        .unwrap();
+    let req = OpenMarketOrderRequest {
+        size: Decimal::new(1, 1),
+        symbol: String::from("BNBBTC"),
+    };
+    let resp = exchange.market_sell(&req).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn cancel_order() {
     let exchange = init();
-    let transaction = exchange
-        .limit_sell("BNBBTC", Decimal::new(1, 1), Decimal::new(2, 3))
-        .await
-        .unwrap();
-    let resp = exchange
-        .cancel_order("BNBBTC", transaction.order_id)
-        .await
-        .unwrap();
+    let req = OpenLimitOrderRequest {
+        price: Decimal::new(5, 3),
+        size: Decimal::new(1, 1),
+        symbol: String::from("BNBBTC"),
+    };
+    let order = exchange.limit_sell(&req).await.unwrap();
+
+    let req = CancelOrderRequest {
+        id: order.id,
+        pair: Some(order.symbol),
+    };
+
+    let resp = exchange.cancel_order(&req).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
-async fn trade_history() {
+async fn cancel_all_orders() {
     let exchange = init();
-    let params = TradeHistoryReq {
-        paginator: None,
+    let req = OpenLimitOrderRequest {
+        price: Decimal::new(1, 3),
+        size: Decimal::new(1, 1),
         symbol: String::from("BNBBTC"),
     };
+    exchange.limit_sell(&req).await.unwrap();
 
-    let resp = exchange.trade_history(&params).await.unwrap();
+    exchange.limit_sell(&req).await.unwrap();
+
+    let req = CancelAllOrdersRequest {
+        pair: Some("BNBBTC".to_string()),
+    };
+
+    let resp = exchange.cancel_all_orders(&req).await.unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn get_order_history() {
+    let exchange = init();
+    let req = GetOrderHistoryRequest {
+        symbol: Some(String::from("BNBBTC")),
+        paginator: None,
+    };
+
+    let resp = exchange.get_order_history(&req).await.unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn get_all_open_orders() {
+    let exchange = init();
+    let req = OpenLimitOrderRequest {
+        price: Decimal::new(1, 3),
+        size: Decimal::new(1, 1),
+        symbol: String::from("BNBBTC"),
+    };
+    exchange.limit_sell(&req).await.unwrap();
+
+    let resp = exchange.get_all_open_orders().await.unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn get_account_balances() {
+    let exchange = init();
+
+    let resp = exchange.get_account_balances(None).await.unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn get_trade_history() {
+    let exchange = init();
+    let req = TradeHistoryRequest {
+        pair: Some("BNBBTC".to_string()),
+        ..Default::default()
+    };
+
+    let resp = exchange.get_trade_history(&req).await.unwrap();
     println!("{:?}", resp);
 }
 
