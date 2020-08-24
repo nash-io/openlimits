@@ -71,6 +71,17 @@ async fn limit_buy() {
 }
 
 #[tokio::test]
+async fn rounded_limit_buy() {
+    let exchange = init();
+
+    let resp = exchange
+        .limit_buy("BNBBTC", Decimal::new(12345678, 8), Decimal::new(1, 3))
+        .await
+        .unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
 async fn limit_sell() {
     let exchange = init();
     let resp = exchange

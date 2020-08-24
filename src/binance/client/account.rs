@@ -104,24 +104,29 @@ impl Binance {
         qty: Decimal,
         price: Decimal,
     ) -> Result<Transaction> {
-        let buy: OrderRequest = OrderRequest {
-            symbol: symbol.into(),
-            qty,
-            price,
-            order_side: ORDER_SIDE_BUY.to_string(),
-            order_type: ORDER_TYPE_LIMIT.to_string(),
-            time_in_force: TIME_IN_FORCE_GTC.to_string(),
-        };
-        let params = self.build_order(buy);
+        match self.exchange_info.refresh(self).await {
+            Ok(_) => {
+                let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
+                let pair = pair_handle.read();
+                let buy: OrderRequest = OrderRequest {
+                    symbol: symbol.into(),
+                    qty: qty.round_dp(pair.base_increment.normalize().scale()),
+                    price,
+                    order_side: ORDER_SIDE_BUY.to_string(),
+                    order_type: ORDER_TYPE_LIMIT.to_string(),
+                    time_in_force: TIME_IN_FORCE_GTC.to_string(),
+                };
+                let params = self.build_order(buy);
 
-        println!("{:?}", params);
+                let transaction = self
+                    .transport
+                    .signed_post("/api/v3/order", Some(&params))
+                    .await?;
 
-        let transaction = self
-            .transport
-            .signed_post("/api/v3/order", Some(&params))
-            .await?;
-
-        Ok(transaction)
+                Ok(transaction)
+            }
+            Err(err) => Err(err),
+        }
     }
 
     // Place a LIMIT order - SELL

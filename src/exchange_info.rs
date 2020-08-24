@@ -45,6 +45,10 @@ impl<'a> MarketPairHandle {
     fn new(inner: Arc<RwLock<MarketPair>>) -> Self {
         Self { inner }
     }
+
+    pub fn read(&'a self) -> MarketPair {
+        self.inner.read().unwrap().clone()
+    }
 }
 
 impl<'a> serde::Serialize for MarketPairHandle {
