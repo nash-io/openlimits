@@ -9,35 +9,35 @@ use openlimits::binance::{
 
 #[tokio::test]
 async fn get_account() {
-    let exchange = init();
+    let exchange = init().await;
     let resp = exchange.get_account().await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_balance() {
-    let exchange = init();
+    let exchange = init().await;
     let resp = exchange.get_balance("BTC").await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_open_orders() {
-    let exchange = init();
+    let exchange = init().await;
     let resp = exchange.get_open_orders("BNBBTC").await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_all_open_orders() {
-    let exchange = init();
+    let exchange = init().await;
     let resp = exchange.get_all_open_orders().await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_all_orders() {
-    let exchange = init();
+    let exchange = init().await;
     let params = AllOrderReq {
         paginator: None,
         symbol: String::from("BNBBTC"),
@@ -48,7 +48,7 @@ async fn get_all_orders() {
 
 #[tokio::test]
 async fn order_status() {
-    let exchange = init();
+    let exchange = init().await;
     let transaction = exchange
         .limit_sell("BNBBTC", Decimal::new(1, 1), Decimal::new(2, 3))
         .await
@@ -62,7 +62,7 @@ async fn order_status() {
 
 #[tokio::test]
 async fn limit_buy() {
-    let exchange = init();
+    let exchange = init().await;
     let resp = exchange
         .limit_buy("BNBBTC", Decimal::new(1, 1), Decimal::new(1, 3))
         .await
@@ -71,8 +71,19 @@ async fn limit_buy() {
 }
 
 #[tokio::test]
+async fn rounded_limit_buy() {
+    let exchange = init().await;
+
+    let resp = exchange
+        .limit_buy("BNBBTC", Decimal::new(12345678, 8), Decimal::new(1, 3))
+        .await
+        .unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
 async fn limit_sell() {
-    let exchange = init();
+    let exchange = init().await;
     let resp = exchange
         .limit_sell("BNBBTC", Decimal::new(1, 1), Decimal::new(2, 3))
         .await
@@ -82,9 +93,9 @@ async fn limit_sell() {
 
 #[tokio::test]
 async fn market_buy() {
-    let exchange = init();
+    let exchange = init().await;
     let resp = exchange
-        .market_buy("BNBBTC", Decimal::new(1, 1))
+        .market_buy("BNBBTC", Decimal::new(1, 0))
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -92,17 +103,18 @@ async fn market_buy() {
 
 #[tokio::test]
 async fn market_sell() {
-    let exchange = init();
+    let exchange = init().await;
     let resp = exchange
-        .market_sell("BNBBTC", Decimal::new(1, 1))
+        .market_sell("BNBBTC", Decimal::new(1, 0))
         .await
         .unwrap();
+
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn cancel_order() {
-    let exchange = init();
+    let exchange = init().await;
     let transaction = exchange
         .limit_sell("BNBBTC", Decimal::new(1, 1), Decimal::new(2, 3))
         .await
@@ -116,7 +128,7 @@ async fn cancel_order() {
 
 #[tokio::test]
 async fn trade_history() {
-    let exchange = init();
+    let exchange = init().await;
     let params = TradeHistoryReq {
         paginator: None,
         symbol: String::from("BNBBTC"),
@@ -126,11 +138,12 @@ async fn trade_history() {
     println!("{:?}", resp);
 }
 
-fn init() -> Binance {
+async fn init() -> Binance {
     dotenv().ok();
     Binance::with_credential(
         &env::var("BINANCE_API_KEY").unwrap(),
         &env::var("BINANCE_API_SECRET").unwrap(),
         true,
     )
+    .await
 }

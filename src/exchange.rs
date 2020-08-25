@@ -94,12 +94,16 @@ impl<E: Exchange> OpenLimits<E> {
     ) -> Result<Vec<Candle>> {
         self.exchange.get_historic_rates(req.as_ref()).await
     }
+    pub async fn refresh_market_info(&self) -> Result<()> {
+        self.exchange.refresh_market_info().await
+    }
 }
 
 #[async_trait]
 pub trait Exchange {
     type OrderIdType;
     type TradeIdType;
+    async fn refresh_market_info(&self) -> Result<()>;
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>>;
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>>;

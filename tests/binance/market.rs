@@ -6,7 +6,7 @@ use openlimits::{
 
 #[tokio::test]
 async fn order_book() {
-    let exchange = Binance::new(true);
+    let exchange = Binance::new(true).await;
     let req = OrderBookRequest {
         symbol: "BNBBTC".to_string(),
     };
@@ -16,7 +16,7 @@ async fn order_book() {
 
 #[tokio::test]
 async fn get_price_ticker() {
-    let exchange = Binance::new(true);
+    let exchange = Binance::new(true).await;
     let req = GetPriceTickerRequest {
         symbol: "BNBBTC".to_string(),
     };
@@ -26,7 +26,7 @@ async fn get_price_ticker() {
 
 #[tokio::test]
 async fn get_historic_rates() {
-    let exchange = Binance::new(true);
+    let exchange = Binance::new(true).await;
     let req = GetHistoricRatesRequest {
         symbol: "BNBBTC".to_string(),
         interval: Interval::OneHour,

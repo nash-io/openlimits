@@ -7,28 +7,20 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-pub async fn get_pair(
+pub async fn get_pair<'a>(
     name: &str,
-    exchange_info: &ExchangeInfo,
-    retrieval: &dyn ExchangeInfoRetrieval,
-    refresh: bool,
-) -> Result<Option<TradePairHandle>> {
-    if refresh {
-        if let Err(err) = exchange_info.refresh(retrieval).await {
-            return Err(err);
-        }
-    }
-
+    exchange_info: &'a ExchangeInfo,
+) -> Result<Option<MarketPairHandle>> {
     Ok(exchange_info.get_pair(name))
 }
 
 #[async_trait]
 pub trait ExchangeInfoRetrieval: Sync {
-    async fn retrieve_pairs(&self) -> Result<Vec<(String, TradePair)>>;
+    async fn retrieve_pairs(&self) -> Result<Vec<(String, MarketPair)>>;
 }
 
 #[derive(Debug, Clone)]
-pub struct TradePair {
+pub struct MarketPair {
     pub base: String,
     pub quote: String,
     pub symbol: String,
@@ -36,20 +28,33 @@ pub struct TradePair {
     pub quote_increment: Decimal,
 }
 
-#[derive(Clone, Debug)]
-pub struct TradePairHandle {
-    inner: Arc<RwLock<TradePair>>,
+#[derive(Debug)]
+pub struct MarketPairHandle {
+    pub inner: Arc<RwLock<MarketPair>>,
 }
 
-impl TradePairHandle {
-    fn new(inner: Arc<RwLock<TradePair>>) -> Self {
+impl<'a> MarketPairHandle {
+    fn new(inner: Arc<RwLock<MarketPair>>) -> Self {
         Self { inner }
+    }
+
+    pub fn read(&'a self) -> MarketPair {
+        self.inner.read().unwrap().clone()
+    }
+}
+
+impl<'a> serde::Serialize for MarketPairHandle {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        return serializer.collect_str(&self.inner.read().unwrap().symbol);
     }
 }
 
 #[derive(Clone)]
 pub struct ExchangeInfo {
-    pairs: Arc<RwLock<HashMap<String, Arc<RwLock<TradePair>>>>>,
+    pairs: Arc<RwLock<HashMap<String, Arc<RwLock<MarketPair>>>>>,
 }
 
 impl ExchangeInfo {
@@ -59,12 +64,10 @@ impl ExchangeInfo {
         }
     }
 
-    pub fn get_pair(&self, name: &str) -> Option<TradePairHandle> {
-        self.pairs
-            .read()
-            .unwrap()
-            .get(name)
-            .map(|pair| TradePairHandle::new(pair.clone()))
+    pub fn get_pair(&self, name: &str) -> Option<MarketPairHandle> {
+        let market_map = self.pairs.read().unwrap();
+        let market_pair = market_map.get(name);
+        market_pair.map(|inner| MarketPairHandle::new(inner.clone()))
     }
 
     pub async fn refresh(&self, retrieval: &dyn ExchangeInfoRetrieval) -> Result<()> {

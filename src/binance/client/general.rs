@@ -3,7 +3,7 @@ use crate::{
         model::{ExchangeInformation, ServerTime, SymbolFilter},
         Binance,
     },
-    exchange_info::{get_pair, ExchangeInfoRetrieval, TradePair, TradePairHandle},
+    exchange_info::{get_pair, ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     shared::Result,
 };
 use async_trait::async_trait;
@@ -29,14 +29,14 @@ impl Binance {
             .await
     }
 
-    pub async fn get_pair(&self, name: &str, refresh: bool) -> Result<Option<TradePairHandle>> {
-        get_pair(name, &self.exchange_info, self, refresh).await
+    pub async fn get_pair(&self, name: &str) -> Result<Option<MarketPairHandle>> {
+        get_pair(name, &self.exchange_info).await
     }
 }
 
 #[async_trait]
 impl ExchangeInfoRetrieval for Binance {
-    async fn retrieve_pairs(&self) -> Result<Vec<(String, TradePair)>> {
+    async fn retrieve_pairs(&self) -> Result<Vec<(String, MarketPair)>> {
         self.get_exchange_info().await.map(|v| {
             v.symbols
                 .into_iter()
@@ -69,7 +69,7 @@ impl ExchangeInfoRetrieval for Binance {
 
                     (
                         symbol.symbol.clone(),
-                        TradePair {
+                        MarketPair {
                             base: symbol.base_asset,
                             quote: symbol.quote_asset,
                             symbol: symbol.symbol,

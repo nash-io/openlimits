@@ -1,12 +1,11 @@
 use serde_json::json;
 use std::collections::HashMap;
-use sugar::{convert_args, hashmap};
 
 use crate::{
     binance::{
         model::{
-            AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, TradeHistory,
-            TradeHistoryReq, Transaction,
+            AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest,
+            TradeHistory, TradeHistoryReq, Transaction,
         },
         Binance,
     },
@@ -21,15 +20,6 @@ static ORDER_TYPE_MARKET: &str = "MARKET";
 static ORDER_SIDE_BUY: &str = "BUY";
 static ORDER_SIDE_SELL: &str = "SELL";
 static TIME_IN_FORCE_GTC: &str = "GTC";
-
-struct OrderRequest {
-    pub symbol: String,
-    pub qty: Decimal,
-    pub price: Decimal,
-    pub order_side: String,
-    pub order_type: String,
-    pub time_in_force: String,
-}
 
 impl Binance {
     // Account Information
@@ -104,21 +94,24 @@ impl Binance {
         qty: Decimal,
         price: Decimal,
     ) -> Result<Transaction> {
+        let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
+        let pair = pair_handle.read();
+
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
-            qty,
-            price,
+            quantity: qty.round_dp(pair.base_increment.normalize().scale()),
+            price: Some(price.round_dp_with_strategy(
+                pair.quote_increment.normalize().scale(),
+                RoundingStrategy::RoundDown,
+            )),
             order_side: ORDER_SIDE_BUY.to_string(),
             order_type: ORDER_TYPE_LIMIT.to_string(),
-            time_in_force: TIME_IN_FORCE_GTC.to_string(),
+            time_in_force: Some(TIME_IN_FORCE_GTC.to_string()),
         };
-        let params = self.build_order(buy);
-
-        println!("{:?}", params);
 
         let transaction = self
             .transport
-            .signed_post("/api/v3/order", Some(&params))
+            .signed_post("/api/v3/order", Some(&buy))
             .await?;
 
         Ok(transaction)
@@ -131,18 +124,24 @@ impl Binance {
         qty: Decimal,
         price: Decimal,
     ) -> Result<Transaction> {
+        let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
+        let pair = pair_handle.read();
+
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
-            qty,
-            price,
+            quantity: qty.round_dp(pair.base_increment.normalize().scale()),
+            price: Some(price.round_dp_with_strategy(
+                pair.quote_increment.normalize().scale(),
+                RoundingStrategy::RoundUp,
+            )),
             order_side: ORDER_SIDE_SELL.to_string(),
             order_type: ORDER_TYPE_LIMIT.to_string(),
-            time_in_force: TIME_IN_FORCE_GTC.to_string(),
+            time_in_force: Some(TIME_IN_FORCE_GTC.to_string()),
         };
-        let params = self.build_order(sell);
+
         let transaction = self
             .transport
-            .signed_post("/api/v3/order", Some(&params))
+            .signed_post("/api/v3/order", Some(&sell))
             .await?;
 
         Ok(transaction)
@@ -150,18 +149,21 @@ impl Binance {
 
     // Place a MARKET order - BUY
     pub async fn market_buy(&self, symbol: &str, qty: Decimal) -> Result<Transaction> {
+        let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
+        let pair = pair_handle.read();
+
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
-            qty,
-            price: Decimal::from_str("0.0").unwrap(),
+            quantity: qty.round_dp(pair.base_increment.normalize().scale()),
+            price: None,
             order_side: ORDER_SIDE_BUY.to_string(),
             order_type: ORDER_TYPE_MARKET.to_string(),
-            time_in_force: TIME_IN_FORCE_GTC.to_string(),
+            time_in_force: None,
         };
-        let params = self.build_order(buy);
+
         let transaction = self
             .transport
-            .signed_post("/api/v3/order", Some(&params))
+            .signed_post("/api/v3/order", Some(&buy))
             .await?;
 
         Ok(transaction)
@@ -169,18 +171,21 @@ impl Binance {
 
     // Place a MARKET order - SELL
     pub async fn market_sell(&self, symbol: &str, qty: Decimal) -> Result<Transaction> {
+        let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
+        let pair = pair_handle.read();
+
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
-            qty,
-            price: Decimal::new(0, 0),
+            quantity: qty.round_dp(pair.base_increment.normalize().scale()),
+            price: None,
             order_side: ORDER_SIDE_SELL.to_string(),
             order_type: ORDER_TYPE_MARKET.to_string(),
-            time_in_force: TIME_IN_FORCE_GTC.to_string(),
+            time_in_force: None,
         };
-        let params = self.build_order(sell);
+
         let transaction = self
             .transport
-            .signed_post("/api/v3/order", Some(&params))
+            .signed_post("/api/v3/order", Some(&sell))
             .await?;
         Ok(transaction)
     }
@@ -212,21 +217,5 @@ impl Binance {
             .await?;
 
         Ok(trade_history)
-    }
-
-    fn build_order(&self, order: OrderRequest) -> HashMap<&'static str, String> {
-        let mut params: HashMap<&str, String> = convert_args!(hashmap!(
-            "symbol" => order.symbol,
-            "side" => order.order_side,
-            "type" => order.order_type,
-            "quantity" => order.qty.to_string(),
-        ));
-
-        if order.price != Decimal::new(0, 0) {
-            params.insert("price", order.price.to_string());
-            params.insert("timeInForce", order.time_in_force);
-        }
-
-        params
     }
 }
