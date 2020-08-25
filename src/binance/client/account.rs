@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use crate::{
     binance::{
         model::{
-            AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, TradeHistory,
-            TradeHistoryReq, Transaction, OrderRequest
+            AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest,
+            TradeHistory, TradeHistoryReq, Transaction,
         },
         Binance,
     },
@@ -160,7 +160,7 @@ impl Binance {
             order_type: ORDER_TYPE_MARKET.to_string(),
             time_in_force: None,
         };
-        
+
         let transaction = self
             .transport
             .signed_post("/api/v3/order", Some(&buy))

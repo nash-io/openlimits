@@ -42,7 +42,7 @@ impl Binance {
         };
 
         state.refresh_market_info().await.unwrap();
-        state 
+        state
     }
 }
 

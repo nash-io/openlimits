@@ -138,11 +138,12 @@ async fn trade_history() {
     println!("{:?}", resp);
 }
 
-async fn init() -> Binance {    
+async fn init() -> Binance {
     dotenv().ok();
     Binance::with_credential(
         &env::var("BINANCE_API_KEY").unwrap(),
         &env::var("BINANCE_API_SECRET").unwrap(),
         true,
-    ).await
+    )
+    .await
 }
