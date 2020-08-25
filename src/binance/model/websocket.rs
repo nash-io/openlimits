@@ -29,7 +29,7 @@ pub enum BinanceWebsocketMessage {
     UserAccountUpdate(AccountUpdate),
     AggregateTrade(AggregateTrade),
     Trade(TradeMessage),
-    Candlestick(CandelStickMessage),
+    Candlestick(CandlestickMessage),
     MiniTicker(MiniTicker),
     MiniTickerAll(Vec<MiniTicker>),
     Ticker(Ticker),
@@ -233,7 +233,7 @@ pub struct Ticker {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct CandelStickMessage {
+pub struct CandlestickMessage {
     #[serde(rename = "e")]
     pub event_type: String,
     #[serde(rename = "E")]
