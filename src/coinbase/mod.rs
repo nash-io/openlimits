@@ -27,24 +27,30 @@ pub struct Coinbase {
 }
 
 impl Coinbase {
-    pub fn new(sandbox: bool) -> Self {
-        Coinbase {
+    pub async fn new(sandbox: bool) -> Self {
+        let state = Coinbase {
             exchange_info: ExchangeInfo::new(),
             transport: Transport::new(sandbox).unwrap(),
-        }
+        };
+
+        state.refresh_market_info().await.unwrap();
+        state
     }
 
-    pub fn with_credential(
+    pub async fn with_credential(
         api_key: &str,
         api_secret: &str,
         passphrase: &str,
         sandbox: bool,
     ) -> Self {
-        Coinbase {
+        let state = Coinbase {
             exchange_info: ExchangeInfo::new(),
             transport: Transport::with_credential(api_key, api_secret, passphrase, sandbox)
                 .unwrap(),
-        }
+        };
+
+        state.refresh_market_info().await.unwrap();
+        state
     }
 }
 
