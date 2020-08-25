@@ -52,29 +52,29 @@ impl Exchange for Binance {
     type TradeIdType = u64;
 
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
-        self.get_depth(req.symbol.as_str(), None)
+        self.get_depth(req.market_pair.as_str(), None)
             .await
             .map(Into::into)
     }
 
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
-        Binance::limit_buy(self, &req.symbol, req.size, req.price)
+        Binance::limit_buy(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
-        Binance::limit_sell(self, &req.symbol, req.size, req.price)
+        Binance::limit_sell(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
     async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
-        Binance::market_buy(self, &req.symbol, req.size)
+        Binance::market_buy(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
     async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
-        Binance::market_sell(self, &req.symbol, req.size)
+        Binance::market_sell(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
@@ -82,7 +82,7 @@ impl Exchange for Binance {
         &self,
         req: &CancelOrderRequest<Self::OrderIdType>,
     ) -> Result<OrderCanceled<Self::OrderIdType>> {
-        if let Some(pair) = req.pair.as_ref() {
+        if let Some(pair) = req.market_pair.as_ref() {
             Binance::cancel_order(self, pair.as_ref(), req.id)
                 .await
                 .map(Into::into)
@@ -96,7 +96,7 @@ impl Exchange for Binance {
         &self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>> {
-        if let Some(pair) = req.pair.as_ref() {
+        if let Some(pair) = req.market_pair.as_ref() {
             Binance::cancel_all_orders(self, pair.as_ref())
                 .await
                 .map(|v| v.into_iter().map(Into::into).collect())
@@ -139,7 +139,9 @@ impl Exchange for Binance {
     }
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
-        Binance::get_price(self, &req.symbol).await.map(Into::into)
+        Binance::get_price(self, &req.market_pair)
+            .await
+            .map(Into::into)
     }
 
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
@@ -187,7 +189,7 @@ impl From<model::Transaction> for Order<u64> {
     fn from(order: model::Transaction) -> Self {
         Self {
             id: order.order_id,
-            symbol: order.symbol,
+            market_pair: order.symbol,
             client_order_id: Some(order.client_order_id),
             created_at: order.transact_time,
         }
@@ -198,7 +200,7 @@ impl From<model::Order> for Order<u64> {
     fn from(order: model::Order) -> Self {
         Self {
             id: order.order_id,
-            symbol: order.symbol,
+            market_pair: order.symbol,
             client_order_id: Some(order.client_order_id),
             created_at: order.time,
         }
@@ -226,7 +228,7 @@ impl From<model::TradeHistory> for Trade<u64, u64> {
         Self {
             id: trade_history.id,
             order_id: trade_history.order_id,
-            pair: trade_history.symbol,
+            market_pair: trade_history.symbol,
             price: trade_history.price,
             qty: trade_history.qty,
             fees: trade_history.commission,
@@ -255,7 +257,7 @@ impl From<&GetOrderHistoryRequest> for model::AllOrderReq {
     fn from(req: &GetOrderHistoryRequest) -> Self {
         Self {
             paginator: req.paginator.clone().map(|p| p.into()),
-            symbol: req.symbol.clone().unwrap(),
+            symbol: req.market_pair.clone().unwrap(),
         }
     }
 }
@@ -264,7 +266,7 @@ impl From<&TradeHistoryRequest<u64>> for model::TradeHistoryReq {
     fn from(trade_history: &TradeHistoryRequest<u64>) -> Self {
         Self {
             paginator: trade_history.paginator.clone().map(|p| p.into()),
-            symbol: trade_history.pair.clone().unwrap(),
+            symbol: trade_history.market_pair.clone().unwrap(),
         }
     }
 }
@@ -276,7 +278,7 @@ impl From<&GetHistoricRatesRequest> for model::KlineParams {
         Self {
             interval: String::from(interval),
             paginator: req.paginator.clone().map(|d| d.into()),
-            symbol: req.symbol.clone(),
+            symbol: req.market_pair.clone(),
         }
     }
 }
