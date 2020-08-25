@@ -25,18 +25,24 @@ pub struct Binance {
 }
 
 impl Binance {
-    pub fn new(sandbox: bool) -> Self {
-        Binance {
+    pub async fn new(sandbox: bool) -> Self {
+        let state = Binance {
             exchange_info: ExchangeInfo::new(),
             transport: Transport::new(sandbox).unwrap(),
-        }
+        };
+
+        state.refresh_market_info().await.unwrap();
+        state
     }
 
-    pub fn with_credential(api_key: &str, api_secret: &str, sandbox: bool) -> Self {
-        Binance {
+    pub async fn with_credential(api_key: &str, api_secret: &str, sandbox: bool) -> Self {
+        let state = Binance {
             exchange_info: ExchangeInfo::new(),
             transport: Transport::with_credential(api_key, api_secret, sandbox).unwrap(),
-        }
+        };
+
+        state.refresh_market_info().await.unwrap();
+        state 
     }
 }
 
@@ -142,6 +148,10 @@ impl Exchange for Binance {
         Binance::get_klines(self, &params)
             .await
             .map(|KlineSummaries::AllKlineSummaries(v)| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn refresh_market_info(&self) -> Result<()> {
+        self.exchange_info.refresh(self).await
     }
 }
 

@@ -10,15 +10,7 @@ use std::{
 pub async fn get_pair<'a>(
     name: &str,
     exchange_info: &'a ExchangeInfo,
-    retrieval: &dyn ExchangeInfoRetrieval,
-    refresh: bool,
 ) -> Result<Option<MarketPairHandle>> {
-    if refresh {
-        if let Err(err) = exchange_info.refresh(retrieval).await {
-            return Err(err);
-        }
-    }
-
     Ok(exchange_info.get_pair(name))
 }
 

@@ -30,17 +30,17 @@ pub mod string_to_decimal {
 }
 
 pub mod string_to_opt_decimal {
-    use std::fmt;
-
     use rust_decimal::prelude::*;
     use serde::{Deserialize, Deserializer, Serializer};
 
-    pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S>(value: &Option<Decimal>, serializer: S) -> Result<S::Ok, S::Error>
     where
-        T: fmt::Display,
         S: Serializer,
     {
-        serializer.collect_str(value)
+        if let Some(value) = value {
+            return serializer.collect_str(&value);
+        }
+        serializer.serialize_none()
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Decimal>, D::Error>

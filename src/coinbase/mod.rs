@@ -152,6 +152,10 @@ impl Exchange for Coinbase {
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
+
+    async fn refresh_market_info(&self) -> Result<()> {
+        self.exchange_info.refresh(self).await
+    }
 }
 
 impl From<model::Book<model::BookRecordL2>> for OrderBookResponse {

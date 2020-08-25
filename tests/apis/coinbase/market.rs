@@ -72,7 +72,7 @@ async fn candles() {
         .unwrap();
     println!("{:?}", res);
     let date =
-        NaiveDateTime::parse_from_str("2020-01-20T00:00:00.642366Z", "%Y-%m-%dT%H:%M:%S.%fZ")
+        NaiveDateTime::parse_from_str("2020-08-20T00:00:00.642366Z", "%Y-%m-%dT%H:%M:%S.%fZ")
             .unwrap();
 
     let res = exchange
@@ -94,6 +94,6 @@ async fn candles() {
 #[tokio::test]
 async fn pair() {
     let exchange = Coinbase::new(true);
-    let res = exchange.pair("BTC-USD", true).await.unwrap();
+    let res = exchange.pair("BTC-USD").await.unwrap();
     println!("{:?}", res);
 }
