@@ -1,12 +1,12 @@
 use openlimits::{
     binance::Binance,
-    exchange::Exchange,
+    exchange::OpenLimits,
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
 };
 
 #[tokio::test]
 async fn order_book() {
-    let exchange = Binance::new(true).await;
+    let exchange = init().await;
     let req = OrderBookRequest {
         symbol: "BNBBTC".to_string(),
     };
@@ -16,7 +16,7 @@ async fn order_book() {
 
 #[tokio::test]
 async fn get_price_ticker() {
-    let exchange = Binance::new(true).await;
+    let exchange = init().await;
     let req = GetPriceTickerRequest {
         symbol: "BNBBTC".to_string(),
     };
@@ -26,7 +26,7 @@ async fn get_price_ticker() {
 
 #[tokio::test]
 async fn get_historic_rates() {
-    let exchange = Binance::new(true).await;
+    let exchange = init().await;
     let req = GetHistoricRatesRequest {
         symbol: "BNBBTC".to_string(),
         interval: Interval::OneHour,
@@ -34,4 +34,10 @@ async fn get_historic_rates() {
     };
     let resp = exchange.get_historic_rates(&req).await.unwrap();
     println!("{:?}", resp);
+}
+
+async fn init() -> OpenLimits<Binance> {
+    OpenLimits {
+        exchange: Binance::new(true).await,
+    }
 }

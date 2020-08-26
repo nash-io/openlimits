@@ -1,12 +1,12 @@
 use openlimits::{
     coinbase::Coinbase,
-    exchange::Exchange,
+    exchange::OpenLimits,
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
 };
 
 #[tokio::test]
 async fn order_book() {
-    let exchange = Coinbase::new(true);
+    let exchange = init().await;
     let req = OrderBookRequest {
         symbol: "ETH-BTC".to_string(),
     };
@@ -16,7 +16,7 @@ async fn order_book() {
 
 #[tokio::test]
 async fn get_price_ticker() {
-    let exchange = Coinbase::new(true);
+    let exchange = init().await;
     let req = GetPriceTickerRequest {
         symbol: "ETH-BTC".to_string(),
     };
@@ -26,7 +26,7 @@ async fn get_price_ticker() {
 
 #[tokio::test]
 async fn get_historic_rates() {
-    let exchange = Coinbase::new(true);
+    let exchange = init().await;
     let req = GetHistoricRatesRequest {
         symbol: "ETH-BTC".to_string(),
         interval: Interval::OneHour,
@@ -38,7 +38,7 @@ async fn get_historic_rates() {
 
 #[tokio::test]
 async fn get_historic_rates_invalid_interval() {
-    let exchange = Coinbase::new(true);
+    let exchange = init().await;
     let req = GetHistoricRatesRequest {
         symbol: "ETH-BTC".to_string(),
         interval: Interval::TwoHours,
@@ -46,4 +46,10 @@ async fn get_historic_rates_invalid_interval() {
     };
     let resp = exchange.get_historic_rates(&req).await;
     assert!(resp.is_err());
+}
+
+async fn init() -> OpenLimits<Coinbase> {
+    OpenLimits {
+        exchange: Coinbase::new(true).await,
+    }
 }
