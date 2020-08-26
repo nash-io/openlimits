@@ -13,54 +13,42 @@ use crate::{
 
 #[derive(Constructor)]
 pub struct OpenLimits<E: Exchange> {
-    exchange: E,
+    pub exchange: E,
 }
 
 impl<E: Exchange> OpenLimits<E> {
-    pub async fn order_book(&self, req: impl AsRef<OrderBookRequest>) -> Result<OrderBookResponse> {
-        self.exchange.order_book(req.as_ref()).await
+    pub async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
+        self.exchange.order_book(req).await
     }
 
-    pub async fn limit_buy(
-        &self,
-        req: impl AsRef<OpenLimitOrderRequest>,
-    ) -> Result<Order<E::OrderIdType>> {
-        self.exchange.limit_buy(req.as_ref()).await
+    pub async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<E::OrderIdType>> {
+        self.exchange.limit_buy(req).await
     }
 
-    pub async fn limit_sell(
-        &self,
-        req: impl AsRef<OpenLimitOrderRequest>,
-    ) -> Result<Order<E::OrderIdType>> {
-        self.exchange.limit_sell(req.as_ref()).await
+    pub async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<E::OrderIdType>> {
+        self.exchange.limit_sell(req).await
     }
 
-    pub async fn market_buy(
-        &self,
-        req: impl AsRef<OpenMarketOrderRequest>,
-    ) -> Result<Order<E::OrderIdType>> {
-        self.exchange.market_buy(req.as_ref()).await
+    pub async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<E::OrderIdType>> {
+        self.exchange.market_buy(req).await
     }
 
-    pub async fn market_sell(
-        &self,
-        req: impl AsRef<OpenMarketOrderRequest>,
-    ) -> Result<Order<E::OrderIdType>> {
-        self.exchange.market_sell(req.as_ref()).await
+    pub async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<E::OrderIdType>> {
+        self.exchange.market_sell(req).await
     }
 
     pub async fn cancel_order(
         &self,
-        req: impl AsRef<CancelOrderRequest<E::OrderIdType>>,
+        req: &CancelOrderRequest<E::OrderIdType>,
     ) -> Result<OrderCanceled<E::OrderIdType>> {
-        self.exchange.cancel_order(req.as_ref()).await
+        self.exchange.cancel_order(req).await
     }
 
     pub async fn cancel_all_orders(
         &self,
-        req: impl AsRef<CancelAllOrdersRequest>,
+        req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<E::OrderIdType>>> {
-        self.exchange.cancel_all_orders(req.as_ref()).await
+        self.exchange.cancel_all_orders(req).await
     }
 
     pub async fn get_all_open_orders(&self) -> Result<Vec<Order<E::OrderIdType>>> {
@@ -69,9 +57,9 @@ impl<E: Exchange> OpenLimits<E> {
 
     pub async fn get_order_history(
         &self,
-        req: impl AsRef<GetOrderHistoryRequest>,
+        req: &GetOrderHistoryRequest,
     ) -> Result<Vec<Order<E::OrderIdType>>> {
-        self.exchange.get_order_history(req.as_ref()).await
+        self.exchange.get_order_history(req).await
     }
 
     pub async fn get_account_balances(
@@ -83,19 +71,20 @@ impl<E: Exchange> OpenLimits<E> {
 
     pub async fn get_trade_history(
         &self,
-        req: impl AsRef<TradeHistoryRequest<E::OrderIdType>>,
+        req: &TradeHistoryRequest<E::OrderIdType>,
     ) -> Result<Vec<Trade<E::TradeIdType, E::OrderIdType>>> {
-        self.exchange.get_trade_history(req.as_ref()).await
+        self.exchange.get_trade_history(req).await
     }
 
-    pub async fn get_historic_rates(
-        &self,
-        req: impl AsRef<GetHistoricRatesRequest>,
-    ) -> Result<Vec<Candle>> {
-        self.exchange.get_historic_rates(req.as_ref()).await
+    pub async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
+        self.exchange.get_historic_rates(req).await
     }
     pub async fn refresh_market_info(&self) -> Result<()> {
         self.exchange.refresh_market_info().await
+    }
+
+    pub async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
+        self.exchange.get_price_ticker(req).await
     }
 }
 

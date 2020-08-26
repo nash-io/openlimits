@@ -3,7 +3,7 @@ use std::env;
 
 use openlimits::{
     coinbase::Coinbase,
-    exchange::Exchange,
+    exchange::OpenLimits,
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         OpenMarketOrderRequest, TradeHistoryRequest,
@@ -13,7 +13,7 @@ use rust_decimal::prelude::Decimal;
 
 #[tokio::test]
 async fn limit_buy() {
-    let exchange = init();
+    let exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 3),
         size: Decimal::new(1, 1),
@@ -25,7 +25,7 @@ async fn limit_buy() {
 
 #[tokio::test]
 async fn limit_sell() {
-    let exchange = init();
+    let exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 1),
         size: Decimal::new(1, 1),
@@ -37,7 +37,7 @@ async fn limit_sell() {
 
 #[tokio::test]
 async fn market_buy() {
-    let exchange = init();
+    let exchange = init().await;
     let req = OpenMarketOrderRequest {
         size: Decimal::new(1, 1),
         symbol: String::from("ETH-BTC"),
@@ -48,7 +48,7 @@ async fn market_buy() {
 
 #[tokio::test]
 async fn market_sell() {
-    let exchange = init();
+    let exchange = init().await;
     let req = OpenMarketOrderRequest {
         size: Decimal::new(1, 1),
         symbol: String::from("ETH-BTC"),
@@ -59,7 +59,7 @@ async fn market_sell() {
 
 #[tokio::test]
 async fn cancel_order() {
-    let exchange = init();
+    let exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 1),
         size: Decimal::new(1, 1),
@@ -77,7 +77,7 @@ async fn cancel_order() {
 
 #[tokio::test]
 async fn cancel_all_orders() {
-    let exchange = init();
+    let exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 1),
         size: Decimal::new(1, 1),
@@ -97,7 +97,7 @@ async fn cancel_all_orders() {
 
 #[tokio::test]
 async fn get_order_history() {
-    let exchange = init();
+    let exchange = init().await;
     let req = GetOrderHistoryRequest {
         symbol: Some(String::from("ETH-BTC")),
         paginator: None,
@@ -109,7 +109,7 @@ async fn get_order_history() {
 
 #[tokio::test]
 async fn get_all_open_orders() {
-    let exchange = init();
+    let exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 1),
         size: Decimal::new(1, 1),
@@ -123,14 +123,14 @@ async fn get_all_open_orders() {
 
 #[tokio::test]
 async fn get_account_balances() {
-    let exchange = init();
+    let exchange = init().await;
     let resp = exchange.get_account_balances(None).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_trade_history() {
-    let exchange = init();
+    let exchange = init().await;
     let req = TradeHistoryRequest {
         pair: Some("ETH-BTC".to_string()),
         ..Default::default()
@@ -140,12 +140,16 @@ async fn get_trade_history() {
     println!("{:?}", resp);
 }
 
-fn init() -> Coinbase {
+async fn init() -> OpenLimits<Coinbase> {
     dotenv().ok();
-    Coinbase::with_credential(
+
+    let exchange = Coinbase::with_credential(
         &env::var("COINBASE_API_KEY").unwrap(),
         &env::var("COINBASE_API_SECRET").unwrap(),
         &env::var("COINBASE_PASSPHRASE").unwrap(),
         true,
     )
+    .await;
+
+    OpenLimits { exchange }
 }
