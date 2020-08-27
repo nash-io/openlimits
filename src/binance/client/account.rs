@@ -88,8 +88,8 @@ impl Binance {
 
     // Place a LIMIT order - BUY
     pub async fn limit_buy(&self, symbol: &str, qty: Decimal, price: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
-        let pair = pair_handle.read();
+        let pair_handle = self.exchange_info.get_pair(symbol)?;
+        let pair = pair_handle.read()?;
 
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
@@ -112,9 +112,10 @@ impl Binance {
     }
 
     // Place a LIMIT order - SELL
+
     pub async fn limit_sell(&self, symbol: &str, qty: Decimal, price: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
-        let pair = pair_handle.read();
+        let pair_handle = self.exchange_info.get_pair(symbol)?;
+        let pair = pair_handle.read()?;
 
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
@@ -138,8 +139,8 @@ impl Binance {
 
     // Place a MARKET order - BUY
     pub async fn market_buy(&self, symbol: &str, qty: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
-        let pair = pair_handle.read();
+        let pair_handle = self.exchange_info.get_pair(symbol)?;
+        let pair = pair_handle.read()?;
 
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
@@ -160,8 +161,8 @@ impl Binance {
 
     // Place a MARKET order - SELL
     pub async fn market_sell(&self, symbol: &str, qty: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
-        let pair = pair_handle.read();
+        let pair_handle = self.exchange_info.get_pair(symbol)?;
+        let pair = pair_handle.read()?;
 
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),

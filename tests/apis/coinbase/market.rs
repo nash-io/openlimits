@@ -94,6 +94,6 @@ async fn candles() {
 #[tokio::test]
 async fn pair() {
     let exchange = Coinbase::new(true).await;
-    let res = exchange.pair("BTC-USD").await.unwrap();
+    let res = exchange.pair("BTC-USD").unwrap();
     println!("{:?}", res);
 }

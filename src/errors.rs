@@ -61,6 +61,8 @@ pub enum OpenLimitError {
     #[error("")]
     IoError(#[from] std::io::Error),
     #[error("")]
+    PoisonError(),
+    #[error("")]
     JsonError(#[from] serde_json::Error),
     #[error("")]
     ParseFloatError(#[from] std::num::ParseFloatError),

@@ -7,7 +7,7 @@ use crate::{
         model::{Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade},
         Coinbase,
     },
-    exchange_info::{get_pair, ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
+    exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     shared::Result,
 };
 
@@ -49,8 +49,8 @@ impl Coinbase {
         self.transport.get(&endpoint, params).await
     }
 
-    pub async fn pair(&self, name: &str) -> Result<Option<MarketPairHandle>> {
-        get_pair(name, &self.exchange_info).await
+    pub fn pair(&self, name: &str) -> Result<MarketPairHandle> {
+        self.exchange_info.get_pair(name)
     }
 }
 

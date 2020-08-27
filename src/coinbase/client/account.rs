@@ -28,8 +28,8 @@ impl Coinbase {
 
     // TODO: refactor buy and sell in order creation in commun function
     pub async fn market_buy(&self, product: &str, size: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(product).unwrap();
-        let pair = pair_handle.read();
+        let pair_handle = self.exchange_info.get_pair(product)?;
+        let pair = pair_handle.read()?;
 
         let data = OrderRequest {
             product_id: product.into(),
@@ -52,8 +52,8 @@ impl Coinbase {
     }
 
     pub async fn market_sell(&self, product: &str, size: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(product).unwrap();
-        let pair = pair_handle.read();
+        let pair_handle = self.exchange_info.get_pair(product)?;
+        let pair = pair_handle.read()?;
 
         let data = OrderRequest {
             product_id: product.into(),
@@ -76,8 +76,8 @@ impl Coinbase {
     }
 
     pub async fn limit_buy(&self, product: &str, size: Decimal, price: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(product).unwrap();
-        let pair = pair_handle.read();
+        let pair_handle = self.exchange_info.get_pair(product)?;
+        let pair = pair_handle.read()?;
 
         let data = OrderRequest {
             product_id: product.into(),
@@ -104,8 +104,8 @@ impl Coinbase {
     }
 
     pub async fn limit_sell(&self, product: &str, size: Decimal, price: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(product).unwrap();
-        let pair = pair_handle.read();
+        let pair_handle = self.exchange_info.get_pair(product)?;
+        let pair = pair_handle.read()?;
 
         let data = OrderRequest {
             product_id: product.into(),
