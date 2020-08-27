@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Constructor, Debug, Default)]
 pub struct OrderBookRequest {
-    pub symbol: String,
+    pub market_pair: String,
 }
 
 #[derive(Clone, Constructor, Debug, Default)]
@@ -28,21 +28,21 @@ pub struct Asks {
 
 #[derive(Clone, Constructor, Debug, Default)]
 pub struct OpenLimitOrderRequest {
-    pub symbol: String,
+    pub market_pair: String,
     pub size: Decimal,
     pub price: Decimal,
 }
 
 #[derive(Clone, Constructor, Debug, Default)]
 pub struct OpenMarketOrderRequest {
-    pub symbol: String,
+    pub market_pair: String,
     pub size: Decimal,
 }
 
 #[derive(Clone, Constructor, Debug)]
 pub struct Order<T> {
     pub id: T,
-    pub symbol: String,
+    pub market_pair: String,
     pub client_order_id: Option<String>,
     pub created_at: u64,
 }
@@ -50,17 +50,17 @@ pub struct Order<T> {
 #[derive(Clone, Constructor, Debug)]
 pub struct CancelOrderRequest<T> {
     pub id: T,
-    pub pair: Option<String>,
+    pub market_pair: Option<String>,
 }
 
 #[derive(Clone, Constructor, Debug)]
 pub struct CancelAllOrdersRequest {
-    pub pair: Option<String>,
+    pub market_pair: Option<String>,
 }
 
 #[derive(Clone, Constructor, Debug)]
 pub struct GetOrderHistoryRequest {
-    pub symbol: Option<String>,
+    pub market_pair: Option<String>,
     pub paginator: Option<Paginator>,
 }
 
@@ -73,7 +73,7 @@ pub struct OrderCanceled<T> {
 pub struct Trade<T, O> {
     pub id: T,
     pub order_id: O,
-    pub pair: String,
+    pub market_pair: String,
     pub price: Decimal,
     pub qty: Decimal,
     pub fees: Decimal,
@@ -90,7 +90,7 @@ pub enum Liquidity {
 
 #[derive(Default)]
 pub struct TradeHistoryRequest<T> {
-    pub pair: Option<String>,
+    pub market_pair: Option<String>,
     pub order_id: Option<T>,
     pub paginator: Option<Paginator>,
 }
@@ -119,12 +119,12 @@ pub struct Candle {
 
 #[derive(Clone, Constructor, Debug, Default)]
 pub struct GetPriceTickerRequest {
-    pub symbol: String,
+    pub market_pair: String,
 }
 
 #[derive(Clone, Constructor, Debug)]
 pub struct GetHistoricRatesRequest {
-    pub symbol: String,
+    pub market_pair: String,
     pub paginator: Option<Paginator>,
     pub interval: Interval,
 }

@@ -16,7 +16,7 @@ pub async fn get_pair<'a>(
 
 #[async_trait]
 pub trait ExchangeInfoRetrieval: Sync {
-    async fn retrieve_pairs(&self) -> Result<Vec<(String, MarketPair)>>;
+    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>>;
 }
 
 #[derive(Debug, Clone)]
@@ -74,9 +74,9 @@ impl ExchangeInfo {
         match retrieval.retrieve_pairs().await {
             Ok(pairs) => {
                 if let Ok(mut writable_pairs) = self.pairs.write() {
-                    for (id, pair) in pairs {
+                    for pair in pairs {
                         let entry = writable_pairs
-                            .entry(id)
+                            .entry(pair.symbol.clone())
                             .or_insert_with(|| Arc::new(RwLock::new(pair.clone())));
                         if let Ok(mut entry) = entry.write() {
                             *entry = pair;

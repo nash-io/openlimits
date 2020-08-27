@@ -59,31 +59,31 @@ impl Exchange for Coinbase {
     type OrderIdType = String;
     type TradeIdType = u64;
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
-        self.book::<model::BookRecordL2>(&req.symbol)
+        self.book::<model::BookRecordL2>(&req.market_pair)
             .await
             .map(Into::into)
     }
 
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
-        Coinbase::limit_buy(self, &req.symbol, req.size, req.price)
+        Coinbase::limit_buy(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
-        Coinbase::limit_sell(self, &req.symbol, req.size, req.price)
+        Coinbase::limit_sell(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
     async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
-        Coinbase::market_buy(self, &req.symbol, req.size)
+        Coinbase::market_buy(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
 
     async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
-        Coinbase::market_sell(self, &req.symbol, req.size)
+        Coinbase::market_sell(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
@@ -92,7 +92,7 @@ impl Exchange for Coinbase {
         &self,
         req: &CancelOrderRequest<Self::OrderIdType>,
     ) -> Result<OrderCanceled<Self::OrderIdType>> {
-        Coinbase::cancel_order(self, req.id.clone(), req.pair.as_deref())
+        Coinbase::cancel_order(self, req.id.clone(), req.market_pair.as_deref())
             .await
             .map(Into::into)
     }
@@ -101,7 +101,7 @@ impl Exchange for Coinbase {
         &self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>> {
-        Coinbase::cancel_all_orders(self, req.pair.as_deref())
+        Coinbase::cancel_all_orders(self, req.market_pair.as_deref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -149,12 +149,14 @@ impl Exchange for Coinbase {
     }
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
-        Coinbase::ticker(self, &req.symbol).await.map(Into::into)
+        Coinbase::ticker(self, &req.market_pair)
+            .await
+            .map(Into::into)
     }
 
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
         let params = CandleRequestParams::try_from(req)?;
-        Coinbase::candles(self, &req.symbol, Some(&params))
+        Coinbase::candles(self, &req.market_pair, Some(&params))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -196,7 +198,7 @@ impl From<model::Order> for Order<String> {
     fn from(order: model::Order) -> Self {
         Self {
             id: order.id,
-            symbol: order.product_id,
+            market_pair: order.product_id,
             client_order_id: None,
             created_at: (order.created_at.timestamp_millis()) as u64,
         }
@@ -224,7 +226,7 @@ impl From<model::Fill> for Trade<u64, String> {
         Self {
             id: fill.trade_id,
             order_id: fill.order_id,
-            pair: fill.product_id,
+            market_pair: fill.product_id,
             price: fill.price,
             qty: fill.size,
             fees: fill.fee,
@@ -295,7 +297,7 @@ impl TryFrom<&GetHistoricRatesRequest> for model::CandleRequestParams {
 impl From<&GetOrderHistoryRequest> for model::GetOrderRequest {
     fn from(req: &GetOrderHistoryRequest) -> Self {
         Self {
-            product_id: req.symbol.clone(),
+            product_id: req.market_pair.clone(),
             paginator: req.paginator.clone().map(|p| p.into()),
             status: None,
         }
@@ -345,7 +347,7 @@ impl From<&TradeHistoryRequest<String>> for model::GetFillsReq {
         Self {
             order_id: req.order_id.clone(),
             paginator: req.paginator.clone().map(|p| p.into()),
-            product_id: req.pair.clone(),
+            product_id: req.market_pair.clone(),
         }
     }
 }

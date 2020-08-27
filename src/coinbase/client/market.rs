@@ -56,20 +56,15 @@ impl Coinbase {
 
 #[async_trait]
 impl ExchangeInfoRetrieval for Coinbase {
-    async fn retrieve_pairs(&self) -> Result<Vec<(String, MarketPair)>> {
+    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
         self.products().await.map(|v| {
             v.into_iter()
-                .map(|product| {
-                    (
-                        product.id.clone(),
-                        MarketPair {
-                            symbol: product.id,
-                            base: product.base_currency,
-                            quote: product.quote_currency,
-                            base_increment: product.base_increment,
-                            quote_increment: product.quote_increment,
-                        },
-                    )
+                .map(|product| MarketPair {
+                    symbol: product.id,
+                    base: product.base_currency,
+                    quote: product.quote_currency,
+                    base_increment: product.base_increment,
+                    quote_increment: product.quote_increment,
                 })
                 .collect()
         })

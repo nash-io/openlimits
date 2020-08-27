@@ -36,7 +36,7 @@ impl Binance {
 
 #[async_trait]
 impl ExchangeInfoRetrieval for Binance {
-    async fn retrieve_pairs(&self) -> Result<Vec<(String, MarketPair)>> {
+    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
         self.get_exchange_info().await.map(|v| {
             v.symbols
                 .into_iter()
@@ -67,16 +67,13 @@ impl ExchangeInfoRetrieval for Binance {
                         })
                         .unwrap();
 
-                    (
-                        symbol.symbol.clone(),
-                        MarketPair {
-                            base: symbol.base_asset,
-                            quote: symbol.quote_asset,
-                            symbol: symbol.symbol,
-                            base_increment: lot_size.clone(),
-                            quote_increment: tick_size.clone(),
-                        },
-                    )
+                    MarketPair {
+                        base: symbol.base_asset,
+                        quote: symbol.quote_asset,
+                        symbol: symbol.symbol,
+                        base_increment: lot_size.clone(),
+                        quote_increment: tick_size.clone(),
+                    }
                 })
                 .collect()
         })
