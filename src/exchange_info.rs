@@ -7,7 +7,7 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-pub async fn get_pair<'a>(name: &str, exchange_info: &'a ExchangeInfo) -> Result<MarketPairHandle> {
+pub fn get_pair<'a>(name: &str, exchange_info: &'a ExchangeInfo) -> Result<MarketPairHandle> {
     exchange_info.get_pair(name)
 }
 
@@ -48,7 +48,7 @@ impl<'a> serde::Serialize for MarketPairHandle {
     where
         S: serde::Serializer,
     {
-        return serializer.collect_str(&self.inner.read().unwrap().symbol);
+        serializer.collect_str(&self.inner.read().unwrap().symbol)
     }
 }
 
@@ -87,5 +87,11 @@ impl ExchangeInfo {
         }
 
         Ok(())
+    }
+}
+
+impl Default for ExchangeInfo {
+    fn default() -> Self {
+        ExchangeInfo::new()
     }
 }
