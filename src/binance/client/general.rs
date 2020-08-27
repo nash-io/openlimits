@@ -71,8 +71,8 @@ impl ExchangeInfoRetrieval for Binance {
                         base: symbol.base_asset,
                         quote: symbol.quote_asset,
                         symbol: symbol.symbol,
-                        base_increment: lot_size.clone(),
-                        quote_increment: tick_size.clone(),
+                        base_increment: *lot_size,
+                        quote_increment: *tick_size,
                     }
                 })
                 .collect()

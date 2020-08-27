@@ -86,8 +86,7 @@ pub mod naive_datetime_from_string {
 
         let DatetimeFromString::String(s) = DatetimeFromString::deserialize(deserializer)?;
 
-        NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S.%fZ")
-            .map_err(|res| serde::de::Error::custom(res))
+        NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S.%fZ").map_err(serde::de::Error::custom)
     }
 }
 
