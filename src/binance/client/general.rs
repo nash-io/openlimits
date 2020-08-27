@@ -3,7 +3,7 @@ use crate::{
         model::{ExchangeInformation, ServerTime, SymbolFilter},
         Binance,
     },
-    exchange_info::{get_pair, ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
+    exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     shared::Result,
 };
 use async_trait::async_trait;
@@ -29,8 +29,8 @@ impl Binance {
             .await
     }
 
-    pub async fn get_pair(&self, name: &str) -> Result<Option<MarketPairHandle>> {
-        get_pair(name, &self.exchange_info).await
+    pub fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
+        self.exchange_info.get_pair(name)
     }
 }
 

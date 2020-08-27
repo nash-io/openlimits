@@ -22,6 +22,6 @@ async fn get_exchange_info() {
 #[tokio::test]
 async fn get_pair() {
     let exchange = Binance::new(true).await;
-    let res = exchange.get_pair("BNBBTC").await.unwrap();
+    let res = exchange.get_pair("BNBBTC").unwrap();
     println!("{:?}", res);
 }

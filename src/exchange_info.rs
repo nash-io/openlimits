@@ -1,4 +1,4 @@
-use crate::shared::Result;
+use crate::{errors::OpenLimitError, shared::Result};
 use async_trait::async_trait;
 use rust_decimal::Decimal;
 
@@ -7,11 +7,8 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-pub async fn get_pair<'a>(
-    name: &str,
-    exchange_info: &'a ExchangeInfo,
-) -> Result<Option<MarketPairHandle>> {
-    Ok(exchange_info.get_pair(name))
+pub async fn get_pair<'a>(name: &str, exchange_info: &'a ExchangeInfo) -> Result<MarketPairHandle> {
+    exchange_info.get_pair(name)
 }
 
 #[async_trait]
@@ -38,8 +35,11 @@ impl<'a> MarketPairHandle {
         Self { inner }
     }
 
-    pub fn read(&'a self) -> MarketPair {
-        self.inner.read().unwrap().clone()
+    pub fn read(&'a self) -> Result<MarketPair> {
+        self.inner
+            .read()
+            .map(|guard| guard.clone())
+            .map_err(|_| OpenLimitError::PoisonError())
     }
 }
 
@@ -64,27 +64,26 @@ impl ExchangeInfo {
         }
     }
 
-    pub fn get_pair(&self, name: &str) -> Option<MarketPairHandle> {
+    pub fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
         let market_map = self.pairs.read().unwrap();
         let market_pair = market_map.get(name);
-        market_pair.map(|inner| MarketPairHandle::new(inner.clone()))
+        market_pair.map_or(Err(OpenLimitError::SymbolNotFound()), |inner| {
+            Ok(MarketPairHandle::new(inner.clone()))
+        })
     }
 
     pub async fn refresh(&self, retrieval: &dyn ExchangeInfoRetrieval) -> Result<()> {
-        match retrieval.retrieve_pairs().await {
-            Ok(pairs) => {
-                if let Ok(mut writable_pairs) = self.pairs.write() {
-                    for pair in pairs {
-                        let entry = writable_pairs
-                            .entry(pair.symbol.clone())
-                            .or_insert_with(|| Arc::new(RwLock::new(pair.clone())));
-                        if let Ok(mut entry) = entry.write() {
-                            *entry = pair;
-                        }
-                    }
+        let pairs = retrieval.retrieve_pairs().await?;
+
+        if let Ok(mut writable_pairs) = self.pairs.write() {
+            for pair in pairs {
+                let entry = writable_pairs
+                    .entry(pair.symbol.clone())
+                    .or_insert_with(|| Arc::new(RwLock::new(pair.clone())));
+                if let Ok(mut entry) = entry.write() {
+                    *entry = pair;
                 }
             }
-            Err(err) => return Err(err),
         }
 
         Ok(())
