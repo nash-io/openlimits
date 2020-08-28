@@ -10,18 +10,12 @@ pub struct OrderBookRequest {
 #[derive(Clone, Constructor, Debug, Default)]
 pub struct OrderBookResponse {
     pub last_update_id: Option<u64>,
-    pub bids: Vec<Bids>,
-    pub asks: Vec<Asks>,
+    pub bids: Vec<AskBid>,
+    pub asks: Vec<AskBid>,
 }
 
 #[derive(Clone, Constructor, Debug, Default)]
-pub struct Bids {
-    pub price: Decimal,
-    pub qty: Decimal,
-}
-
-#[derive(Clone, Constructor, Debug, Default)]
-pub struct Asks {
+pub struct AskBid {
     pub price: Decimal,
     pub qty: Decimal,
 }

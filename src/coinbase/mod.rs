@@ -7,7 +7,7 @@ use crate::{
     exchange::Exchange,
     exchange_info::ExchangeInfo,
     model::{
-        Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Candle,
+        AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetOrderHistoryRequest, GetPriceTickerRequest, Interval,
         Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
         OrderBookResponse, OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
@@ -28,7 +28,7 @@ pub struct Coinbase {
 
 impl Coinbase {
     pub async fn new(sandbox: bool) -> Self {
-        let state = Coinbase {
+        let mut state = Coinbase {
             exchange_info: ExchangeInfo::new(),
             transport: Transport::new(sandbox).unwrap(),
         };
@@ -43,7 +43,7 @@ impl Coinbase {
         passphrase: &str,
         sandbox: bool,
     ) -> Self {
-        let state = Coinbase {
+        let mut state = Coinbase {
             exchange_info: ExchangeInfo::new(),
             transport: Transport::with_credential(api_key, api_secret, passphrase, sandbox)
                 .unwrap(),
@@ -58,38 +58,38 @@ impl Coinbase {
 impl Exchange for Coinbase {
     type OrderIdType = String;
     type TradeIdType = u64;
-    async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
+    async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.book::<model::BookRecordL2>(&req.market_pair)
             .await
             .map(Into::into)
     }
 
-    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_buy(&mut self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
         Coinbase::limit_buy(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_sell(&mut self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
         Coinbase::limit_sell(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn market_buy(&mut self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
         Coinbase::market_buy(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
 
-    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn market_sell(&mut self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
         Coinbase::market_sell(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
 
     async fn cancel_order(
-        &self,
+        &mut self,
         req: &CancelOrderRequest<Self::OrderIdType>,
     ) -> Result<OrderCanceled<Self::OrderIdType>> {
         Coinbase::cancel_order(self, req.id.clone(), req.market_pair.as_deref())
@@ -98,7 +98,7 @@ impl Exchange for Coinbase {
     }
 
     async fn cancel_all_orders(
-        &self,
+        &mut self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>> {
         Coinbase::cancel_all_orders(self, req.market_pair.as_deref())
@@ -106,7 +106,7 @@ impl Exchange for Coinbase {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>> {
+    async fn get_all_open_orders(&mut self) -> Result<Vec<Order<Self::OrderIdType>>> {
         let params = GetOrderRequest {
             status: Some(String::from("open")),
             paginator: None,
@@ -119,7 +119,7 @@ impl Exchange for Coinbase {
     }
 
     async fn get_order_history(
-        &self,
+        &mut self,
         req: &GetOrderHistoryRequest,
     ) -> Result<Vec<Order<Self::OrderIdType>>> {
         let req: GetOrderRequest = req.into();
@@ -129,7 +129,7 @@ impl Exchange for Coinbase {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_account_balances(&self, paginator: Option<&Paginator>) -> Result<Vec<Balance>> {
+    async fn get_account_balances(&mut self, paginator: Option<&Paginator>) -> Result<Vec<Balance>> {
         let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
 
         Coinbase::get_account(self, paginator.as_ref())
@@ -138,7 +138,7 @@ impl Exchange for Coinbase {
     }
 
     async fn get_trade_history(
-        &self,
+        &mut self,
         req: &TradeHistoryRequest<Self::OrderIdType>,
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
         let req = req.into();
@@ -148,20 +148,20 @@ impl Exchange for Coinbase {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
+    async fn get_price_ticker(&mut self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         Coinbase::ticker(self, &req.market_pair)
             .await
             .map(Into::into)
     }
 
-    async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
+    async fn get_historic_rates(&mut self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
         let params = CandleRequestParams::try_from(req)?;
         Coinbase::candles(self, &req.market_pair, Some(&params))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn refresh_market_info(&self) -> Result<()> {
+    async fn refresh_market_info(&mut self) -> Result<()> {
         self.exchange_info.refresh(self).await
     }
 }
@@ -176,16 +176,7 @@ impl From<model::Book<model::BookRecordL2>> for OrderBookResponse {
     }
 }
 
-impl From<model::BookRecordL2> for Bids {
-    fn from(bids: model::BookRecordL2) -> Self {
-        Self {
-            price: bids.price,
-            qty: bids.size,
-        }
-    }
-}
-
-impl From<model::BookRecordL2> for Asks {
+impl From<model::BookRecordL2> for AskBid {
     fn from(bids: model::BookRecordL2) -> Self {
         Self {
             price: bids.price,
