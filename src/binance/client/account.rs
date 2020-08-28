@@ -5,7 +5,7 @@ use crate::{
     binance::{
         model::{
             AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest,
-            TradeHistory, TradeHistoryReq, Transaction,
+            TradeHistory, TradeHistoryReq,
         },
         Binance,
     },
@@ -76,8 +76,7 @@ impl Binance {
         Ok(orders)
     }
 
-    // Check an order's status
-    pub async fn order_status(&self, symbol: &str, order_id: u64) -> Result<Order> {
+    pub async fn get_order(&self, symbol: &str, order_id: u64) -> Result<Order> {
         let params = json! {{"symbol": symbol, "orderId": order_id}};
 
         let order = self
@@ -88,12 +87,7 @@ impl Binance {
     }
 
     // Place a LIMIT order - BUY
-    pub async fn limit_buy(
-        &self,
-        symbol: &str,
-        qty: Decimal,
-        price: Decimal,
-    ) -> Result<Transaction> {
+    pub async fn limit_buy(&self, symbol: &str, qty: Decimal, price: Decimal) -> Result<Order> {
         let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
         let pair = pair_handle.read();
 
@@ -118,12 +112,7 @@ impl Binance {
     }
 
     // Place a LIMIT order - SELL
-    pub async fn limit_sell(
-        &self,
-        symbol: &str,
-        qty: Decimal,
-        price: Decimal,
-    ) -> Result<Transaction> {
+    pub async fn limit_sell(&self, symbol: &str, qty: Decimal, price: Decimal) -> Result<Order> {
         let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
         let pair = pair_handle.read();
 
@@ -148,7 +137,7 @@ impl Binance {
     }
 
     // Place a MARKET order - BUY
-    pub async fn market_buy(&self, symbol: &str, qty: Decimal) -> Result<Transaction> {
+    pub async fn market_buy(&self, symbol: &str, qty: Decimal) -> Result<Order> {
         let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
         let pair = pair_handle.read();
 
@@ -170,7 +159,7 @@ impl Binance {
     }
 
     // Place a MARKET order - SELL
-    pub async fn market_sell(&self, symbol: &str, qty: Decimal) -> Result<Transaction> {
+    pub async fn market_sell(&self, symbol: &str, qty: Decimal) -> Result<Order> {
         let pair_handle = self.exchange_info.get_pair(symbol).unwrap();
         let pair = pair_handle.read();
 

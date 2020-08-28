@@ -20,7 +20,7 @@ impl Coinbase {
         self.transport.signed_get::<_, _>("/orders", params).await
     }
 
-    pub async fn order_status(&self, order_id: String) -> Result<Order> {
+    pub async fn get_order(&self, order_id: String) -> Result<Order> {
         self.transport
             .signed_get::<_, ()>(&format!("/orders/{}", order_id), None)
             .await

@@ -38,6 +38,25 @@ pub struct Order<T> {
     pub id: T,
     pub market_pair: String,
     pub client_order_id: Option<String>,
+    pub created_at: Option<u64>,
+    pub order_type: String,
+    pub side: Side,
+    pub status: OrderStatus,
+    pub size: Decimal,
+    pub price: Option<Decimal>,
+}
+
+#[derive(Clone, Constructor, Debug)]
+pub struct GetOrderRequest<T> {
+    pub id: T,
+    pub market_pair: Option<String>,
+}
+
+#[derive(Clone, Constructor, Debug)]
+pub struct Transaction<T> {
+    pub id: T,
+    pub market_pair: String,
+    pub client_order_id: Option<String>,
     pub created_at: u64,
 }
 
@@ -146,6 +165,21 @@ pub enum Interval {
     ThreeDay,
     OneWeek,
     OneMonth,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderStatus {
+    New,
+    PartiallyFilled,
+    Filled,
+    Canceled,
+    PendingCancel,
+    Rejected,
+    Expired,
+    Open,
+    Pending,
+    Active,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]

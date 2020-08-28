@@ -54,14 +54,14 @@ async fn get_all_orders_for_a_given_product() {
 }
 
 #[tokio::test]
-async fn order_status() {
+async fn get_order() {
     let exchange = init().await;
     let order = exchange
         .market_buy("BTC-USD", Decimal::new(1, 3))
         .await
         .unwrap();
 
-    let resp = exchange.order_status(order.id).await.unwrap();
+    let resp = exchange.get_order(order.id).await.unwrap();
     println!("{:?}", resp);
 }
 

@@ -8,15 +8,15 @@ use crate::{
     exchange_info::ExchangeInfo,
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
-        GetHistoricRatesRequest, GetOrderHistoryRequest, GetPriceTickerRequest, Interval,
-        Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
-        OrderBookResponse, OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
+        GetHistoricRatesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
+        Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
+        OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, Paginator, Side, Ticker,
+        Trade, TradeHistoryRequest,
     },
     shared::{timestamp_to_datetime, Result},
 };
 use async_trait::async_trait;
 
-use model::{CandleRequestParams, GetOrderRequest};
 use std::convert::TryFrom;
 use transport::Transport;
 
@@ -116,7 +116,7 @@ impl Exchange for Coinbase {
     }
 
     async fn get_all_open_orders(&mut self) -> Result<Vec<Order<Self::OrderIdType>>> {
-        let params = GetOrderRequest {
+        let params = model::GetOrderRequest {
             status: Some(String::from("open")),
             paginator: None,
             product_id: None,
@@ -131,7 +131,7 @@ impl Exchange for Coinbase {
         &mut self,
         req: &GetOrderHistoryRequest,
     ) -> Result<Vec<Order<Self::OrderIdType>>> {
-        let req: GetOrderRequest = req.into();
+        let req: model::GetOrderRequest = req.into();
 
         Coinbase::get_orders(self, Some(&req))
             .await
@@ -167,10 +167,19 @@ impl Exchange for Coinbase {
     }
 
     async fn get_historic_rates(&mut self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
-        let params = CandleRequestParams::try_from(req)?;
+        let params = model::CandleRequestParams::try_from(req)?;
         Coinbase::candles(self, &req.market_pair, Some(&params))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_order(
+        &mut self,
+        req: &GetOrderRequest<Self::OrderIdType>,
+    ) -> Result<Order<Self::OrderIdType>> {
+        let id = req.id.clone();
+
+        Coinbase::get_order(self, id).await.map(Into::into)
     }
 
     async fn refresh_market_info(&mut self) -> Result<()> {
@@ -199,11 +208,25 @@ impl From<model::BookRecordL2> for AskBid {
 
 impl From<model::Order> for Order<String> {
     fn from(order: model::Order) -> Self {
+        let (price, size, order_type) = match order._type {
+            model::OrderType::Limit {
+                price,
+                size,
+                time_in_force: _,
+            } => (Some(price), size, "limit"),
+            model::OrderType::Market { size, funds: _ } => (None, size, "market"),
+        };
+
         Self {
             id: order.id,
             market_pair: order.product_id,
             client_order_id: None,
-            created_at: (order.created_at.timestamp_millis()) as u64,
+            created_at: Some((order.created_at.timestamp_millis()) as u64),
+            price,
+            size,
+            side: order.side.into(),
+            status: order.status.into(),
+            order_type: String::from(order_type),
         }
     }
 }
@@ -351,6 +374,27 @@ impl From<&TradeHistoryRequest<String>> for model::GetFillsReq {
             order_id: req.order_id.clone(),
             paginator: req.paginator.clone().map(|p| p.into()),
             product_id: req.market_pair.clone(),
+        }
+    }
+}
+
+impl From<model::OrderSide> for Side {
+    fn from(req: model::OrderSide) -> Self {
+        match req {
+            model::OrderSide::Buy => Side::Buy,
+            model::OrderSide::Sell => Side::Sell,
+        }
+    }
+}
+
+impl From<model::OrderStatus> for OrderStatus {
+    fn from(req: model::OrderStatus) -> OrderStatus {
+        match req {
+            model::OrderStatus::Active => OrderStatus::Active,
+            model::OrderStatus::Done => OrderStatus::Filled,
+            model::OrderStatus::Open => OrderStatus::Open,
+            model::OrderStatus::Pending => OrderStatus::Pending,
+            model::OrderStatus::Rejected => OrderStatus::Rejected,
         }
     }
 }

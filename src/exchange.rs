@@ -4,7 +4,7 @@ use derive_more::Constructor;
 use crate::{
     model::{
         Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
-        GetOrderHistoryRequest, GetPriceTickerRequest, OpenLimitOrderRequest,
+        GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest, OpenLimitOrderRequest,
         OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
         Paginator, Ticker, Trade, TradeHistoryRequest,
     },
@@ -98,6 +98,13 @@ impl<E: Exchange> OpenLimits<E> {
         self.exchange.refresh_market_info().await
     }
 
+    pub async fn get_order(
+        &mut self,
+        req: GetOrderRequest<E::OrderIdType>,
+    ) -> Result<Order<E::OrderIdType>> {
+        self.exchange.get_order(&req).await
+    }
+
     pub async fn get_price_ticker(&mut self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         self.exchange.get_price_ticker(req).await
     }
@@ -141,4 +148,8 @@ pub trait Exchange {
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>>;
     async fn get_price_ticker(&mut self, req: &GetPriceTickerRequest) -> Result<Ticker>;
     async fn get_historic_rates(&mut self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>>;
+    async fn get_order(
+        &mut self,
+        req: &GetOrderRequest<Self::OrderIdType>,
+    ) -> Result<Order<Self::OrderIdType>>;
 }

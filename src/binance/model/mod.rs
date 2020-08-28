@@ -51,17 +51,21 @@ pub struct Order {
     pub client_order_id: String,
     #[serde(with = "string_to_decimal")]
     pub price: Decimal,
-    pub orig_qty: String,
+    #[serde(with = "string_to_decimal")]
+    pub orig_qty: Decimal,
     pub executed_qty: String,
-    pub status: String,
+    pub status: OrderStatus,
     pub time_in_force: String,
     #[serde(rename = "type")]
     pub type_name: String,
     pub side: String,
-    #[serde(with = "string_to_decimal")]
-    pub stop_price: Decimal,
-    pub iceberg_qty: String,
-    pub time: u64,
+    #[serde(with = "string_to_opt_decimal")]
+    #[serde(default)]
+    pub stop_price: Option<Decimal>,
+    #[serde(default)]
+    pub iceberg_qty: Option<String>,
+    #[serde(default)]
+    pub time: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
