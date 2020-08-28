@@ -6,9 +6,9 @@ use openlimits::{
 
 #[tokio::test]
 async fn order_book() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = OrderBookRequest {
-        symbol: "BNBBTC".to_string(),
+        market_pair: "BNBBTC".to_string(),
     };
     let resp = exchange.order_book(&req).await.unwrap();
     println!("{:?}", resp);
@@ -16,9 +16,9 @@ async fn order_book() {
 
 #[tokio::test]
 async fn get_price_ticker() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = GetPriceTickerRequest {
-        symbol: "BNBBTC".to_string(),
+        market_pair: "BNBBTC".to_string(),
     };
     let resp = exchange.get_price_ticker(&req).await.unwrap();
     println!("{:?}", resp);
@@ -26,9 +26,9 @@ async fn get_price_ticker() {
 
 #[tokio::test]
 async fn get_historic_rates() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = GetHistoricRatesRequest {
-        symbol: "BNBBTC".to_string(),
+        market_pair: "BNBBTC".to_string(),
         interval: Interval::OneHour,
         paginator: None,
     };

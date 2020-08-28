@@ -100,15 +100,7 @@ pub struct Transaction {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Bids {
-    #[serde(with = "string_to_decimal")]
-    pub price: Decimal,
-    #[serde(with = "string_to_decimal")]
-    pub qty: Decimal,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Asks {
+pub struct AskBid {
     #[serde(with = "string_to_decimal")]
     pub price: Decimal,
     #[serde(with = "string_to_decimal")]
@@ -391,8 +383,8 @@ pub struct Symbol {
 #[serde(rename_all = "camelCase")]
 pub struct OrderBook {
     pub last_update_id: u64,
-    pub bids: Vec<Bids>,
-    pub asks: Vec<Asks>,
+    pub bids: Vec<AskBid>,
+    pub asks: Vec<AskBid>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

@@ -6,9 +6,9 @@ use openlimits::{
 
 #[tokio::test]
 async fn order_book() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = OrderBookRequest {
-        symbol: "ETH-BTC".to_string(),
+        market_pair: "ETH-BTC".to_string(),
     };
     let resp = exchange.order_book(&req).await.unwrap();
     println!("{:?}", resp);
@@ -16,9 +16,9 @@ async fn order_book() {
 
 #[tokio::test]
 async fn get_price_ticker() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = GetPriceTickerRequest {
-        symbol: "ETH-BTC".to_string(),
+        market_pair: "ETH-BTC".to_string(),
     };
     let resp = exchange.get_price_ticker(&req).await.unwrap();
     println!("{:?}", resp);
@@ -26,9 +26,9 @@ async fn get_price_ticker() {
 
 #[tokio::test]
 async fn get_historic_rates() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = GetHistoricRatesRequest {
-        symbol: "ETH-BTC".to_string(),
+        market_pair: "ETH-BTC".to_string(),
         interval: Interval::OneHour,
         paginator: None,
     };
@@ -38,9 +38,9 @@ async fn get_historic_rates() {
 
 #[tokio::test]
 async fn get_historic_rates_invalid_interval() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = GetHistoricRatesRequest {
-        symbol: "ETH-BTC".to_string(),
+        market_pair: "ETH-BTC".to_string(),
         interval: Interval::TwoHours,
         paginator: None,
     };

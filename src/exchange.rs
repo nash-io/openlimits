@@ -17,73 +17,88 @@ pub struct OpenLimits<E: Exchange> {
 }
 
 impl<E: Exchange> OpenLimits<E> {
-    pub async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
+    pub async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.exchange.order_book(req).await
     }
 
-    pub async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<E::OrderIdType>> {
+    pub async fn limit_buy(
+        &mut self,
+        req: &OpenLimitOrderRequest,
+    ) -> Result<Order<E::OrderIdType>> {
         self.exchange.limit_buy(req).await
     }
 
-    pub async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<E::OrderIdType>> {
+    pub async fn limit_sell(
+        &mut self,
+        req: &OpenLimitOrderRequest,
+    ) -> Result<Order<E::OrderIdType>> {
         self.exchange.limit_sell(req).await
     }
 
-    pub async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<E::OrderIdType>> {
+    pub async fn market_buy(
+        &mut self,
+        req: &OpenMarketOrderRequest,
+    ) -> Result<Order<E::OrderIdType>> {
         self.exchange.market_buy(req).await
     }
 
-    pub async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<E::OrderIdType>> {
+    pub async fn market_sell(
+        &mut self,
+        req: &OpenMarketOrderRequest,
+    ) -> Result<Order<E::OrderIdType>> {
         self.exchange.market_sell(req).await
     }
 
     pub async fn cancel_order(
-        &self,
+        &mut self,
         req: &CancelOrderRequest<E::OrderIdType>,
     ) -> Result<OrderCanceled<E::OrderIdType>> {
         self.exchange.cancel_order(req).await
     }
 
     pub async fn cancel_all_orders(
-        &self,
+        &mut self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<E::OrderIdType>>> {
         self.exchange.cancel_all_orders(req).await
     }
 
-    pub async fn get_all_open_orders(&self) -> Result<Vec<Order<E::OrderIdType>>> {
+    pub async fn get_all_open_orders(&mut self) -> Result<Vec<Order<E::OrderIdType>>> {
         self.exchange.get_all_open_orders().await
     }
 
     pub async fn get_order_history(
-        &self,
+        &mut self,
         req: &GetOrderHistoryRequest,
     ) -> Result<Vec<Order<E::OrderIdType>>> {
         self.exchange.get_order_history(req).await
     }
 
     pub async fn get_account_balances(
-        &self,
+        &mut self,
         paginator: Option<&Paginator>,
     ) -> Result<Vec<Balance>> {
         self.exchange.get_account_balances(paginator).await
     }
 
     pub async fn get_trade_history(
-        &self,
+        &mut self,
         req: &TradeHistoryRequest<E::OrderIdType>,
     ) -> Result<Vec<Trade<E::TradeIdType, E::OrderIdType>>> {
         self.exchange.get_trade_history(req).await
     }
 
-    pub async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
+    pub async fn get_historic_rates(
+        &mut self,
+        req: &GetHistoricRatesRequest,
+    ) -> Result<Vec<Candle>> {
         self.exchange.get_historic_rates(req).await
     }
-    pub async fn refresh_market_info(&self) -> Result<()> {
+    pub async fn refresh_market_info(&mut self) -> Result<()> {
         self.exchange.refresh_market_info().await
     }
 
-    pub async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
+    pub async fn get_price_ticker(&mut self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         self.exchange.get_price_ticker(req).await
     }
 }
@@ -92,30 +107,38 @@ impl<E: Exchange> OpenLimits<E> {
 pub trait Exchange {
     type OrderIdType;
     type TradeIdType;
-    async fn refresh_market_info(&self) -> Result<()>;
-    async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
-    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>>;
-    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>>;
-    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>>;
-    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>>;
+    async fn refresh_market_info(&mut self) -> Result<()>;
+    async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
+    async fn limit_buy(&mut self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>>;
+    async fn limit_sell(&mut self, req: &OpenLimitOrderRequest)
+        -> Result<Order<Self::OrderIdType>>;
+    async fn market_buy(
+        &mut self,
+        req: &OpenMarketOrderRequest,
+    ) -> Result<Order<Self::OrderIdType>>;
+    async fn market_sell(
+        &mut self,
+        req: &OpenMarketOrderRequest,
+    ) -> Result<Order<Self::OrderIdType>>;
     async fn cancel_order(
-        &self,
+        &mut self,
         req: &CancelOrderRequest<Self::OrderIdType>,
     ) -> Result<OrderCanceled<Self::OrderIdType>>;
     async fn cancel_all_orders(
-        &self,
+        &mut self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>>;
-    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>>;
+    async fn get_all_open_orders(&mut self) -> Result<Vec<Order<Self::OrderIdType>>>;
     async fn get_order_history(
-        &self,
+        &mut self,
         req: &GetOrderHistoryRequest,
     ) -> Result<Vec<Order<Self::OrderIdType>>>;
-    async fn get_account_balances(&self, paginator: Option<&Paginator>) -> Result<Vec<Balance>>;
+    async fn get_account_balances(&mut self, paginator: Option<&Paginator>)
+        -> Result<Vec<Balance>>;
     async fn get_trade_history(
-        &self,
+        &mut self,
         req: &TradeHistoryRequest<Self::OrderIdType>,
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>>;
-    async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker>;
-    async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>>;
+    async fn get_price_ticker(&mut self, req: &GetPriceTickerRequest) -> Result<Ticker>;
+    async fn get_historic_rates(&mut self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>>;
 }
