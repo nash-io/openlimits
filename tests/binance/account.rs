@@ -13,11 +13,11 @@ use rust_decimal::prelude::Decimal;
 
 #[tokio::test]
 async fn limit_buy() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 3),
         size: Decimal::new(1, 1),
-        symbol: String::from("BNBBTC"),
+        market_pair: String::from("BNBBTC"),
     };
     let resp = exchange.limit_buy(&req).await.unwrap();
     println!("{:?}", resp);
@@ -25,11 +25,11 @@ async fn limit_buy() {
 
 #[tokio::test]
 async fn limit_sell() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 3),
         size: Decimal::new(1, 1),
-        symbol: String::from("BNBBTC"),
+        market_pair: String::from("BNBBTC"),
     };
     let resp = exchange.limit_sell(&req).await.unwrap();
     println!("{:?}", resp);
@@ -37,10 +37,10 @@ async fn limit_sell() {
 
 #[tokio::test]
 async fn market_buy() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = OpenMarketOrderRequest {
         size: Decimal::new(1, 1),
-        symbol: String::from("BNBBTC"),
+        market_pair: String::from("BNBBTC"),
     };
     let resp = exchange.market_buy(&req).await.unwrap();
     println!("{:?}", resp);
@@ -48,10 +48,10 @@ async fn market_buy() {
 
 #[tokio::test]
 async fn market_sell() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = OpenMarketOrderRequest {
         size: Decimal::new(1, 1),
-        symbol: String::from("BNBBTC"),
+        market_pair: String::from("BNBBTC"),
     };
     let resp = exchange.market_sell(&req).await.unwrap();
     println!("{:?}", resp);
@@ -59,17 +59,17 @@ async fn market_sell() {
 
 #[tokio::test]
 async fn cancel_order() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(5, 3),
         size: Decimal::new(1, 1),
-        symbol: String::from("BNBBTC"),
+        market_pair: String::from("BNBBTC"),
     };
     let order = exchange.limit_sell(&req).await.unwrap();
 
     let req = CancelOrderRequest {
         id: order.id,
-        pair: Some(order.symbol),
+        market_pair: Some(order.market_pair),
     };
 
     let resp = exchange.cancel_order(&req).await.unwrap();
@@ -78,18 +78,18 @@ async fn cancel_order() {
 
 #[tokio::test]
 async fn cancel_all_orders() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 3),
         size: Decimal::new(1, 1),
-        symbol: String::from("BNBBTC"),
+        market_pair: String::from("BNBBTC"),
     };
     exchange.limit_sell(&req).await.unwrap();
 
     exchange.limit_sell(&req).await.unwrap();
 
     let req = CancelAllOrdersRequest {
-        pair: Some("BNBBTC".to_string()),
+        market_pair: Some("BNBBTC".to_string()),
     };
 
     let resp = exchange.cancel_all_orders(&req).await.unwrap();
@@ -98,9 +98,9 @@ async fn cancel_all_orders() {
 
 #[tokio::test]
 async fn get_order_history() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = GetOrderHistoryRequest {
-        symbol: Some(String::from("BNBBTC")),
+        market_pair: Some(String::from("BNBBTC")),
         paginator: None,
     };
 
@@ -110,11 +110,11 @@ async fn get_order_history() {
 
 #[tokio::test]
 async fn get_all_open_orders() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 3),
         size: Decimal::new(1, 1),
-        symbol: String::from("BNBBTC"),
+        market_pair: String::from("BNBBTC"),
     };
     exchange.limit_sell(&req).await.unwrap();
 
@@ -124,7 +124,7 @@ async fn get_all_open_orders() {
 
 #[tokio::test]
 async fn get_account_balances() {
-    let exchange = init().await;
+    let mut exchange = init().await;
 
     let resp = exchange.get_account_balances(None).await.unwrap();
     println!("{:?}", resp);
@@ -132,9 +132,9 @@ async fn get_account_balances() {
 
 #[tokio::test]
 async fn get_trade_history() {
-    let exchange = init().await;
+    let mut exchange = init().await;
     let req = TradeHistoryRequest {
-        pair: Some("BNBBTC".to_string()),
+        market_pair: Some("BNBBTC".to_string()),
         ..Default::default()
     };
 

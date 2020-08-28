@@ -37,8 +37,6 @@ pub enum OpenLimitError {
     #[error("")]
     CoinbaseError(#[from] CoinbaseContentError),
     #[error("")]
-    NashProtocolError(#[from] nash_protocol::errors::ProtocolError),
-    #[error("")]
     AssetNotFound(),
     #[error("")]
     NoApiKeySet(),

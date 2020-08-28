@@ -21,19 +21,31 @@ impl<E: Exchange> OpenLimits<E> {
         self.exchange.order_book(req).await
     }
 
-    pub async fn limit_buy(&mut self, req: &OpenLimitOrderRequest) -> Result<Order<E::OrderIdType>> {
+    pub async fn limit_buy(
+        &mut self,
+        req: &OpenLimitOrderRequest,
+    ) -> Result<Order<E::OrderIdType>> {
         self.exchange.limit_buy(req).await
     }
 
-    pub async fn limit_sell(&mut self, req: &OpenLimitOrderRequest) -> Result<Order<E::OrderIdType>> {
+    pub async fn limit_sell(
+        &mut self,
+        req: &OpenLimitOrderRequest,
+    ) -> Result<Order<E::OrderIdType>> {
         self.exchange.limit_sell(req).await
     }
 
-    pub async fn market_buy(&mut self, req: &OpenMarketOrderRequest) -> Result<Order<E::OrderIdType>> {
+    pub async fn market_buy(
+        &mut self,
+        req: &OpenMarketOrderRequest,
+    ) -> Result<Order<E::OrderIdType>> {
         self.exchange.market_buy(req).await
     }
 
-    pub async fn market_sell(&mut self, req: &OpenMarketOrderRequest) -> Result<Order<E::OrderIdType>> {
+    pub async fn market_sell(
+        &mut self,
+        req: &OpenMarketOrderRequest,
+    ) -> Result<Order<E::OrderIdType>> {
         self.exchange.market_sell(req).await
     }
 
@@ -76,7 +88,10 @@ impl<E: Exchange> OpenLimits<E> {
         self.exchange.get_trade_history(req).await
     }
 
-    pub async fn get_historic_rates(&mut self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
+    pub async fn get_historic_rates(
+        &mut self,
+        req: &GetHistoricRatesRequest,
+    ) -> Result<Vec<Candle>> {
         self.exchange.get_historic_rates(req).await
     }
     pub async fn refresh_market_info(&mut self) -> Result<()> {
@@ -95,9 +110,16 @@ pub trait Exchange {
     async fn refresh_market_info(&mut self) -> Result<()>;
     async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
     async fn limit_buy(&mut self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>>;
-    async fn limit_sell(&mut self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>>;
-    async fn market_buy(&mut self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>>;
-    async fn market_sell(&mut self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>>;
+    async fn limit_sell(&mut self, req: &OpenLimitOrderRequest)
+        -> Result<Order<Self::OrderIdType>>;
+    async fn market_buy(
+        &mut self,
+        req: &OpenMarketOrderRequest,
+    ) -> Result<Order<Self::OrderIdType>>;
+    async fn market_sell(
+        &mut self,
+        req: &OpenMarketOrderRequest,
+    ) -> Result<Order<Self::OrderIdType>>;
     async fn cancel_order(
         &mut self,
         req: &CancelOrderRequest<Self::OrderIdType>,
@@ -111,7 +133,8 @@ pub trait Exchange {
         &mut self,
         req: &GetOrderHistoryRequest,
     ) -> Result<Vec<Order<Self::OrderIdType>>>;
-    async fn get_account_balances(&mut self, paginator: Option<&Paginator>) -> Result<Vec<Balance>>;
+    async fn get_account_balances(&mut self, paginator: Option<&Paginator>)
+        -> Result<Vec<Balance>>;
     async fn get_trade_history(
         &mut self,
         req: &TradeHistoryRequest<Self::OrderIdType>,

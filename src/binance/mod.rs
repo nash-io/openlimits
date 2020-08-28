@@ -7,7 +7,7 @@ use crate::{
     exchange::Exchange,
     exchange_info::ExchangeInfo,
     model::{
-        Asks, Balance, Bids, CancelAllOrdersRequest, CancelOrderRequest, Candle,
+        AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetOrderHistoryRequest, GetPriceTickerRequest, Interval,
         Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
         OrderBookResponse, OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
@@ -62,18 +62,27 @@ impl Exchange for Binance {
             .await
             .map(Into::into)
     }
-    async fn limit_sell(&mut self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_sell(
+        &mut self,
+        req: &OpenLimitOrderRequest,
+    ) -> Result<Order<Self::OrderIdType>> {
         Binance::limit_sell(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn market_buy(&mut self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn market_buy(
+        &mut self,
+        req: &OpenMarketOrderRequest,
+    ) -> Result<Order<Self::OrderIdType>> {
         Binance::market_buy(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
-    async fn market_sell(&mut self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn market_sell(
+        &mut self,
+        req: &OpenMarketOrderRequest,
+    ) -> Result<Order<Self::OrderIdType>> {
         Binance::market_sell(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
@@ -122,7 +131,10 @@ impl Exchange for Binance {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_account_balances(&mut self, _paginator: Option<&Paginator>) -> Result<Vec<Balance>> {
+    async fn get_account_balances(
+        &mut self,
+        _paginator: Option<&Paginator>,
+    ) -> Result<Vec<Balance>> {
         Binance::get_account(self)
             .await
             .map(|v| v.balances.into_iter().map(Into::into).collect())
@@ -167,17 +179,8 @@ impl From<model::OrderBook> for OrderBookResponse {
     }
 }
 
-impl From<model::Bids> for Bids {
-    fn from(bids: model::Bids) -> Self {
-        Self {
-            price: bids.price,
-            qty: bids.qty,
-        }
-    }
-}
-
-impl From<model::Asks> for Asks {
-    fn from(bids: model::Asks) -> Self {
+impl From<model::AskBid> for AskBid {
+    fn from(bids: model::AskBid) -> Self {
         Self {
             price: bids.price,
             qty: bids.qty,

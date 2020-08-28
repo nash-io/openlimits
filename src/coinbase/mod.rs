@@ -70,19 +70,28 @@ impl Exchange for Coinbase {
             .map(Into::into)
     }
 
-    async fn limit_sell(&mut self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_sell(
+        &mut self,
+        req: &OpenLimitOrderRequest,
+    ) -> Result<Order<Self::OrderIdType>> {
         Coinbase::limit_sell(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn market_buy(&mut self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn market_buy(
+        &mut self,
+        req: &OpenMarketOrderRequest,
+    ) -> Result<Order<Self::OrderIdType>> {
         Coinbase::market_buy(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
 
-    async fn market_sell(&mut self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn market_sell(
+        &mut self,
+        req: &OpenMarketOrderRequest,
+    ) -> Result<Order<Self::OrderIdType>> {
         Coinbase::market_sell(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
@@ -129,7 +138,10 @@ impl Exchange for Coinbase {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_account_balances(&mut self, paginator: Option<&Paginator>) -> Result<Vec<Balance>> {
+    async fn get_account_balances(
+        &mut self,
+        paginator: Option<&Paginator>,
+    ) -> Result<Vec<Balance>> {
         let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
 
         Coinbase::get_account(self, paginator.as_ref())

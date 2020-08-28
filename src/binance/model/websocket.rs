@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::shared::string_to_decimal;
 
 use super::{
-    Asks, Bids, Kline, OrderBook, OrderExecType, OrderRejectReason, OrderStatus, OrderType, Side,
+    AskBid, Kline, OrderBook, OrderExecType, OrderRejectReason, OrderStatus, OrderType, Side,
     TimeInForce,
 };
 
@@ -175,9 +175,9 @@ pub struct Depth {
     #[serde(rename = "u")]
     pub final_update_id: u64,
     #[serde(rename = "b")]
-    pub bids: Vec<Bids>,
+    pub bids: Vec<AskBid>,
     #[serde(rename = "a")]
-    pub asks: Vec<Asks>,
+    pub asks: Vec<AskBid>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
