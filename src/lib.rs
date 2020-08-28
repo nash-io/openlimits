@@ -27,4 +27,5 @@ pub mod exchange;
 pub mod exchange_info;
 pub mod exchange_ws;
 pub mod model;
+pub mod nash;
 pub mod shared;
