@@ -47,14 +47,14 @@ async fn get_all_orders() {
 }
 
 #[tokio::test]
-async fn order_status() {
+async fn get_order() {
     let exchange = init().await;
     let transaction = exchange
         .limit_sell("BNBBTC", Decimal::new(1, 1), Decimal::new(2, 3))
         .await
         .unwrap();
     let resp = exchange
-        .order_status("BNBBTC", transaction.order_id)
+        .get_order("BNBBTC", transaction.order_id)
         .await
         .unwrap();
     println!("{:?}", resp);

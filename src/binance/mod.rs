@@ -8,9 +8,10 @@ use crate::{
     exchange_info::ExchangeInfo,
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
-        GetHistoricRatesRequest, GetOrderHistoryRequest, GetPriceTickerRequest, Interval,
-        Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest,
-        OrderBookResponse, OrderCanceled, Paginator, Side, Ticker, Trade, TradeHistoryRequest,
+        GetHistoricRatesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
+        Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
+        OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, Paginator, Side, Ticker,
+        Trade, TradeHistoryRequest, Transaction,
     },
     shared::Result,
 };
@@ -164,6 +165,16 @@ impl Exchange for Binance {
             .map(|KlineSummaries::AllKlineSummaries(v)| v.into_iter().map(Into::into).collect())
     }
 
+    async fn get_order(
+        &mut self,
+        req: &GetOrderRequest<Self::OrderIdType>,
+    ) -> Result<Order<Self::OrderIdType>> {
+        let pair = req.market_pair.clone().unwrap();
+        Binance::get_order(self, &pair, req.id)
+            .await
+            .map(Into::into)
+    }
+
     async fn refresh_market_info(&mut self) -> Result<()> {
         self.exchange_info.refresh(self).await
     }
@@ -188,7 +199,7 @@ impl From<model::AskBid> for AskBid {
     }
 }
 
-impl From<model::Transaction> for Order<u64> {
+impl From<model::Transaction> for Transaction<u64> {
     fn from(order: model::Transaction) -> Self {
         Self {
             id: order.order_id,
@@ -206,6 +217,11 @@ impl From<model::Order> for Order<u64> {
             market_pair: order.symbol,
             client_order_id: Some(order.client_order_id),
             created_at: order.time,
+            order_type: order.type_name,
+            side: order.side.into(),
+            status: order.status.into(),
+            price: Some(order.price),
+            size: order.orig_qty,
         }
     }
 }
@@ -329,6 +345,30 @@ impl From<Paginator> for model::Paginator {
             end_time: paginator.end_time,
             start_time: paginator.start_time,
             limit: paginator.limit,
+        }
+    }
+}
+
+impl From<String> for Side {
+    fn from(side: String) -> Self {
+        if side == "buy" {
+            Side::Buy
+        } else {
+            Side::Sell
+        }
+    }
+}
+
+impl From<model::OrderStatus> for OrderStatus {
+    fn from(status: model::OrderStatus) -> OrderStatus {
+        match status {
+            model::OrderStatus::Canceled => OrderStatus::Canceled,
+            model::OrderStatus::Expired => OrderStatus::Expired,
+            model::OrderStatus::Filled => OrderStatus::Filled,
+            model::OrderStatus::New => OrderStatus::New,
+            model::OrderStatus::PartiallyFilled => OrderStatus::PartiallyFilled,
+            model::OrderStatus::PendingCancel => OrderStatus::PendingCancel,
+            model::OrderStatus::Rejected => OrderStatus::Rejected,
         }
     }
 }
