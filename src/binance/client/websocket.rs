@@ -8,8 +8,10 @@ use crate::{
 use std::{collections::HashMap, pin::Pin, task::Poll};
 
 use futures::{
-    stream::{SplitStream, Stream},
+    stream::{SplitSink, SplitStream, Stream},
     StreamExt,
+    Sink,
+    ready,
 };
 use serde::{Deserialize, Serialize};
 use tokio::net::TcpStream;
@@ -29,7 +31,7 @@ enum Either<L, R> {
 type WSStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
 
 pub struct BinanceWebsocket {
-    pub subscriptions: HashMap<Subscription, SplitStream<WSStream>>,
+    pub subscriptions: HashMap<Subscription, (bool, (SplitSink<WSStream, Message>, SplitStream<WSStream>))>,
 }
 
 impl BinanceWebsocket {
@@ -61,7 +63,7 @@ impl BinanceWebsocket {
         let endpoint = url::Url::parse(&format!("{}/{}", WS_URL, sub)).unwrap();
         let (ws_stream, _) = connect_async(endpoint).await?;
 
-        self.subscriptions.insert(subscription, ws_stream.split().1);
+        self.subscriptions.insert(subscription, (false, ws_stream.split()));
 
         Ok(())
     }
@@ -80,11 +82,38 @@ impl Stream for BinanceWebsocket {
         mut self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> Poll<Option<Self::Item>> {
-        for (sub, stream) in &mut self.subscriptions.iter_mut() {
-            if let Poll::Ready(Some(message)) = Pin::new(stream).poll_next(cx) {
-                let m = parse_message(sub.clone(), message?);
+        for (sub, (pong, (sink, stream))) in &mut self.subscriptions.iter_mut() {
+            if *pong {
+                // Send back a pong frame.
 
-                return Poll::Ready(Some(m));
+                let mut sink = Pin::new(sink);
+                let message = Message::Pong(b"pong frame".to_vec());
+
+                match sink.as_mut().poll_ready(cx)? {
+                    Poll::Ready(()) => sink.as_mut().start_send(message)?,
+                    Poll::Pending => {
+                        // Wait until sink is ready.
+                        return Poll::Pending;
+                    }
+                }
+
+                ready!(sink.poll_flush(cx))?;
+
+                // We now have successfully sent the pong.
+                *pong = false;
+            }
+            
+            if !*pong {
+                if let Poll::Ready(Some(message)) = Pin::new(stream).poll_next(cx) {
+                    let m = parse_message(sub.clone(), message?);
+                    
+                    if let Ok(BinanceWebsocketMessage::Ping) = m {
+                        // Ping frame received, we need to send back a pong later.
+                        *pong = true;
+                    }
+
+                    return Poll::Ready(Some(m));
+                }
             }
         }
 
