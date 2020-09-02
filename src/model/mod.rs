@@ -187,7 +187,7 @@ pub enum OrderStatus {
 pub struct Paginator<T> {
     pub start_time: Option<u64>,
     pub end_time: Option<u64>,
-    pub limit: Option<T>,
+    pub limit: Option<u64>,
     pub after: Option<T>,
-    pub before: Option<u64>,
+    pub before: Option<T>,
 }
