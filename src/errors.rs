@@ -30,6 +30,17 @@ impl fmt::Display for CoinbaseContentError {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Error)]
+pub struct MissingImplementationContent {
+    pub message: String,
+}
+
+impl fmt::Display for MissingImplementationContent {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "error message: {}", self.message)
+    }
+}
+
 #[derive(Error, Debug)]
 pub enum OpenLimitError {
     #[error("")]
@@ -38,6 +49,8 @@ pub enum OpenLimitError {
     CoinbaseError(#[from] CoinbaseContentError),
     #[error("")]
     NashProtocolError(#[from] nash_protocol::errors::ProtocolError),
+    #[error("")]
+    MissingImplementation(#[from] MissingImplementationContent),
     #[error("")]
     AssetNotFound(),
     #[error("")]
