@@ -51,7 +51,8 @@ impl Binance {
 impl Exchange for Binance {
     type OrderIdType = u64;
     type TradeIdType = u64;
-
+    type PaginationType = u64;
+    
     async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.get_depth(req.market_pair.as_str(), None)
             .await
@@ -124,7 +125,7 @@ impl Exchange for Binance {
 
     async fn get_order_history(
         &mut self,
-        req: &GetOrderHistoryRequest,
+        req: &GetOrderHistoryRequest<Self::PaginationType>,
     ) -> Result<Vec<Order<Self::OrderIdType>>> {
         let req = req.into();
         Binance::get_all_orders(self, &req)
@@ -134,7 +135,7 @@ impl Exchange for Binance {
 
     async fn get_account_balances(
         &mut self,
-        _paginator: Option<&Paginator>,
+        _paginator: Option<&Paginator<Self::PaginationType>>,
     ) -> Result<Vec<Balance>> {
         Binance::get_account(self)
             .await
@@ -143,7 +144,7 @@ impl Exchange for Binance {
 
     async fn get_trade_history(
         &mut self,
-        req: &TradeHistoryRequest<Self::OrderIdType>,
+        req: &TradeHistoryRequest<Self::OrderIdType, Self::PaginationType>,
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
         let req = req.into();
         Binance::trade_history(self, &req)
@@ -157,7 +158,7 @@ impl Exchange for Binance {
             .map(Into::into)
     }
 
-    async fn get_historic_rates(&mut self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
+    async fn get_historic_rates(&mut self, req: &GetHistoricRatesRequest<Self::PaginationType>) -> Result<Vec<Candle>> {
         let params = req.into();
 
         Binance::get_klines(self, &params)
@@ -272,8 +273,8 @@ impl From<model::SymbolPrice> for Ticker {
     }
 }
 
-impl From<&GetOrderHistoryRequest> for model::AllOrderReq {
-    fn from(req: &GetOrderHistoryRequest) -> Self {
+impl From<&GetOrderHistoryRequest<u64>> for model::AllOrderReq {
+    fn from(req: &GetOrderHistoryRequest<u64>) -> Self {
         Self {
             paginator: req.paginator.clone().map(|p| p.into()),
             symbol: req.market_pair.clone().unwrap(),
@@ -281,8 +282,8 @@ impl From<&GetOrderHistoryRequest> for model::AllOrderReq {
     }
 }
 
-impl From<&TradeHistoryRequest<u64>> for model::TradeHistoryReq {
-    fn from(trade_history: &TradeHistoryRequest<u64>) -> Self {
+impl From<&TradeHistoryRequest<u64, u64>> for model::TradeHistoryReq {
+    fn from(trade_history: &TradeHistoryRequest<u64, u64>) -> Self {
         Self {
             paginator: trade_history.paginator.clone().map(|p| p.into()),
             symbol: trade_history.market_pair.clone().unwrap(),
@@ -290,8 +291,8 @@ impl From<&TradeHistoryRequest<u64>> for model::TradeHistoryReq {
     }
 }
 
-impl From<&GetHistoricRatesRequest> for model::KlineParams {
-    fn from(req: &GetHistoricRatesRequest) -> Self {
+impl From<&GetHistoricRatesRequest<u64>> for model::KlineParams {
+    fn from(req: &GetHistoricRatesRequest<u64>) -> Self {
         let interval: &str = req.interval.into();
 
         Self {
@@ -337,8 +338,8 @@ impl From<model::KlineSummary> for Candle {
     }
 }
 
-impl From<Paginator> for model::Paginator {
-    fn from(paginator: Paginator) -> Self {
+impl From<Paginator<u64>> for model::Paginator {
+    fn from(paginator: Paginator<u64>) -> Self {
         Self {
             from_id: paginator.after,
             order_id: paginator.after,
