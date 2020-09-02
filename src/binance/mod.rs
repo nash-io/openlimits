@@ -52,7 +52,7 @@ impl Exchange for Binance {
     type OrderIdType = u64;
     type TradeIdType = u64;
     type PaginationType = u64;
-    
+
     async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.get_depth(req.market_pair.as_str(), None)
             .await
@@ -158,7 +158,10 @@ impl Exchange for Binance {
             .map(Into::into)
     }
 
-    async fn get_historic_rates(&mut self, req: &GetHistoricRatesRequest<Self::PaginationType>) -> Result<Vec<Candle>> {
+    async fn get_historic_rates(
+        &mut self,
+        req: &GetHistoricRatesRequest<Self::PaginationType>,
+    ) -> Result<Vec<Candle>> {
         let params = req.into();
 
         Binance::get_klines(self, &params)

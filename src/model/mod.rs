@@ -102,7 +102,7 @@ pub enum Liquidity {
 }
 
 #[derive(Default)]
-pub struct TradeHistoryRequest<T,U> {
+pub struct TradeHistoryRequest<T, U> {
     pub market_pair: Option<String>,
     pub order_id: Option<T>,
     pub paginator: Option<Paginator<U>>,

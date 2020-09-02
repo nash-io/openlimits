@@ -167,7 +167,10 @@ impl Exchange for Coinbase {
             .map(Into::into)
     }
 
-    async fn get_historic_rates(&mut self, req: &GetHistoricRatesRequest<Self::PaginationType>) -> Result<Vec<Candle>> {
+    async fn get_historic_rates(
+        &mut self,
+        req: &GetHistoricRatesRequest<Self::PaginationType>,
+    ) -> Result<Vec<Candle>> {
         let params = model::CandleRequestParams::try_from(req)?;
         Coinbase::candles(self, &req.market_pair, Some(&params))
             .await

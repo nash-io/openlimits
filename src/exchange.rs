@@ -141,14 +141,19 @@ pub trait Exchange {
         &mut self,
         req: &GetOrderHistoryRequest<Self::PaginationType>,
     ) -> Result<Vec<Order<Self::OrderIdType>>>;
-    async fn get_account_balances(&mut self, paginator: Option<&Paginator<Self::PaginationType>>)
-        -> Result<Vec<Balance>>;
+    async fn get_account_balances(
+        &mut self,
+        paginator: Option<&Paginator<Self::PaginationType>>,
+    ) -> Result<Vec<Balance>>;
     async fn get_trade_history(
         &mut self,
         req: &TradeHistoryRequest<Self::OrderIdType, Self::PaginationType>,
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>>;
     async fn get_price_ticker(&mut self, req: &GetPriceTickerRequest) -> Result<Ticker>;
-    async fn get_historic_rates(&mut self, req: &GetHistoricRatesRequest<Self::PaginationType>) -> Result<Vec<Candle>>;
+    async fn get_historic_rates(
+        &mut self,
+        req: &GetHistoricRatesRequest<Self::PaginationType>,
+    ) -> Result<Vec<Candle>>;
     async fn get_order(
         &mut self,
         req: &GetOrderRequest<Self::OrderIdType>,
