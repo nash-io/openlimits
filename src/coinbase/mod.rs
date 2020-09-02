@@ -58,6 +58,7 @@ impl Coinbase {
 impl Exchange for Coinbase {
     type OrderIdType = String;
     type TradeIdType = u64;
+    type PaginationType = u64;
     async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.book::<model::BookRecordL2>(&req.market_pair)
             .await
@@ -129,7 +130,7 @@ impl Exchange for Coinbase {
 
     async fn get_order_history(
         &mut self,
-        req: &GetOrderHistoryRequest,
+        req: &GetOrderHistoryRequest<Self::PaginationType>,
     ) -> Result<Vec<Order<Self::OrderIdType>>> {
         let req: model::GetOrderRequest = req.into();
 
@@ -140,7 +141,7 @@ impl Exchange for Coinbase {
 
     async fn get_account_balances(
         &mut self,
-        paginator: Option<&Paginator>,
+        paginator: Option<&Paginator<Self::PaginationType>>,
     ) -> Result<Vec<Balance>> {
         let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
 
@@ -151,7 +152,7 @@ impl Exchange for Coinbase {
 
     async fn get_trade_history(
         &mut self,
-        req: &TradeHistoryRequest<Self::OrderIdType>,
+        req: &TradeHistoryRequest<Self::OrderIdType, Self::PaginationType>,
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
         let req = req.into();
 
@@ -166,7 +167,10 @@ impl Exchange for Coinbase {
             .map(Into::into)
     }
 
-    async fn get_historic_rates(&mut self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
+    async fn get_historic_rates(
+        &mut self,
+        req: &GetHistoricRatesRequest<Self::PaginationType>,
+    ) -> Result<Vec<Candle>> {
         let params = model::CandleRequestParams::try_from(req)?;
         Coinbase::candles(self, &req.market_pair, Some(&params))
             .await
@@ -309,9 +313,9 @@ impl TryFrom<Interval> for u32 {
     }
 }
 
-impl TryFrom<&GetHistoricRatesRequest> for model::CandleRequestParams {
+impl TryFrom<&GetHistoricRatesRequest<u64>> for model::CandleRequestParams {
     type Error = OpenLimitError;
-    fn try_from(params: &GetHistoricRatesRequest) -> Result<Self> {
+    fn try_from(params: &GetHistoricRatesRequest<u64>) -> Result<Self> {
         let granularity = u32::try_from(params.interval)?;
         Ok(Self {
             daterange: params.paginator.clone().map(|p| p.into()),
@@ -320,8 +324,8 @@ impl TryFrom<&GetHistoricRatesRequest> for model::CandleRequestParams {
     }
 }
 
-impl From<&GetOrderHistoryRequest> for model::GetOrderRequest {
-    fn from(req: &GetOrderHistoryRequest) -> Self {
+impl From<&GetOrderHistoryRequest<u64>> for model::GetOrderRequest {
+    fn from(req: &GetOrderHistoryRequest<u64>) -> Self {
         Self {
             product_id: req.market_pair.clone(),
             paginator: req.paginator.clone().map(|p| p.into()),
@@ -330,8 +334,8 @@ impl From<&GetOrderHistoryRequest> for model::GetOrderRequest {
     }
 }
 
-impl From<Paginator> for model::Paginator {
-    fn from(paginator: Paginator) -> Self {
+impl From<Paginator<u64>> for model::Paginator {
+    fn from(paginator: Paginator<u64>) -> Self {
         Self {
             after: paginator.after,
             before: paginator.before,
@@ -340,8 +344,8 @@ impl From<Paginator> for model::Paginator {
     }
 }
 
-impl From<&Paginator> for model::Paginator {
-    fn from(paginator: &Paginator) -> Self {
+impl From<&Paginator<u64>> for model::Paginator {
+    fn from(paginator: &Paginator<u64>) -> Self {
         Self {
             after: paginator.after,
             before: paginator.before,
@@ -350,8 +354,8 @@ impl From<&Paginator> for model::Paginator {
     }
 }
 
-impl From<Paginator> for model::DateRange {
-    fn from(paginator: Paginator) -> Self {
+impl From<Paginator<u64>> for model::DateRange {
+    fn from(paginator: Paginator<u64>) -> Self {
         Self {
             start: paginator.start_time.map(timestamp_to_datetime),
             end: paginator.end_time.map(timestamp_to_datetime),
@@ -359,8 +363,8 @@ impl From<Paginator> for model::DateRange {
     }
 }
 
-impl From<&Paginator> for model::DateRange {
-    fn from(paginator: &Paginator) -> Self {
+impl From<&Paginator<u64>> for model::DateRange {
+    fn from(paginator: &Paginator<u64>) -> Self {
         Self {
             start: paginator.start_time.map(timestamp_to_datetime),
             end: paginator.end_time.map(timestamp_to_datetime),
@@ -368,8 +372,8 @@ impl From<&Paginator> for model::DateRange {
     }
 }
 
-impl From<&TradeHistoryRequest<String>> for model::GetFillsReq {
-    fn from(req: &TradeHistoryRequest<String>) -> Self {
+impl From<&TradeHistoryRequest<String, u64>> for model::GetFillsReq {
+    fn from(req: &TradeHistoryRequest<String, u64>) -> Self {
         Self {
             order_id: req.order_id.clone(),
             paginator: req.paginator.clone().map(|p| p.into()),

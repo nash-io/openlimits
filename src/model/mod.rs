@@ -72,9 +72,9 @@ pub struct CancelAllOrdersRequest {
 }
 
 #[derive(Clone, Constructor, Debug)]
-pub struct GetOrderHistoryRequest {
+pub struct GetOrderHistoryRequest<T> {
     pub market_pair: Option<String>,
-    pub paginator: Option<Paginator>,
+    pub paginator: Option<Paginator<T>>,
 }
 
 #[derive(Clone, Constructor, Debug)]
@@ -102,10 +102,10 @@ pub enum Liquidity {
 }
 
 #[derive(Default)]
-pub struct TradeHistoryRequest<T> {
+pub struct TradeHistoryRequest<T, U> {
     pub market_pair: Option<String>,
     pub order_id: Option<T>,
-    pub paginator: Option<Paginator>,
+    pub paginator: Option<Paginator<U>>,
 }
 
 #[derive(Clone, Constructor, Debug)]
@@ -136,9 +136,9 @@ pub struct GetPriceTickerRequest {
 }
 
 #[derive(Clone, Constructor, Debug)]
-pub struct GetHistoricRatesRequest {
+pub struct GetHistoricRatesRequest<T> {
     pub market_pair: String,
-    pub paginator: Option<Paginator>,
+    pub paginator: Option<Paginator<T>>,
     pub interval: Interval,
 }
 
@@ -184,10 +184,10 @@ pub enum OrderStatus {
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Paginator {
+pub struct Paginator<T> {
     pub start_time: Option<u64>,
     pub end_time: Option<u64>,
-    pub limit: Option<u64>,
-    pub after: Option<u64>,
+    pub limit: Option<T>,
+    pub after: Option<T>,
     pub before: Option<u64>,
 }
