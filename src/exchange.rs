@@ -17,6 +17,10 @@ pub struct OpenLimits<E: Exchange> {
 }
 
 impl<E: Exchange> OpenLimits<E> {
+    pub async fn refresh_market_info(&mut self) -> Result<()> {
+        self.exchange.refresh_market_info().await
+    }
+
     pub async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.exchange.order_book(req).await
     }
@@ -63,49 +67,46 @@ impl<E: Exchange> OpenLimits<E> {
         self.exchange.cancel_all_orders(req).await
     }
 
-    pub async fn get_all_open_orders(&mut self) -> Result<Vec<Order<E::OrderIdType>>> {
+    pub async fn get_all_open_orders(&self) -> Result<Vec<Order<E::OrderIdType>>> {
         self.exchange.get_all_open_orders().await
     }
 
     pub async fn get_order_history(
-        &mut self,
+        &self,
         req: &GetOrderHistoryRequest<E::PaginationType>,
     ) -> Result<Vec<Order<E::OrderIdType>>> {
         self.exchange.get_order_history(req).await
     }
 
     pub async fn get_account_balances(
-        &mut self,
+        &self,
         paginator: Option<&Paginator<E::PaginationType>>,
     ) -> Result<Vec<Balance>> {
         self.exchange.get_account_balances(paginator).await
     }
 
     pub async fn get_trade_history(
-        &mut self,
+        &self,
         req: &TradeHistoryRequest<E::OrderIdType, E::PaginationType>,
     ) -> Result<Vec<Trade<E::TradeIdType, E::OrderIdType>>> {
         self.exchange.get_trade_history(req).await
     }
 
     pub async fn get_historic_rates(
-        &mut self,
+        &self,
         req: &GetHistoricRatesRequest<E::PaginationType>,
     ) -> Result<Vec<Candle>> {
         self.exchange.get_historic_rates(req).await
     }
-    pub async fn refresh_market_info(&mut self) -> Result<()> {
-        self.exchange.refresh_market_info().await
-    }
 
     pub async fn get_order(
-        &mut self,
+        &self,
         req: GetOrderRequest<E::OrderIdType>,
     ) -> Result<Order<E::OrderIdType>> {
         self.exchange.get_order(&req).await
     }
 
-    pub async fn get_price_ticker(&mut self, req: &GetPriceTickerRequest) -> Result<Ticker> {
+    pub async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         self.exchange.get_price_ticker(req).await
     }
 }
@@ -136,26 +137,26 @@ pub trait Exchange {
         &mut self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>>;
-    async fn get_all_open_orders(&mut self) -> Result<Vec<Order<Self::OrderIdType>>>;
+    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>>;
     async fn get_order_history(
-        &mut self,
+        &self,
         req: &GetOrderHistoryRequest<Self::PaginationType>,
     ) -> Result<Vec<Order<Self::OrderIdType>>>;
     async fn get_account_balances(
-        &mut self,
+        &self,
         paginator: Option<&Paginator<Self::PaginationType>>,
     ) -> Result<Vec<Balance>>;
     async fn get_trade_history(
-        &mut self,
+        &self,
         req: &TradeHistoryRequest<Self::OrderIdType, Self::PaginationType>,
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>>;
-    async fn get_price_ticker(&mut self, req: &GetPriceTickerRequest) -> Result<Ticker>;
+    async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker>;
     async fn get_historic_rates(
-        &mut self,
+        &self,
         req: &GetHistoricRatesRequest<Self::PaginationType>,
     ) -> Result<Vec<Candle>>;
     async fn get_order(
-        &mut self,
+        &self,
         req: &GetOrderRequest<Self::OrderIdType>,
     ) -> Result<Order<Self::OrderIdType>>;
 }
