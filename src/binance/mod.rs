@@ -27,23 +27,17 @@ pub struct Binance {
 
 impl Binance {
     pub async fn new(sandbox: bool) -> Self {
-        let mut state = Binance {
+        Binance {
             exchange_info: ExchangeInfo::new(),
             transport: Transport::new(sandbox).unwrap(),
-        };
-
-        state.refresh_market_info().await.unwrap();
-        state
+        }
     }
 
     pub async fn with_credential(api_key: &str, api_secret: &str, sandbox: bool) -> Self {
-        let mut state = Binance {
+        Binance {
             exchange_info: ExchangeInfo::new(),
             transport: Transport::with_credential(api_key, api_secret, sandbox).unwrap(),
-        };
-
-        state.refresh_market_info().await.unwrap();
-        state
+        }
     }
 }
 
