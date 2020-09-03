@@ -97,7 +97,7 @@ async fn cancel_all_orders() {
 
 #[tokio::test]
 async fn get_order_history() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = GetOrderHistoryRequest {
         market_pair: Some(String::from("ETH-BTC")),
         paginator: None,
@@ -123,14 +123,14 @@ async fn get_all_open_orders() {
 
 #[tokio::test]
 async fn get_account_balances() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let resp = exchange.get_account_balances(None).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_trade_history() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = TradeHistoryRequest {
         market_pair: Some("ETH-BTC".to_string()),
         ..Default::default()

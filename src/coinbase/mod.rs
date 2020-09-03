@@ -65,6 +65,10 @@ impl Exchange for Coinbase {
             .map(Into::into)
     }
 
+    async fn refresh_market_info(&mut self) -> Result<()> {
+        self.exchange_info.refresh(self).await
+    }
+
     async fn limit_buy(&mut self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
         Coinbase::limit_buy(self, &req.market_pair, req.size, req.price)
             .await
@@ -116,7 +120,7 @@ impl Exchange for Coinbase {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_all_open_orders(&mut self) -> Result<Vec<Order<Self::OrderIdType>>> {
+    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>> {
         let params = model::GetOrderRequest {
             status: Some(String::from("open")),
             paginator: None,
@@ -129,7 +133,7 @@ impl Exchange for Coinbase {
     }
 
     async fn get_order_history(
-        &mut self,
+        &self,
         req: &GetOrderHistoryRequest<Self::PaginationType>,
     ) -> Result<Vec<Order<Self::OrderIdType>>> {
         let req: model::GetOrderRequest = req.into();
@@ -140,7 +144,7 @@ impl Exchange for Coinbase {
     }
 
     async fn get_account_balances(
-        &mut self,
+        &self,
         paginator: Option<&Paginator<Self::PaginationType>>,
     ) -> Result<Vec<Balance>> {
         let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
@@ -151,7 +155,7 @@ impl Exchange for Coinbase {
     }
 
     async fn get_trade_history(
-        &mut self,
+        &self,
         req: &TradeHistoryRequest<Self::OrderIdType, Self::PaginationType>,
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
         let req = req.into();
@@ -161,14 +165,14 @@ impl Exchange for Coinbase {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_price_ticker(&mut self, req: &GetPriceTickerRequest) -> Result<Ticker> {
+    async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         Coinbase::ticker(self, &req.market_pair)
             .await
             .map(Into::into)
     }
 
     async fn get_historic_rates(
-        &mut self,
+        &self,
         req: &GetHistoricRatesRequest<Self::PaginationType>,
     ) -> Result<Vec<Candle>> {
         let params = model::CandleRequestParams::try_from(req)?;
@@ -178,16 +182,12 @@ impl Exchange for Coinbase {
     }
 
     async fn get_order(
-        &mut self,
+        &self,
         req: &GetOrderRequest<Self::OrderIdType>,
     ) -> Result<Order<Self::OrderIdType>> {
         let id = req.id.clone();
 
         Coinbase::get_order(self, id).await.map(Into::into)
-    }
-
-    async fn refresh_market_info(&mut self) -> Result<()> {
-        self.exchange_info.refresh(self).await
     }
 }
 
