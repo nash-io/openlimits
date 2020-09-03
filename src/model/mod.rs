@@ -182,7 +182,7 @@ pub enum OrderStatus {
     Active,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Paginator<T> {
     pub start_time: Option<u64>,
