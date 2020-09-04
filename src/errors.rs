@@ -50,10 +50,12 @@ pub enum OpenLimitError {
     #[error(transparent)]
     CoinbaseError(#[from] CoinbaseContentError),
     #[error(transparent)]
+    #[cfg(not(target_arch="wasm32"))]
     NashProtocolError(#[from] nash_protocol::errors::ProtocolError),
     #[error(transparent)]
     MissingImplementation(#[from] MissingImplementationContent),
     #[error("")]
+    #[cfg(not(target_arch="wasm32"))]
     AssetNotFound(),
     #[error("")]
     NoApiKeySet(),
@@ -88,6 +90,7 @@ pub enum OpenLimitError {
     #[error(transparent)]
     UrlParserError(#[from] url::ParseError),
     #[error(transparent)]
+    #[cfg(not(target_arch="wasm32"))]
     Tungstenite(#[from] tokio_tungstenite::tungstenite::Error),
     #[error(transparent)]
     TimestampError(#[from] std::time::SystemTimeError),
