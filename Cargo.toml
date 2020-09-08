@@ -5,6 +5,7 @@ authors = ["steffel <2143646+steffenix@users.noreply.github.com>"]
 edition = "2018"
 description = "A open source Rust high performance cryptocurrency trading API with support for multiple exchanges and language wrappers. Focused in safety, correctness and speed."
 license = "BSD-2-Clause"
+repository = "https://github.com/nash-io/openlimits"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
