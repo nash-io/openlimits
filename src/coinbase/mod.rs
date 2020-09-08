@@ -28,7 +28,7 @@ pub struct Coinbase {
 
 impl Coinbase {
     pub async fn new(sandbox: bool) -> Self {
-        let mut state = Coinbase {
+        let state = Coinbase {
             exchange_info: ExchangeInfo::new(),
             transport: Transport::new(sandbox).unwrap(),
         };
@@ -43,7 +43,7 @@ impl Coinbase {
         passphrase: &str,
         sandbox: bool,
     ) -> Self {
-        let mut state = Coinbase {
+        let state = Coinbase {
             exchange_info: ExchangeInfo::new(),
             transport: Transport::with_credential(api_key, api_secret, passphrase, sandbox)
                 .unwrap(),
@@ -59,51 +59,42 @@ impl Exchange for Coinbase {
     type OrderIdType = String;
     type TradeIdType = u64;
     type PaginationType = u64;
-    async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
+    async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.book::<model::BookRecordL2>(&req.market_pair)
             .await
             .map(Into::into)
     }
 
-    async fn refresh_market_info(&mut self) -> Result<()> {
+    async fn refresh_market_info(&self) -> Result<()> {
         self.exchange_info.refresh(self).await
     }
 
-    async fn limit_buy(&mut self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
         Coinbase::limit_buy(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn limit_sell(
-        &mut self,
-        req: &OpenLimitOrderRequest,
-    ) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
         Coinbase::limit_sell(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn market_buy(
-        &mut self,
-        req: &OpenMarketOrderRequest,
-    ) -> Result<Order<Self::OrderIdType>> {
+    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
         Coinbase::market_buy(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
 
-    async fn market_sell(
-        &mut self,
-        req: &OpenMarketOrderRequest,
-    ) -> Result<Order<Self::OrderIdType>> {
+    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
         Coinbase::market_sell(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
 
     async fn cancel_order(
-        &mut self,
+        &self,
         req: &CancelOrderRequest<Self::OrderIdType>,
     ) -> Result<OrderCanceled<Self::OrderIdType>> {
         Coinbase::cancel_order(self, req.id.clone(), req.market_pair.as_deref())
@@ -112,7 +103,7 @@ impl Exchange for Coinbase {
     }
 
     async fn cancel_all_orders(
-        &mut self,
+        &self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>> {
         Coinbase::cancel_all_orders(self, req.market_pair.as_deref())

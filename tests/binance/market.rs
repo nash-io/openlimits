@@ -6,7 +6,7 @@ use openlimits::{
 
 #[tokio::test]
 async fn order_book() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = OrderBookRequest {
         market_pair: "BNBBTC".to_string(),
     };
