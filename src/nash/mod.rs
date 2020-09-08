@@ -43,7 +43,7 @@ impl Exchange for Nash {
     type PaginationType = String;
 
     async fn cancel_all_orders(
-        &mut self,
+        &self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>> {
         let req: nash_protocol::protocol::cancel_all_orders::types::CancelAllOrders = req.into();
@@ -52,7 +52,7 @@ impl Exchange for Nash {
     }
 
     async fn cancel_order(
-        &mut self,
+        &self,
         req: &CancelOrderRequest<Self::OrderIdType>,
     ) -> Result<OrderCanceled<Self::OrderIdType>> {
         let req: nash_protocol::protocol::cancel_order::types::CancelOrderRequest = req.into();
@@ -64,7 +64,7 @@ impl Exchange for Nash {
     }
 
     async fn get_account_balances(
-        &mut self,
+        &self,
         _paginator: Option<&Paginator<Self::PaginationType>>,
     ) -> Result<Vec<Balance>> {
         let req =
@@ -88,7 +88,7 @@ impl Exchange for Nash {
         Ok(balances)
     }
 
-    async fn get_all_open_orders(&mut self) -> Result<Vec<Order<Self::OrderIdType>>> {
+    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>> {
         let err = MissingImplementationContent {
             message: String::from("Not supported yet, market paramater is mandatory."),
         };
@@ -96,7 +96,7 @@ impl Exchange for Nash {
     }
 
     async fn get_historic_rates(
-        &mut self,
+        &self,
         req: &GetHistoricRatesRequest<Self::PaginationType>,
     ) -> Result<Vec<Candle>> {
         let req: nash_protocol::protocol::list_candles::types::ListCandlesRequest = req.into();
@@ -112,7 +112,7 @@ impl Exchange for Nash {
     }
 
     async fn get_order_history(
-        &mut self,
+        &self,
         req: &GetOrderHistoryRequest<Self::PaginationType>,
     ) -> Result<Vec<Order<Self::OrderIdType>>> {
         let req: nash_protocol::protocol::list_account_orders::types::ListAccountOrdersRequest =
@@ -129,7 +129,7 @@ impl Exchange for Nash {
     }
 
     async fn get_trade_history(
-        &mut self,
+        &self,
         req: &TradeHistoryRequest<Self::OrderIdType, Self::PaginationType>,
     ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
         let req: nash_protocol::protocol::list_account_trades::types::ListAccountTradesRequest =
@@ -145,7 +145,7 @@ impl Exchange for Nash {
         Ok(resp.trades.into_iter().map(Into::into).collect())
     }
 
-    async fn limit_buy(&mut self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
         let req: nash_protocol::protocol::place_order::types::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Buy);
 
@@ -154,7 +154,7 @@ impl Exchange for Nash {
     }
 
     async fn limit_sell(
-        &mut self,
+        &self,
         req: &OpenLimitOrderRequest,
     ) -> Result<Order<Self::OrderIdType>> {
         let req: nash_protocol::protocol::place_order::types::LimitOrderRequest =
@@ -165,7 +165,7 @@ impl Exchange for Nash {
     }
 
     async fn market_sell(
-        &mut self,
+        &self,
         _req: &OpenMarketOrderRequest,
     ) -> Result<Order<Self::OrderIdType>> {
         let err = MissingImplementationContent {
@@ -175,7 +175,7 @@ impl Exchange for Nash {
     }
 
     async fn market_buy(
-        &mut self,
+        &self,
         _req: &OpenMarketOrderRequest,
     ) -> Result<Order<Self::OrderIdType>> {
         let err = MissingImplementationContent {
@@ -184,7 +184,7 @@ impl Exchange for Nash {
         Err(OpenLimitError::MissingImplementation(err))
     }
 
-    async fn get_price_ticker(&mut self, req: &GetPriceTickerRequest) -> Result<Ticker> {
+    async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         let req: nash_protocol::protocol::get_ticker::types::TickerRequest = req.into();
         let resp = self.transport.run(req).await;
         Ok(
@@ -195,7 +195,7 @@ impl Exchange for Nash {
         )
     }
 
-    async fn order_book(&mut self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
+    async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         let req: nash_protocol::protocol::orderbook::types::OrderbookRequest = req.into();
         let resp = self.transport.run(req).await;
         Ok(
@@ -207,7 +207,7 @@ impl Exchange for Nash {
     }
 
     async fn get_order(
-        &mut self,
+        &self,
         req: &GetOrderRequest<Self::OrderIdType>,
     ) -> Result<Order<Self::OrderIdType>> {
         let req: nash_protocol::protocol::get_account_order::types::GetAccountOrderRequest =
@@ -219,7 +219,7 @@ impl Exchange for Nash {
         Ok(resp.order.into())
     }
 
-    async fn refresh_market_info(&mut self) -> Result<()> {
+    async fn refresh_market_info(&self) -> Result<()> {
         println!("Nash doesn't support refreshing markets");
         Ok(())
     }
@@ -529,7 +529,7 @@ impl From<nash_protocol::types::response::Order> for Order<String> {
             nash_protocol::types::OrderType::StopMarket => "stop_market",
         };
         Self {
-            id: String::from("???"),
+            id: order.id,
             client_order_id: None,
             created_at: Some(order.placed_at.timestamp_millis() as u64),
             market_pair: order.market.market_name(),
