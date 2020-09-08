@@ -16,7 +16,7 @@ async fn order_book() {
 
 #[tokio::test]
 async fn get_price_ticker() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = GetPriceTickerRequest {
         market_pair: "ETH-BTC".to_string(),
     };
@@ -26,7 +26,7 @@ async fn get_price_ticker() {
 
 #[tokio::test]
 async fn get_historic_rates() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = GetHistoricRatesRequest {
         market_pair: "ETH-BTC".to_string(),
         interval: Interval::OneHour,
@@ -38,7 +38,7 @@ async fn get_historic_rates() {
 
 #[tokio::test]
 async fn get_historic_rates_invalid_interval() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = GetHistoricRatesRequest {
         market_pair: "ETH-BTC".to_string(),
         interval: Interval::TwoHours,
