@@ -1,6 +1,7 @@
 use derive_more::Constructor;
 use rust_decimal::prelude::Decimal;
 use serde::{Deserialize, Serialize};
+use chrono::Duration;
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default)]
 pub struct OrderBookRequest {
@@ -165,6 +166,32 @@ pub enum Interval {
     ThreeDays,
     OneWeek,
     OneMonth,
+}
+impl Into<Duration> for Interval {
+    fn into(self) -> Duration {
+        match self {
+            Self::OneMinute => Duration::minutes(1),
+            Self::ThreeMinutes => Duration::minutes(3),
+            Self::FiveMinutes => Duration::minutes(5),
+            Self::FifteenMinutes => Duration::minutes(15),
+            Self::ThirtyMinutes => Duration::minutes(30),
+            Self::OneHour => Duration::hours(1),
+            Self::TwoHours => Duration::hours(2),
+            Self::FourHours => Duration::hours(4),
+            Self::SixHours => Duration::hours(6),
+            Self::EightHours => Duration::hours(8),
+            Self::TwelveHours => Duration::hours(12),
+            Self::OneDay => Duration::days(1),
+            Self::ThreeDays => Duration::days(3),
+            Self::OneWeek => Duration::weeks(1),
+            Self::OneMonth => Duration::days(30),
+        }
+    }
+}
+impl Interval {
+    pub fn to_duration(self) -> Duration {
+        self.into()
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
