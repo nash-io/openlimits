@@ -28,32 +28,10 @@ async fn limit_sell() {
     let mut exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 1),
-        size: Decimal::new(1, 1),
+        size: Decimal::new(2, 2),
         market_pair: String::from("eth_btc"),
     };
     let resp = exchange.limit_sell(&req).await.unwrap();
-    println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn market_buy() {
-    let mut exchange = init().await;
-    let req = OpenMarketOrderRequest {
-        size: Decimal::new(1, 1),
-        market_pair: String::from("eth_btc"),
-    };
-    let resp = exchange.market_buy(&req).await.unwrap();
-    println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn market_sell() {
-    let mut exchange = init().await;
-    let req = OpenMarketOrderRequest {
-        size: Decimal::new(1, 1),
-        market_pair: String::from("eth_btc"),
-    };
-    let resp = exchange.market_sell(&req).await.unwrap();
     println!("{:?}", resp);
 }
 
@@ -62,7 +40,7 @@ async fn cancel_order() {
     let mut exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 1),
-        size: Decimal::new(1, 1),
+        size: Decimal::new(2, 2),
         market_pair: String::from("eth_btc"),
     };
     let order = exchange.limit_sell(&req).await.unwrap();
@@ -80,7 +58,7 @@ async fn cancel_all_orders() {
     let mut exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 1),
-        size: Decimal::new(1, 1),
+        size: Decimal::new(2, 2),
         market_pair: String::from("eth_btc"),
     };
     exchange.limit_sell(&req).await.unwrap();
@@ -107,19 +85,19 @@ async fn get_order_history() {
     println!("{:?}", resp);
 }
 
-#[tokio::test]
-async fn get_all_open_orders() {
-    let mut exchange = init().await;
-    let req = OpenLimitOrderRequest {
-        price: Decimal::new(1, 1),
-        size: Decimal::new(1, 1),
-        market_pair: String::from("eth_btc"),
-    };
-    exchange.limit_sell(&req).await.unwrap();
+// #[tokio::test]
+// async fn get_all_open_orders() {
+//     let mut exchange = init().await;
+//     let req = OpenLimitOrderRequest {
+//         price: Decimal::new(1, 1),
+//         size: Decimal::new(2, 2),
+//         market_pair: String::from("eth_btc"),
+//     };
+//     exchange.limit_sell(&req).await.unwrap();
 
-    let resp = exchange.get_all_open_orders().await.unwrap();
-    println!("{:?}", resp);
-}
+//     let resp = exchange.get_all_open_orders().await.unwrap();
+//     println!("{:?}", resp);
+// }
 
 #[tokio::test]
 async fn get_account_balances() {
@@ -147,7 +125,7 @@ async fn init() -> OpenLimits<Nash> {
         &env::var("NASH_API_SECRET").unwrap(),
         &env::var("NASH_API_KEY").unwrap(),
         1234,
-        true,
+        false,
         100000,
     )
     .await;

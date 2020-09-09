@@ -39,17 +39,17 @@ async fn get_historic_rates() {
     println!("{:?}", resp);
 }
 
-#[tokio::test]
-async fn get_historic_rates_invalid_interval() {
-    let mut exchange = init().await;
-    let req = GetHistoricRatesRequest {
-        market_pair: "eth_btc".to_string(),
-        interval: Interval::TwoHours,
-        paginator: None,
-    };
-    let resp = exchange.get_historic_rates(&req).await;
-    assert!(resp.is_err());
-}
+// #[tokio::test]
+// async fn get_historic_rates_invalid_interval() {
+//     let mut exchange = init().await;
+//     let req = GetHistoricRatesRequest {
+//         market_pair: "eth_btc".to_string(),
+//         interval: Interval::TwoHours,
+//         paginator: None,
+//     };
+//     let resp = exchange.get_historic_rates(&req).await;
+//     assert!(resp.is_err());
+// }
 
 async fn init() -> OpenLimits<Nash> {
     dotenv().ok();
@@ -58,7 +58,7 @@ async fn init() -> OpenLimits<Nash> {
         &env::var("NASH_API_SECRET").unwrap(),
         &env::var("NASH_API_KEY").unwrap(),
         1234,
-        true,
+        false,
         100000,
     )
     .await;
