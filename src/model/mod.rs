@@ -3,32 +3,32 @@ use rust_decimal::prelude::Decimal;
 use serde::{Deserialize, Serialize};
 use chrono::Duration;
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct OrderBookRequest {
     pub market_pair: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct OrderBookResponse {
     pub last_update_id: Option<u64>,
     pub bids: Vec<AskBid>,
     pub asks: Vec<AskBid>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct AskBid {
     pub price: Decimal,
     pub qty: Decimal,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct OpenLimitOrderRequest {
     pub market_pair: String,
     pub size: Decimal,
     pub price: Decimal,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct OpenMarketOrderRequest {
     pub market_pair: String,
     pub size: Decimal,
@@ -67,7 +67,7 @@ pub struct CancelOrderRequest<T> {
     pub market_pair: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq)]
 pub struct CancelAllOrdersRequest {
     pub market_pair: Option<String>,
 }
@@ -96,7 +96,7 @@ pub struct Trade<T, O> {
     pub created_at: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub enum Liquidity {
     Maker,
     Taker,
@@ -109,19 +109,19 @@ pub struct TradeHistoryRequest<T, U> {
     pub paginator: Option<Paginator<U>>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq)]
 pub struct Balance {
     pub asset: String,
     pub total: Decimal,
     pub free: Decimal,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq)]
 pub struct Ticker {
     pub price: Decimal,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq)]
 pub struct Candle {
     pub time: u64,
     pub low: Decimal,
@@ -131,7 +131,7 @@ pub struct Candle {
     pub volume: Decimal,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct GetPriceTickerRequest {
     pub market_pair: String,
 }
@@ -143,13 +143,13 @@ pub struct GetHistoricRatesRequest<T> {
     pub interval: Interval,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub enum Side {
     Buy,
     Sell,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum Interval {
     OneMinute,
     ThreeMinutes,
@@ -194,7 +194,7 @@ impl Interval {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OrderStatus {
     New,
