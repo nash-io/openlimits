@@ -153,7 +153,7 @@ pub enum Interval {
     OneMinute,
     ThreeMinutes,
     FiveMinutes,
-    FiftyMinutes,
+    FifteenMinutes,
     ThirtyMinutes,
     OneHour,
     TwoHours,
@@ -162,7 +162,7 @@ pub enum Interval {
     EightHours,
     TwelveHours,
     OneDay,
-    ThreeDay,
+    ThreeDays,
     OneWeek,
     OneMonth,
 }

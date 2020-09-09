@@ -292,7 +292,7 @@ impl TryFrom<Interval> for u32 {
         match value {
             Interval::OneMinute => Ok(60),
             Interval::FiveMinutes => Ok(300),
-            Interval::FiftyMinutes => Ok(900),
+            Interval::FifteenMinutes => Ok(900),
             Interval::OneHour => Ok(3600),
             Interval::SixHours => Ok(21600),
             Interval::OneDay => Ok(86400),
