@@ -3,11 +3,15 @@ pub mod model;
 mod transport;
 use std::convert::TryFrom;
 
+use client::websocket::BinanceWebsocket;
+
 use crate::{
     errors::OpenLimitError,
     exchange::Exchange,
     exchange_info::ExchangeInfo,
+    exchange_ws::ExchangeWs,
     model::{
+        websocket::{OpenLimitsWebsocketMessage, Subscription},
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
         Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
@@ -382,6 +386,38 @@ impl From<model::OrderStatus> for OrderStatus {
             model::OrderStatus::PartiallyFilled => OrderStatus::PartiallyFilled,
             model::OrderStatus::PendingCancel => OrderStatus::PendingCancel,
             model::OrderStatus::Rejected => OrderStatus::Rejected,
+        }
+    }
+}
+
+#[async_trait]
+impl ExchangeWs for BinanceWebsocket {
+    async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
+        BinanceWebsocket::subscribe(self, subscription.into()).await
+    }
+    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
+        Ok(message?.into())
+    }
+}
+impl From<Subscription> for model::websocket::Subscription {
+    fn from(sub: Subscription) -> Self {
+        match sub {
+            Subscription::OrderBook(symbol, depth) => {
+                model::websocket::Subscription::OrderBook(symbol, depth)
+            }
+            _ => panic!("Not supported Subscription"),
+        }
+    }
+}
+
+impl From<model::websocket::BinanceWebsocketMessage> for OpenLimitsWebsocketMessage {
+    fn from(message: model::websocket::BinanceWebsocketMessage) -> Self {
+        match message {
+            model::websocket::BinanceWebsocketMessage::Ping => OpenLimitsWebsocketMessage::Ping,
+            model::websocket::BinanceWebsocketMessage::OrderBook(orderbook) => {
+                OpenLimitsWebsocketMessage::OrderBook(orderbook.into())
+            }
+            _ => panic!("Not supported Mesaage"),
         }
     }
 }

@@ -11,14 +11,16 @@ pub struct OpenLimitsWs<E: ExchangeWs> {
     pub websocket: E,
 }
 
+impl<E: ExchangeWs> OpenLimitsWs<E> {
+    pub async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
+        self.websocket.subscribe(subscription).await
+    }
+}
+
 #[async_trait]
 pub trait ExchangeWs: Stream + Unpin {
-    type WebSocketMessageType;
-    fn subscribe(&self, subscription: Subscription) -> Result<()>;
-    fn parse_message(
-        &self,
-        message: Self::WebSocketMessageType,
-    ) -> Result<OpenLimitsWebsocketMessage>;
+    async fn subscribe(&mut self, subscription: Subscription) -> Result<()>;
+    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage>;
 }
 
 impl<E: ExchangeWs> Stream for OpenLimitsWs<E> {
