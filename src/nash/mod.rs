@@ -68,7 +68,9 @@ impl Exchange for Nash {
         _paginator: Option<&Paginator<Self::PaginationType>>,
     ) -> Result<Vec<Balance>> {
         let req =
-            nash_protocol::protocol::list_account_balances::types::ListAccountBalancesRequest {filter: None};
+            nash_protocol::protocol::list_account_balances::types::ListAccountBalancesRequest {
+                filter: None,
+            };
         let resp = self.transport.run(req).await;
 
         let resp:nash_protocol::protocol::list_account_balances::types::ListAccountBalancesResponse = Nash::unwrap_response::<nash_protocol::protocol::list_account_balances::types::ListAccountBalancesResponse>(resp)?;
