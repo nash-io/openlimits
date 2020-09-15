@@ -125,7 +125,7 @@ async fn init() -> OpenLimits<Nash> {
         &env::var("NASH_API_SECRET").unwrap(),
         &env::var("NASH_API_KEY").unwrap(),
         1234,
-        false,
+        true,
         100000,
     )
     .await;

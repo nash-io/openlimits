@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use nash_native_client::ws_client::client::Client;
+use nash_native_client::ws_client::client::{Client, Environment};
 use std::convert::{TryFrom, TryInto};
 
 use crate::{
@@ -28,10 +28,22 @@ impl Nash {
         sandbox: bool,
         timeout: u64,
     ) -> Self {
+        let environment = if sandbox {
+            Environment::Sandbox
+        } else {
+            Environment::Production
+        };
         Nash {
-            transport: Client::from_key_data(secret, session, None, client_id, sandbox, timeout)
-                .await
-                .unwrap(),
+            transport: Client::from_key_data(
+                secret,
+                session,
+                None,
+                client_id,
+                environment,
+                timeout,
+            )
+            .await
+            .unwrap(),
         }
     }
 }
@@ -241,9 +253,11 @@ impl Nash {
         req: &OpenLimitOrderRequest,
         buy_or_sell: nash_protocol::types::BuyOrSell,
     ) -> nash_protocol::protocol::place_order::types::LimitOrderRequest {
-        let market = nash_protocol::types::request::Market::from_str(&req.market_pair).unwrap();
+        let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
 
         nash_protocol::protocol::place_order::types::LimitOrderRequest {
+            cancellation_policy: nash_protocol::types::OrderCancellationPolicy::GoodTilCancelled,
+            allow_taker: true,
             market,
             buy_or_sell,
             amount: format!("{}", req.size),
@@ -253,7 +267,7 @@ impl Nash {
 }
 impl From<&OrderBookRequest> for nash_protocol::protocol::orderbook::types::OrderbookRequest {
     fn from(req: &OrderBookRequest) -> Self {
-        let market = nash_protocol::types::request::Market::from_str(&req.market_pair).unwrap();
+        let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
         Self { market }
     }
 }
@@ -268,10 +282,10 @@ impl From<nash_protocol::protocol::orderbook::types::OrderbookResponse> for Orde
     }
 }
 
-impl From<nash_protocol::protocol::orderbook::types::Order> for AskBid {
-    fn from(resp: nash_protocol::protocol::orderbook::types::Order) -> Self {
+impl From<nash_protocol::types::OrderbookOrder> for AskBid {
+    fn from(resp: nash_protocol::types::OrderbookOrder) -> Self {
         let price = Decimal::from_str(&resp.price).unwrap();
-        let qty = Decimal::from_str(&format!("{}", resp.amount.amount.value)).unwrap();
+        let qty = Decimal::from_str(&resp.amount.amount.value.to_string()).unwrap();
         Self { price, qty }
     }
 }
@@ -281,7 +295,7 @@ impl From<&CancelOrderRequest<String>>
 {
     fn from(req: &CancelOrderRequest<String>) -> Self {
         let pair = req.market_pair.clone().unwrap();
-        let market = nash_protocol::types::request::Market::from_str(&pair).unwrap();
+        let market = nash_protocol::types::Market::from_str(&pair).unwrap();
 
         Self {
             market,
@@ -303,7 +317,7 @@ impl From<&CancelAllOrdersRequest>
 {
     fn from(req: &CancelAllOrdersRequest) -> Self {
         let pair = req.market_pair.clone().unwrap();
-        let market = nash_protocol::types::request::Market::from_str(&pair).unwrap();
+        let market = nash_protocol::types::Market::from_str(&pair).unwrap();
         Self { market }
     }
 }
@@ -314,7 +328,7 @@ impl From<nash_protocol::protocol::place_order::types::LimitOrderResponse> for O
             created_at: None,
             client_order_id: None,
             id: resp.order_id,
-            market_pair: resp.market.market_name(),
+            market_pair: resp.market_name,
             order_type: resp.order_type.to_string(),
             price: None,
             size: Decimal::from(0),
@@ -339,7 +353,7 @@ impl TryFrom<&TradeHistoryRequest<String, String>>
 
         let market = match req.market_pair.clone() {
             Some(pair) => {
-                let market = nash_protocol::types::request::Market::from_str(&pair)?;
+                let market = nash_protocol::types::Market::from_str(&pair)?;
                 Some(market)
             }
             None => None,
@@ -385,16 +399,16 @@ impl From<nash_protocol::types::Trade> for Trade<String, String> {
     }
 }
 
-impl From<nash_protocol::types::request::BuyOrSell> for Side {
-    fn from(side: nash_protocol::types::request::BuyOrSell) -> Self {
+impl From<nash_protocol::types::BuyOrSell> for Side {
+    fn from(side: nash_protocol::types::BuyOrSell) -> Self {
         match side {
-            nash_protocol::types::request::BuyOrSell::Buy => Side::Buy,
-            nash_protocol::types::request::BuyOrSell::Sell => Side::Sell,
+            nash_protocol::types::BuyOrSell::Buy => Side::Buy,
+            nash_protocol::types::BuyOrSell::Sell => Side::Sell,
         }
     }
 }
 
-impl From<Paginator<String>> for nash_protocol::types::request::DateTimeRange {
+impl From<Paginator<String>> for nash_protocol::types::DateTimeRange {
     fn from(paginator: Paginator<String>) -> Self {
         Self {
             start: paginator.start_time.map(timestamp_to_utc_datetime).unwrap(),
@@ -403,8 +417,8 @@ impl From<Paginator<String>> for nash_protocol::types::request::DateTimeRange {
     }
 }
 
-impl From<nash_protocol::types::response::AccountTradeSide> for Liquidity {
-    fn from(side: nash_protocol::types::response::AccountTradeSide) -> Self {
+impl From<nash_protocol::types::AccountTradeSide> for Liquidity {
+    fn from(side: nash_protocol::types::AccountTradeSide) -> Self {
         match side {
             nash_protocol::types::AccountTradeSide::Taker => Liquidity::Taker,
             _ => Liquidity::Maker,
@@ -416,7 +430,7 @@ impl From<&GetHistoricRatesRequest<String>>
     for nash_protocol::protocol::list_candles::types::ListCandlesRequest
 {
     fn from(req: &GetHistoricRatesRequest<String>) -> Self {
-        let market = nash_protocol::types::request::Market::from_str(&req.market_pair).unwrap();
+        let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
 
         let (before, limit) = match req.paginator.clone() {
             Some(p) => (p.before, p.limit.map(|v| i64::try_from(v).unwrap())),
@@ -434,22 +448,18 @@ impl From<&GetHistoricRatesRequest<String>>
     }
 }
 
-impl TryFrom<Interval> for nash_protocol::types::request::CandleInterval {
+impl TryFrom<Interval> for nash_protocol::types::CandleInterval {
     type Error = OpenLimitError;
     fn try_from(interval: Interval) -> crate::shared::Result<Self> {
         match interval {
-            Interval::OneMinute => Ok(nash_protocol::types::request::CandleInterval::OneMinute),
-            Interval::FiveMinutes => Ok(nash_protocol::types::request::CandleInterval::FiveMinute),
-            Interval::FifteenMinutes => {
-                Ok(nash_protocol::types::request::CandleInterval::FifteenMinute)
-            }
-            Interval::ThirtyMinutes => {
-                Ok(nash_protocol::types::request::CandleInterval::ThirtyMinute)
-            }
-            Interval::OneHour => Ok(nash_protocol::types::request::CandleInterval::OneHour),
-            Interval::SixHours => Ok(nash_protocol::types::request::CandleInterval::SixHour),
-            Interval::TwelveHours => Ok(nash_protocol::types::request::CandleInterval::TwelveHour),
-            Interval::OneDay => Ok(nash_protocol::types::request::CandleInterval::OneDay),
+            Interval::OneMinute => Ok(nash_protocol::types::CandleInterval::OneMinute),
+            Interval::FiveMinutes => Ok(nash_protocol::types::CandleInterval::FiveMinute),
+            Interval::FifteenMinutes => Ok(nash_protocol::types::CandleInterval::FifteenMinute),
+            Interval::ThirtyMinutes => Ok(nash_protocol::types::CandleInterval::ThirtyMinute),
+            Interval::OneHour => Ok(nash_protocol::types::CandleInterval::OneHour),
+            Interval::SixHours => Ok(nash_protocol::types::CandleInterval::SixHour),
+            Interval::TwelveHours => Ok(nash_protocol::types::CandleInterval::TwelveHour),
+            Interval::OneDay => Ok(nash_protocol::types::CandleInterval::OneDay),
             _ => {
                 let err = MissingImplementationContent {
                     message: String::from("Not supported interval"),
@@ -460,8 +470,8 @@ impl TryFrom<Interval> for nash_protocol::types::request::CandleInterval {
     }
 }
 
-impl From<nash_protocol::types::request::Candle> for Candle {
-    fn from(candle: nash_protocol::types::request::Candle) -> Self {
+impl From<nash_protocol::types::Candle> for Candle {
+    fn from(candle: nash_protocol::types::Candle) -> Self {
         let close = Decimal::from_str(&format!("{}", &candle.close_price.amount.value)).unwrap();
         let high = Decimal::from_str(&format!("{}", &candle.high_price.amount.value)).unwrap();
         let low = Decimal::from_str(&format!("{}", &candle.low_price.amount.value)).unwrap();
@@ -494,7 +504,7 @@ impl TryFrom<&GetOrderHistoryRequest<String>>
 
         let market = match req.clone().market_pair {
             Some(pair) => {
-                let market = nash_protocol::types::request::Market::from_str(&pair)?;
+                let market = nash_protocol::types::Market::from_str(&pair)?;
                 Some(market)
             }
             None => None,
@@ -516,8 +526,8 @@ impl TryFrom<&GetOrderHistoryRequest<String>>
     }
 }
 
-impl From<nash_protocol::types::response::Order> for Order<String> {
-    fn from(order: nash_protocol::types::response::Order) -> Self {
+impl From<nash_protocol::types::Order> for Order<String> {
+    fn from(order: nash_protocol::types::Order) -> Self {
         let size = Decimal::from_str(&format!("{}", &order.amount_placed.amount.value)).unwrap();
         let order_type = match order.order_type {
             nash_protocol::types::OrderType::Limit => "limit",
@@ -540,20 +550,20 @@ impl From<nash_protocol::types::response::Order> for Order<String> {
         }
     }
 }
-impl From<nash_protocol::types::response::OrderStatus> for OrderStatus {
-    fn from(status: nash_protocol::types::response::OrderStatus) -> Self {
+impl From<nash_protocol::types::OrderStatus> for OrderStatus {
+    fn from(status: nash_protocol::types::OrderStatus) -> Self {
         match status {
-            nash_protocol::types::response::OrderStatus::Filled => OrderStatus::Filled,
-            nash_protocol::types::response::OrderStatus::Open => OrderStatus::Open,
-            nash_protocol::types::response::OrderStatus::Canceled => OrderStatus::Canceled,
-            nash_protocol::types::response::OrderStatus::Pending => OrderStatus::Pending,
+            nash_protocol::types::OrderStatus::Filled => OrderStatus::Filled,
+            nash_protocol::types::OrderStatus::Open => OrderStatus::Open,
+            nash_protocol::types::OrderStatus::Canceled => OrderStatus::Canceled,
+            nash_protocol::types::OrderStatus::Pending => OrderStatus::Pending,
         }
     }
 }
 
 impl From<&GetPriceTickerRequest> for nash_protocol::protocol::get_ticker::types::TickerRequest {
     fn from(req: &GetPriceTickerRequest) -> Self {
-        let market = nash_protocol::types::request::Market::from_str(&req.market_pair).unwrap();
+        let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
 
         Self { market }
     }
