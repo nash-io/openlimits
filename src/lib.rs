@@ -25,5 +25,6 @@ pub mod coinbase;
 pub mod errors;
 pub mod exchange;
 pub mod exchange_info;
+pub mod exchange_ws;
 pub mod model;
 pub mod shared;
