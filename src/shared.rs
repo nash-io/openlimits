@@ -124,9 +124,14 @@ pub mod opt_naive_datetime_from_string {
     }
 }
 
-pub fn timestamp_to_datetime(timestamp: u64) -> chrono::naive::NaiveDateTime {
+pub fn timestamp_to_naive_datetime(timestamp: u64) -> chrono::naive::NaiveDateTime {
     let seconds = (timestamp / 1000) as i64;
     let nanos = ((timestamp % 1000) * 1_000_000) as u32;
 
     chrono::NaiveDateTime::from_timestamp(seconds, nanos)
+}
+
+pub fn timestamp_to_utc_datetime(timestamp: u64) -> chrono::DateTime<chrono::Utc> {
+    let d = timestamp_to_naive_datetime(timestamp);
+    chrono::DateTime::<chrono::Utc>::from_utc(d, chrono::Utc)
 }
