@@ -417,7 +417,7 @@ impl From<model::websocket::BinanceWebsocketMessage> for OpenLimitsWebsocketMess
             model::websocket::BinanceWebsocketMessage::OrderBook(orderbook) => {
                 OpenLimitsWebsocketMessage::OrderBook(orderbook.into())
             }
-            _ => panic!("Not supported Mesaage"),
+            _ => panic!("Not supported Message"),
         }
     }
 }
