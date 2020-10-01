@@ -338,6 +338,11 @@ pub enum SymbolFilter {
     #[serde(rename_all = "camelCase")]
     MaxNumAlgoOrders { max_num_algo_orders: u64 },
     #[serde(rename_all = "camelCase")]
+    MaxPosition {
+        #[serde(with = "string_to_decimal")]
+        max_position: Decimal,
+    },
+    #[serde(rename_all = "camelCase")]
     MaxNumOrders { max_num_orders: u64 },
     #[serde(rename_all = "camelCase")]
     IcebergParts { limit: u64 },
