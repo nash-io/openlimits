@@ -27,7 +27,7 @@ Future goals are:
 
 ### Community
 
-There is a project slack, [click here](https://join.slack.com/t/openlimitsworkspace/shared_invite/zt-gdtstuma-ea2cIR_tpwavCuY5uLw1VQ) to join.
+There is a project slack, [click here](https://join.slack.com/t/openlimitsworkspace/shared_invite/zt-ifhd5tv4-9QL73tCB~fDcRJzDFEuOrQ) to join.
 
 ### Testing
 
