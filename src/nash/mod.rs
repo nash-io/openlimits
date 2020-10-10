@@ -71,23 +71,27 @@ impl Exchange for Nash {
     ) -> Result<OrderCanceled<Self::OrderIdType>> {
         let req: nash_protocol::protocol::cancel_order::CancelOrderRequest = req.into();
         let resp = self.transport.run(req).await;
-        Ok(Nash::unwrap_response::<
-            nash_protocol::protocol::cancel_order::CancelOrderResponse,
-        >(resp)?
-        .into())
+        Ok(
+            Nash::unwrap_response::<nash_protocol::protocol::cancel_order::CancelOrderResponse>(
+                resp,
+            )?
+            .into(),
+        )
     }
 
     async fn get_account_balances(
         &self,
         _paginator: Option<&Paginator<Self::PaginationType>>,
     ) -> Result<Vec<Balance>> {
-        let req =
-            nash_protocol::protocol::list_account_balances::ListAccountBalancesRequest {
-                filter: None,
-            };
+        let req = nash_protocol::protocol::list_account_balances::ListAccountBalancesRequest {
+            filter: None,
+        };
         let resp = self.transport.run(req).await;
 
-        let resp:nash_protocol::protocol::list_account_balances::ListAccountBalancesResponse = Nash::unwrap_response::<nash_protocol::protocol::list_account_balances::ListAccountBalancesResponse>(resp)?;
+        let resp: nash_protocol::protocol::list_account_balances::ListAccountBalancesResponse =
+            Nash::unwrap_response::<
+                nash_protocol::protocol::list_account_balances::ListAccountBalancesResponse,
+            >(resp)?;
 
         let balances: Vec<Balance> = resp
             .personal
@@ -120,9 +124,9 @@ impl Exchange for Nash {
         let resp = self.transport.run(req).await;
 
         let resp: nash_protocol::protocol::list_candles::ListCandlesResponse =
-            Nash::unwrap_response::<
-                nash_protocol::protocol::list_candles::ListCandlesResponse,
-            >(resp)?;
+            Nash::unwrap_response::<nash_protocol::protocol::list_candles::ListCandlesResponse>(
+                resp,
+            )?;
 
         Ok(resp.candles.into_iter().map(Into::into).collect())
     }
@@ -168,7 +172,12 @@ impl Exchange for Nash {
         let resp = self.transport.run(req).await;
         println!("{:?}", resp);
 
-        Ok(Nash::unwrap_response::<nash_protocol::protocol::place_order::LimitOrderResponse>(resp)?.into())
+        Ok(
+            Nash::unwrap_response::<nash_protocol::protocol::place_order::LimitOrderResponse>(
+                resp,
+            )?
+            .into(),
+        )
     }
 
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
@@ -178,7 +187,12 @@ impl Exchange for Nash {
         let resp = self.transport.run(req).await;
         println!("{:?}", resp);
 
-        Ok(Nash::unwrap_response::<nash_protocol::protocol::place_order::LimitOrderResponse>(resp)?.into())
+        Ok(
+            Nash::unwrap_response::<nash_protocol::protocol::place_order::LimitOrderResponse>(
+                resp,
+            )?
+            .into(),
+        )
     }
 
     async fn market_sell(&self, _req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
@@ -199,10 +213,8 @@ impl Exchange for Nash {
         let req: nash_protocol::protocol::get_ticker::TickerRequest = req.into();
         let resp = self.transport.run(req).await;
         Ok(
-            Nash::unwrap_response::<nash_protocol::protocol::get_ticker::TickerResponse>(
-                resp,
-            )?
-            .into(),
+            Nash::unwrap_response::<nash_protocol::protocol::get_ticker::TickerResponse>(resp)?
+                .into(),
         )
     }
 
@@ -210,10 +222,8 @@ impl Exchange for Nash {
         let req: nash_protocol::protocol::orderbook::OrderbookRequest = req.into();
         let resp = self.transport.run(req).await;
         Ok(
-            Nash::unwrap_response::<nash_protocol::protocol::orderbook::OrderbookResponse>(
-                resp,
-            )?
-            .into(),
+            Nash::unwrap_response::<nash_protocol::protocol::orderbook::OrderbookResponse>(resp)?
+                .into(),
         )
     }
 
@@ -221,8 +231,7 @@ impl Exchange for Nash {
         &self,
         req: &GetOrderRequest<Self::OrderIdType>,
     ) -> Result<Order<Self::OrderIdType>> {
-        let req: nash_protocol::protocol::get_account_order::GetAccountOrderRequest =
-            req.into();
+        let req: nash_protocol::protocol::get_account_order::GetAccountOrderRequest = req.into();
         let resp = self.transport.run(req).await;
         let resp = Nash::unwrap_response::<
             nash_protocol::protocol::get_account_order::GetAccountOrderResponse,
@@ -306,17 +315,13 @@ impl From<&CancelOrderRequest<String>>
     }
 }
 
-impl From<nash_protocol::protocol::cancel_order::CancelOrderResponse>
-    for OrderCanceled<String>
-{
+impl From<nash_protocol::protocol::cancel_order::CancelOrderResponse> for OrderCanceled<String> {
     fn from(resp: nash_protocol::protocol::cancel_order::CancelOrderResponse) -> Self {
         Self { id: resp.order_id }
     }
 }
 
-impl From<&CancelAllOrdersRequest>
-    for nash_protocol::protocol::cancel_all_orders::CancelAllOrders
-{
+impl From<&CancelAllOrdersRequest> for nash_protocol::protocol::cancel_all_orders::CancelAllOrders {
     fn from(req: &CancelAllOrdersRequest) -> Self {
         let pair = req.market_pair.clone().unwrap();
         let market = nash_protocol::types::Market::from_str(&pair).unwrap();
@@ -611,7 +616,8 @@ impl Stream for NashStream {
 #[async_trait]
 impl ExchangeWs for NashStream {
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
-        let sub:nash_protocol::protocol::subscriptions::updated_orderbook::SubscribeOrderbook = subscription.into();
+        let sub: nash_protocol::protocol::subscriptions::updated_orderbook::SubscribeOrderbook =
+            subscription.into();
         let _stream = Client::subscribe_protocol(&self.client, sub).await.unwrap();
 
         Ok(())
