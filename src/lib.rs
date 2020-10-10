@@ -4,9 +4,9 @@
 #![deny(unstable_features)]
 #![warn(unused_import_braces)]
 
-#[cfg(not(target_arch="wasm32"))]
+#[cfg(not(target_arch = "wasm32"))]
 pub mod binance;
-#[cfg(not(target_arch="wasm32"))]
+#[cfg(not(target_arch = "wasm32"))]
 pub mod coinbase;
 pub mod errors;
 pub mod exchange;
