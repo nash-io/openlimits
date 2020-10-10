@@ -157,6 +157,7 @@ impl Transport {
         Ok(self.response_handler(request).await?)
     }
 
+    #[allow(unused)]
     pub async fn signed_put<O, Q>(&self, endpoint: &str, data: Option<&Q>) -> Result<O>
     where
         O: DeserializeOwned,
