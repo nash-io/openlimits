@@ -173,12 +173,9 @@ impl Exchange for Binance {
         &self,
         req: &GetOrderRequest<Self::OrderIdType>,
     ) -> Result<Order<Self::OrderIdType>> {
-        let pair = req
-            .market_pair
-            .clone()
-            .ok_or(OpenLimitError::MissingParameter(
-                "market_pair parameter is required.".to_string(),
-            ))?;
+        let pair = req.market_pair.clone().ok_or_else(|| {
+            OpenLimitError::MissingParameter("market_pair parameter is required.".to_string())
+        })?;
         Binance::get_order(self, &pair, req.id)
             .await
             .map(Into::into)
@@ -282,12 +279,9 @@ impl TryFrom<&GetOrderHistoryRequest<u64>> for model::AllOrderReq {
     fn try_from(req: &GetOrderHistoryRequest<u64>) -> Result<Self> {
         Ok(Self {
             paginator: req.paginator.clone().map(|p| p.into()),
-            symbol: req
-                .market_pair
-                .clone()
-                .ok_or(OpenLimitError::MissingParameter(
-                    "market_pair parameter is required.".to_string(),
-                ))?,
+            symbol: req.market_pair.clone().ok_or_else(|| {
+                OpenLimitError::MissingParameter("market_pair parameter is required.".to_string())
+            })?,
         })
     }
 }
@@ -297,12 +291,9 @@ impl TryFrom<&TradeHistoryRequest<u64, u64>> for model::TradeHistoryReq {
     fn try_from(trade_history: &TradeHistoryRequest<u64, u64>) -> Result<Self> {
         Ok(Self {
             paginator: trade_history.paginator.clone().map(|p| p.into()),
-            symbol: trade_history
-                .market_pair
-                .clone()
-                .ok_or(OpenLimitError::MissingParameter(
-                    "market_pair parameter is required.".to_string(),
-                ))?,
+            symbol: trade_history.market_pair.clone().ok_or_else(|| {
+                OpenLimitError::MissingParameter("market_pair parameter is required.".to_string())
+            })?,
         })
     }
 }

@@ -9,7 +9,7 @@ use std::env;
 
 #[tokio::test]
 async fn order_book() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = OrderBookRequest {
         market_pair: "eth_btc".to_string(),
     };
@@ -19,7 +19,7 @@ async fn order_book() {
 
 #[tokio::test]
 async fn get_price_ticker() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = GetPriceTickerRequest {
         market_pair: "eth_btc".to_string(),
     };
@@ -29,7 +29,7 @@ async fn get_price_ticker() {
 
 #[tokio::test]
 async fn get_historic_rates() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = GetHistoricRatesRequest {
         market_pair: "eth_btc".to_string(),
         interval: Interval::OneHour,

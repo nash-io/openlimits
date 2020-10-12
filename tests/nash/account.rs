@@ -5,7 +5,7 @@ use openlimits::{
     exchange::OpenLimits,
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
-        OpenMarketOrderRequest, TradeHistoryRequest,
+        TradeHistoryRequest,
     },
     nash::Nash,
 };
@@ -13,7 +13,7 @@ use rust_decimal::prelude::Decimal;
 
 #[tokio::test]
 async fn limit_buy() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 3),
         size: Decimal::new(1, 1),
@@ -25,7 +25,7 @@ async fn limit_buy() {
 
 #[tokio::test]
 async fn limit_sell() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 1),
         size: Decimal::new(2, 2),
@@ -37,7 +37,7 @@ async fn limit_sell() {
 
 #[tokio::test]
 async fn cancel_order() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 1),
         size: Decimal::new(2, 2),
@@ -55,7 +55,7 @@ async fn cancel_order() {
 
 #[tokio::test]
 async fn cancel_all_orders() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 1),
         size: Decimal::new(2, 2),
@@ -75,7 +75,7 @@ async fn cancel_all_orders() {
 
 #[tokio::test]
 async fn get_order_history() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = GetOrderHistoryRequest {
         market_pair: Some(String::from("eth_btc")),
         paginator: None,
@@ -101,14 +101,14 @@ async fn get_order_history() {
 
 #[tokio::test]
 async fn get_account_balances() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let resp = exchange.get_account_balances(None).await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_trade_history() {
-    let mut exchange = init().await;
+    let exchange = init().await;
     let req = TradeHistoryRequest {
         market_pair: Some("eth_btc".to_string()),
         ..Default::default()

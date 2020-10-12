@@ -100,7 +100,7 @@ impl Exchange for Nash {
                 let total = Decimal::from_str(&format!("{}", &amount.amount.value)).unwrap();
                 Balance {
                     asset: String::from(asset.name()),
-                    total: total,
+                    total,
                     free: total,
                 }
             })
@@ -255,7 +255,7 @@ impl Nash {
         match resp {
             Ok(resp) => resp
                 .response_or_error()
-                .map_err(|err| OpenLimitError::NashProtocolError(err)),
+                .map_err(OpenLimitError::NashProtocolError),
             Err(err) => Err(OpenLimitError::NashProtocolError(err)),
         }
     }
