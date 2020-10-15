@@ -8,6 +8,7 @@ use crate::{
         OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
         Paginator, Ticker, Trade, TradeHistoryRequest,
     },
+    exchange_info::MarketPairHandle,
     shared::Result,
 };
 
@@ -17,7 +18,7 @@ pub struct OpenLimits<E: Exchange> {
 }
 
 impl<E: Exchange> OpenLimits<E> {
-    pub async fn refresh_market_info(&self) -> Result<()> {
+    pub async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
         self.exchange.refresh_market_info().await
     }
 
@@ -104,7 +105,7 @@ pub trait Exchange {
     type OrderIdType;
     type TradeIdType;
     type PaginationType;
-    async fn refresh_market_info(&self) -> Result<()>;
+    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>>;
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>>;
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>>;

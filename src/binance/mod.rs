@@ -8,7 +8,7 @@ use client::websocket::BinanceWebsocket;
 use crate::{
     errors::OpenLimitError,
     exchange::Exchange,
-    exchange_info::ExchangeInfo,
+    exchange_info::{ExchangeInfo, MarketPairHandle},
     exchange_ws::ExchangeWs,
     model::{
         websocket::{OpenLimitsWebsocketMessage, Subscription},
@@ -64,7 +64,7 @@ impl Exchange for Binance {
             .map(Into::into)
     }
 
-    async fn refresh_market_info(&self) -> Result<()> {
+    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
         self.exchange_info.refresh(self).await
     }
 

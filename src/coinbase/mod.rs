@@ -5,7 +5,7 @@ mod transport;
 use crate::{
     errors::OpenLimitError,
     exchange::Exchange,
-    exchange_info::ExchangeInfo,
+    exchange_info::{ExchangeInfo, MarketPairHandle},
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
@@ -65,7 +65,7 @@ impl Exchange for Coinbase {
             .map(Into::into)
     }
 
-    async fn refresh_market_info(&self) -> Result<()> {
+    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
         self.exchange_info.refresh(self).await
     }
 
