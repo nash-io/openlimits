@@ -2,13 +2,13 @@ use async_trait::async_trait;
 use derive_more::Constructor;
 
 use crate::{
+    exchange_info::MarketPairHandle,
     model::{
         Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
         GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest, OpenLimitOrderRequest,
         OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
         Paginator, Ticker, Trade, TradeHistoryRequest,
     },
-    exchange_info::MarketPairHandle,
     shared::Result,
 };
 

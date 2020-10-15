@@ -5,8 +5,8 @@ use std::convert::{TryFrom, TryInto};
 use crate::{
     errors::{MissingImplementationContent, OpenLimitError},
     exchange::Exchange,
+    exchange_info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     exchange_ws::ExchangeWs,
-    exchange_info::{ExchangeInfoRetrieval, ExchangeInfo, MarketPair, MarketPairHandle},
     model::{
         websocket::{OpenLimitsWebsocketMessage, Subscription},
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
@@ -48,7 +48,7 @@ impl Nash {
             )
             .await
             .unwrap(),
-            exchange_info: ExchangeInfo::new()
+            exchange_info: ExchangeInfo::new(),
         }
     }
 }
@@ -673,14 +673,20 @@ impl From<nash_protocol::protocol::subscriptions::SubscriptionResponse>
 }
 
 impl Nash {
-    async fn list_markets(&self) -> Result<nash_protocol::protocol::list_markets::ListMarketsResponse> {
-        let response = self.transport.run(
-            nash_protocol::protocol::list_markets::ListMarketsRequest
-        ).await?;
+    async fn list_markets(
+        &self,
+    ) -> Result<nash_protocol::protocol::list_markets::ListMarketsResponse> {
+        let response = self
+            .transport
+            .run(nash_protocol::protocol::list_markets::ListMarketsRequest)
+            .await?;
         if let Some(err) = response.error() {
             Err(OpenLimitError::NashProtocolError(
                 // FIXME: handle this better in both nash protocol and openlimits
-                nash_protocol::errors::ProtocolError::coerce_static_from_str(&format!("{:#?}", err))
+                nash_protocol::errors::ProtocolError::coerce_static_from_str(&format!(
+                    "{:#?}",
+                    err
+                )),
             ))
         } else {
             Ok(response.consume_response().unwrap()) // safe unwrap
@@ -691,14 +697,18 @@ impl Nash {
 #[async_trait]
 impl ExchangeInfoRetrieval for Nash {
     async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
-        Ok(self.list_markets().await?.markets.iter().map(|(symbol,v)| {
-            MarketPair {
-                    symbol: symbol.to_string(),
-                    base: v.asset_b.asset.name().to_string(),
-                    quote: v.asset_a.asset.name().to_string(),
-                    base_increment: Decimal::new(1, v.asset_b.precision),
-                    quote_increment: Decimal::new(1, v.asset_a.precision)
-                }
-        }).collect())
+        Ok(self
+            .list_markets()
+            .await?
+            .markets
+            .iter()
+            .map(|(symbol, v)| MarketPair {
+                symbol: symbol.to_string(),
+                base: v.asset_b.asset.name().to_string(),
+                quote: v.asset_a.asset.name().to_string(),
+                base_increment: Decimal::new(1, v.asset_b.precision),
+                quote_increment: Decimal::new(1, v.asset_a.precision),
+            })
+            .collect())
     }
 }
