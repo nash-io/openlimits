@@ -94,7 +94,7 @@ impl Exchange for Nash {
             >(resp)?;
 
         let balances: Vec<Balance> = resp
-            .personal
+            .state_channel
             .iter()
             .map(|(asset, amount)| {
                 let total = Decimal::from_str(&format!("{}", &amount.amount.value)).unwrap();
