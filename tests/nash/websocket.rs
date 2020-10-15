@@ -14,6 +14,16 @@ async fn orderbook() {
     println!("{:?}", item.unwrap().unwrap());
 }
 
+#[tokio::test]
+async fn trades() {
+    let mut client = init().await;
+    let sub = Subscription::Trade("btc_usdc".to_string());
+    client.subscribe(sub).await.unwrap();
+
+    let item = client.next().await;
+    println!("{:?}", item.unwrap().unwrap());
+}
+
 async fn init() -> OpenLimitsWs<NashStream> {
     dotenv().ok();
 
