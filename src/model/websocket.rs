@@ -19,5 +19,5 @@ pub enum Subscription {
 pub enum OpenLimitsWebsocketMessage {
     Ping,
     OrderBook(OrderBookResponse),
-    Trades(Vec<Trade<String, String>>)
+    Trades(Vec<Trade<String, String>>),
 }
