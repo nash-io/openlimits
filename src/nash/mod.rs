@@ -597,8 +597,8 @@ impl From<&GetOrderRequest<String>>
 }
 
 use futures::stream::{Stream, StreamExt};
-use std::{pin::Pin, task::Context, task::Poll};
 use nash_protocol::protocol::ResponseOrError;
+use std::{pin::Pin, task::Context, task::Poll};
 
 pub struct NashStream {
     pub client: Client,
@@ -617,8 +617,7 @@ impl Stream for NashStream {
 #[async_trait]
 impl ExchangeWs for NashStream {
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
-        let sub: nash_protocol::protocol::subscriptions::SubscriptionRequest =
-            subscription.into();
+        let sub: nash_protocol::protocol::subscriptions::SubscriptionRequest = subscription.into();
         let _stream = Client::subscribe_protocol(&self.client, sub).await.unwrap();
 
         Ok(())
@@ -629,42 +628,41 @@ impl ExchangeWs for NashStream {
     }
 }
 
-impl From<Subscription>
-    for nash_protocol::protocol::subscriptions::SubscriptionRequest
-{
+impl From<Subscription> for nash_protocol::protocol::subscriptions::SubscriptionRequest {
     fn from(sub: Subscription) -> Self {
         match sub {
             Subscription::OrderBook(symbol, _depth) => {
                 let market = nash_protocol::types::Market::from_str(&symbol).unwrap();
-                Self::Orderbook(nash_protocol::protocol::subscriptions::updated_orderbook::SubscribeOrderbook{ market })
-            },
+                Self::Orderbook(
+                    nash_protocol::protocol::subscriptions::updated_orderbook::SubscribeOrderbook {
+                        market,
+                    },
+                )
+            }
             Subscription::Trade(symbol) => {
                 let market = nash_protocol::types::Market::from_str(&symbol).unwrap();
-                Self::Trades(nash_protocol::protocol::subscriptions::trades::SubscribeTrades{ market })
+                Self::Trades(
+                    nash_protocol::protocol::subscriptions::trades::SubscribeTrades { market },
+                )
             }
             _ => panic!("Not supported Subscription"),
         }
     }
 }
 
-
 impl From<nash_protocol::protocol::subscriptions::SubscriptionResponse>
     for OpenLimitsWebsocketMessage
 {
     fn from(message: nash_protocol::protocol::subscriptions::SubscriptionResponse) -> Self {
         match message {
-            nash_protocol::protocol::subscriptions::SubscriptionResponse::Orderbook(
-                resp,
-            ) => {
+            nash_protocol::protocol::subscriptions::SubscriptionResponse::Orderbook(resp) => {
                 OpenLimitsWebsocketMessage::OrderBook(OrderBookResponse {
                     asks: resp.asks.clone().into_iter().map(Into::into).collect(),
                     bids: resp.bids.clone().into_iter().map(Into::into).collect(),
                     last_update_id: None,
                 })
-            },
-            nash_protocol::protocol::subscriptions::SubscriptionResponse::Trades(
-                resp
-            ) => {
+            }
+            nash_protocol::protocol::subscriptions::SubscriptionResponse::Trades(resp) => {
                 let trades = resp.trades.into_iter().map(|x| x.into()).collect();
                 OpenLimitsWebsocketMessage::Trades(trades)
             }
