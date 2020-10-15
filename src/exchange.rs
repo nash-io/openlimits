@@ -1,5 +1,6 @@
+use std::ops::Deref;
+
 use async_trait::async_trait;
-use derive_more::Constructor;
 
 use crate::{
     exchange_info::MarketPairHandle,
@@ -12,99 +13,43 @@ use crate::{
     shared::Result,
 };
 
-#[derive(Constructor)]
-pub struct OpenLimits<E: Exchange> {
-    pub exchange: E,
+pub struct OpenLimits {}
+
+impl OpenLimits {
+    pub async fn instantiate<Exc: Exchange + ExchangeInstantiation>(
+        parameters: Exc::Parameters,
+    ) -> ExchangeWrapper<Exc> {
+        ExchangeWrapper::new(Exc::new(parameters).await)
+    }
 }
 
-impl<E: Exchange> OpenLimits<E> {
-    pub async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
-        self.exchange.refresh_market_info().await
-    }
+pub struct ExchangeWrapper<Exc: Exchange + ?Sized> {
+    inner: Exc,
+}
 
-    pub async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
-        self.exchange.order_book(req).await
+impl<Exc: Exchange> ExchangeWrapper<Exc> {
+    pub fn new(inner: Exc) -> Self {
+        Self { inner }
     }
+}
 
-    pub async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<E::OrderIdType>> {
-        self.exchange.limit_buy(req).await
-    }
+impl<Exc: 'static + Exchange> Deref for ExchangeWrapper<Exc> {
+    type Target = dyn Exchange<
+        OrderIdType = Exc::OrderIdType,
+        TradeIdType = Exc::TradeIdType,
+        PaginationType = Exc::PaginationType,
+    >;
 
-    pub async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<E::OrderIdType>> {
-        self.exchange.limit_sell(req).await
+    fn deref(&self) -> &Self::Target {
+        &self.inner
     }
+}
 
-    pub async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<E::OrderIdType>> {
-        self.exchange.market_buy(req).await
-    }
+#[async_trait]
+pub trait ExchangeInstantiation {
+    type Parameters;
 
-    pub async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<E::OrderIdType>> {
-        self.exchange.market_sell(req).await
-    }
-
-    pub async fn cancel_order(
-        &self,
-        req: &CancelOrderRequest<E::OrderIdType>,
-    ) -> Result<OrderCanceled<E::OrderIdType>> {
-        self.exchange.cancel_order(req).await
-    }
-
-    pub async fn cancel_all_orders(
-        &self,
-        req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled<E::OrderIdType>>> {
-        self.exchange.cancel_all_orders(req).await
-    }
-
-    pub async fn get_all_open_orders(&self) -> Result<Vec<Order<E::OrderIdType>>> {
-        self.exchange.get_all_open_orders().await
-    }
-
-    pub async fn get_order_history(
-        &self,
-        req: &GetOrderHistoryRequest<E::PaginationType>,
-    ) -> Result<Vec<Order<E::OrderIdType>>> {
-        self.exchange.get_order_history(req).await
-    }
-
-    pub async fn get_account_balances(
-        &self,
-        paginator: Option<&Paginator<E::PaginationType>>,
-    ) -> Result<Vec<Balance>> {
-        self.exchange.get_account_balances(paginator).await
-    }
-
-    pub async fn get_trade_history(
-        &self,
-        req: &TradeHistoryRequest<E::OrderIdType, E::PaginationType>,
-    ) -> Result<Vec<Trade<E::TradeIdType, E::OrderIdType>>> {
-        self.exchange.get_trade_history(req).await
-    }
-
-    pub async fn get_historic_rates(
-        &self,
-        req: &GetHistoricRatesRequest<E::PaginationType>,
-    ) -> Result<Vec<Candle>> {
-        self.exchange.get_historic_rates(req).await
-    }
-
-    pub async fn get_historic_trades(
-        &self,
-        req: &GetHistoricTradesRequest<E::PaginationType>,
-    ) -> Result<Vec<Trade<E::TradeIdType, E::OrderIdType>>> {
-        self.exchange.get_historic_trades(req).await
-    }
-
-    pub async fn get_order(
-        &self,
-        req: GetOrderRequest<E::OrderIdType>,
-    ) -> Result<Order<E::OrderIdType>> {
-        self.exchange.get_order(&req).await
-    }
-
-    pub async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
-        self.exchange.get_price_ticker(req).await
-    }
+    async fn new(parameters: Self::Parameters) -> Self;
 }
 
 #[async_trait]

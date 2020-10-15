@@ -5,7 +5,10 @@ use std::convert::{TryFrom, TryInto};
 use crate::{
     errors::{MissingImplementationContent, OpenLimitError},
     exchange::Exchange,
-    exchange_info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
+    exchange::ExchangeInstantiation,
+    exchange_info::ExchangeInfo,
+    exchange_info::MarketPair,
+    exchange_info::{ExchangeInfoRetrieval, MarketPairHandle},
     exchange_ws::ExchangeWs,
     model::{
         websocket::{OpenLimitsWebsocketMessage, Subscription},
@@ -43,22 +46,48 @@ impl Nash {
         secret: &str,
         session: &str,
         client_id: u64,
-        sandbox: bool,
+        environment: Environment,
         timeout: u64,
     ) -> Self {
-        let environment = if sandbox {
-            Environment::Sandbox
-        } else {
-            Environment::Production
-        };
+        ExchangeInstantiation::new(NashParameters {
+            credentials: Some(NashCredentials {
+                secret: secret.to_string(),
+                session: session.to_string(),
+            }),
+            client_id,
+            environment,
+            timeout,
+        })
+        .await
+    }
+}
+
+pub struct NashCredentials {
+    pub secret: String,
+    pub session: String,
+}
+
+pub struct NashParameters {
+    pub credentials: Option<NashCredentials>,
+    pub client_id: u64,
+    pub environment: Environment,
+    pub timeout: u64,
+}
+
+#[async_trait]
+impl ExchangeInstantiation for Nash {
+    type Parameters = NashParameters;
+
+    async fn new(parameters: Self::Parameters) -> Self {
+        let credentials = parameters.credentials.unwrap();
         Nash {
             transport: Client::from_key_data(
-                secret,
-                session,
+                &credentials.secret,
+                &credentials.session,
                 None,
-                client_id,
-                environment,
-                timeout,
+                parameters.client_id,
+                parameters.environment,
+                parameters.timeout,
             )
             .await
             .unwrap(),

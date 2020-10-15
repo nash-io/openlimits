@@ -3,6 +3,9 @@ use std::env;
 
 use openlimits::{
     coinbase::Coinbase,
+    coinbase::CoinbaseCredentials,
+    coinbase::CoinbaseParameters,
+    exchange::ExchangeWrapper,
     exchange::OpenLimits,
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
@@ -140,15 +143,17 @@ async fn get_trade_history() {
     println!("{:?}", resp);
 }
 
-async fn init() -> OpenLimits<Coinbase> {
+async fn init() -> ExchangeWrapper<Coinbase> {
     dotenv().ok();
-    let exchange = Coinbase::with_credential(
-        &env::var("COINBASE_API_KEY").unwrap(),
-        &env::var("COINBASE_API_SECRET").unwrap(),
-        &env::var("COINBASE_PASSPHRASE").unwrap(),
-        true,
-    )
-    .await;
 
-    OpenLimits { exchange }
+    let parameters = CoinbaseParameters {
+        credentials: Some(CoinbaseCredentials {
+            api_key: env::var("COINBASE_API_KEY").unwrap(),
+            api_secret: env::var("COINBASE_API_SECRET").unwrap(),
+            passphrase: env::var("COINBASE_PASSPHRASE").unwrap(),
+        }),
+        sandbox: true,
+    };
+
+    OpenLimits::instantiate(parameters).await
 }

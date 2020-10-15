@@ -5,6 +5,7 @@ mod transport;
 use crate::{
     errors::OpenLimitError,
     exchange::Exchange,
+    exchange::ExchangeInstantiation,
     exchange_info::{ExchangeInfo, MarketPairHandle},
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
@@ -28,29 +29,67 @@ pub struct Coinbase {
 
 impl Coinbase {
     pub async fn new(sandbox: bool) -> Self {
-        let state = Coinbase {
-            exchange_info: ExchangeInfo::new(),
-            transport: Transport::new(sandbox).unwrap(),
-        };
-
-        state.refresh_market_info().await.unwrap();
-        state
+        ExchangeInstantiation::new(CoinbaseParameters {
+            sandbox,
+            ..Default::default()
+        })
+        .await
     }
 
     pub async fn with_credential(
         api_key: &str,
-        api_secret: &str,
+        secret_key: &str,
         passphrase: &str,
         sandbox: bool,
     ) -> Self {
-        let state = Coinbase {
-            exchange_info: ExchangeInfo::new(),
-            transport: Transport::with_credential(api_key, api_secret, passphrase, sandbox)
+        ExchangeInstantiation::new(CoinbaseParameters {
+            sandbox,
+            credentials: Some(CoinbaseCredentials {
+                api_key: api_key.to_string(),
+                api_secret: secret_key.to_string(),
+                passphrase: passphrase.to_string(),
+            }),
+        })
+        .await
+    }
+}
+
+pub struct CoinbaseCredentials {
+    pub api_key: String,
+    pub api_secret: String,
+    pub passphrase: String,
+}
+
+#[derive(Default)]
+pub struct CoinbaseParameters {
+    pub sandbox: bool,
+    pub credentials: Option<CoinbaseCredentials>,
+}
+
+#[async_trait]
+impl ExchangeInstantiation for Coinbase {
+    type Parameters = CoinbaseParameters;
+
+    async fn new(parameters: Self::Parameters) -> Self {
+        let coinbase = match parameters.credentials {
+            Some(credentials) => Coinbase {
+                exchange_info: ExchangeInfo::new(),
+                transport: Transport::with_credential(
+                    &credentials.api_key,
+                    &credentials.api_secret,
+                    &credentials.passphrase,
+                    parameters.sandbox,
+                )
                 .unwrap(),
+            },
+            None => Coinbase {
+                exchange_info: ExchangeInfo::new(),
+                transport: Transport::new(parameters.sandbox).unwrap(),
+            },
         };
 
-        state.refresh_market_info().await.unwrap();
-        state
+        coinbase.refresh_market_info().await.unwrap();
+        coinbase
     }
 }
 
@@ -59,6 +98,7 @@ impl Exchange for Coinbase {
     type OrderIdType = String;
     type TradeIdType = u64;
     type PaginationType = u64;
+
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.book::<model::BookRecordL2>(&req.market_pair)
             .await

@@ -1,5 +1,7 @@
 use openlimits::{
     binance::Binance,
+    binance::BinanceParameters,
+    exchange::ExchangeWrapper,
     exchange::OpenLimits,
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
 };
@@ -36,8 +38,11 @@ async fn get_historic_rates() {
     println!("{:?}", resp);
 }
 
-async fn init() -> OpenLimits<Binance> {
-    OpenLimits {
-        exchange: Binance::new(true).await,
-    }
+async fn init() -> ExchangeWrapper<Binance> {
+    let parameters = BinanceParameters {
+        credentials: None,
+        sandbox: true,
+    };
+
+    OpenLimits::instantiate(parameters).await
 }
