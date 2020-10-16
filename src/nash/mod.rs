@@ -96,18 +96,18 @@ impl Exchange for Nash {
                 nash_protocol::protocol::list_account_balances::ListAccountBalancesResponse,
             >(resp)?;
 
-        let balances: Vec<Balance> = resp
-            .state_channel
-            .iter()
-            .map(|(asset, amount)| {
-                let total = Decimal::from_str(&format!("{}", &amount.amount.value)).unwrap();
-                Balance {
-                    asset: String::from(asset.name()),
-                    total,
-                    free: total,
-                }
-            })
-            .collect();
+        let mut balances = Vec::new();
+        for asset in resp.state_channel.keys() {
+            let free = Decimal::from_str(&format!("{}", resp.state_channel.get(asset).unwrap().amount.value)).unwrap();
+            let in_orders = Decimal::from_str(&format!("{}", resp.in_orders.get(asset).unwrap().amount.value)).unwrap();
+            let total = &free + &in_orders;
+            balances.push(Balance {
+                asset: asset.name().to_string(),
+                total,
+                free
+            });
+        }
+
         Ok(balances)
     }
 
