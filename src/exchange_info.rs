@@ -72,7 +72,18 @@ impl ExchangeInfo {
         })
     }
 
-    pub async fn refresh(&self, retrieval: &dyn ExchangeInfoRetrieval) -> Result<()> {
+    pub fn list_pairs(&self) -> Vec<MarketPairHandle> {
+        let market_map = self.pairs.read().unwrap();
+        market_map
+            .iter()
+            .map(|(_symbol, market)| MarketPairHandle::new(market.clone()))
+            .collect()
+    }
+
+    pub async fn refresh(
+        &self,
+        retrieval: &dyn ExchangeInfoRetrieval,
+    ) -> Result<Vec<MarketPairHandle>> {
         let pairs = retrieval.retrieve_pairs().await?;
 
         if let Ok(mut writable_pairs) = self.pairs.write() {
@@ -86,7 +97,7 @@ impl ExchangeInfo {
             }
         }
 
-        Ok(())
+        Ok(self.list_pairs())
     }
 }
 

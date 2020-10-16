@@ -5,6 +5,7 @@ use std::convert::{TryFrom, TryInto};
 use crate::{
     errors::{MissingImplementationContent, OpenLimitError},
     exchange::Exchange,
+    exchange_info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     exchange_ws::ExchangeWs,
     model::{
         websocket::{OpenLimitsWebsocketMessage, Subscription},
@@ -20,6 +21,7 @@ use rust_decimal::prelude::*;
 
 pub struct Nash {
     transport: Client,
+    exchange_info: ExchangeInfo,
 }
 
 impl Nash {
@@ -46,6 +48,7 @@ impl Nash {
             )
             .await
             .unwrap(),
+            exchange_info: ExchangeInfo::new(),
         }
     }
 }
@@ -239,9 +242,8 @@ impl Exchange for Nash {
         Ok(resp.order.into())
     }
 
-    async fn refresh_market_info(&self) -> Result<()> {
-        println!("Nash doesn't support refreshing markets");
-        Ok(())
+    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
+        self.exchange_info.refresh(self).await
     }
 }
 
@@ -667,5 +669,46 @@ impl From<nash_protocol::protocol::subscriptions::SubscriptionResponse>
                 OpenLimitsWebsocketMessage::Trades(trades)
             }
         }
+    }
+}
+
+impl Nash {
+    async fn list_markets(
+        &self,
+    ) -> Result<nash_protocol::protocol::list_markets::ListMarketsResponse> {
+        let response = self
+            .transport
+            .run(nash_protocol::protocol::list_markets::ListMarketsRequest)
+            .await?;
+        if let Some(err) = response.error() {
+            Err(OpenLimitError::NashProtocolError(
+                // FIXME: handle this better in both nash protocol and openlimits
+                nash_protocol::errors::ProtocolError::coerce_static_from_str(&format!(
+                    "{:#?}",
+                    err
+                )),
+            ))
+        } else {
+            Ok(response.consume_response().unwrap()) // safe unwrap
+        }
+    }
+}
+
+#[async_trait]
+impl ExchangeInfoRetrieval for Nash {
+    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
+        Ok(self
+            .list_markets()
+            .await?
+            .markets
+            .iter()
+            .map(|(symbol, v)| MarketPair {
+                symbol: symbol.to_string(),
+                base: v.asset_b.asset.name().to_string(),
+                quote: v.asset_a.asset.name().to_string(),
+                base_increment: Decimal::new(1, v.asset_b.precision),
+                quote_increment: Decimal::new(1, v.asset_a.precision),
+            })
+            .collect())
     }
 }

@@ -1,5 +1,6 @@
 use openlimits::{
     exchange::OpenLimits,
+    exchange_info::ExchangeInfoRetrieval,
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
     nash::Nash,
 };
@@ -39,6 +40,13 @@ async fn get_historic_rates() {
     println!("{:?}", resp);
 }
 
+#[tokio::test]
+async fn retrieve_pairs() {
+    let exchange = init().await;
+    let pairs = exchange.refresh_market_info().await.unwrap();
+    println!("{:?}", pairs);
+}
+
 // #[tokio::test]
 // async fn get_historic_rates_invalid_interval() {
 //     let mut exchange = init().await;
@@ -58,7 +66,7 @@ async fn init() -> OpenLimits<Nash> {
         &env::var("NASH_API_SECRET").unwrap(),
         &env::var("NASH_API_KEY").unwrap(),
         1234,
-        true,
+        false,
         100000,
     )
     .await;
