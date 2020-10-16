@@ -98,13 +98,21 @@ impl Exchange for Nash {
 
         let mut balances = Vec::new();
         for asset in resp.state_channel.keys() {
-            let free = Decimal::from_str(&format!("{}", resp.state_channel.get(asset).unwrap().amount.value)).unwrap();
-            let in_orders = Decimal::from_str(&format!("{}", resp.in_orders.get(asset).unwrap().amount.value)).unwrap();
+            let free = Decimal::from_str(&format!(
+                "{}",
+                resp.state_channel.get(asset).unwrap().amount.value
+            ))
+            .unwrap();
+            let in_orders = Decimal::from_str(&format!(
+                "{}",
+                resp.in_orders.get(asset).unwrap().amount.value
+            ))
+            .unwrap();
             let total = free + in_orders;
             balances.push(Balance {
                 asset: asset.name().to_string(),
                 total,
-                free
+                free,
             });
         }
 
