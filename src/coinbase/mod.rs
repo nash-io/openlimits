@@ -28,14 +28,6 @@ pub struct Coinbase {
 }
 
 impl Coinbase {
-    pub async fn new(sandbox: bool) -> Self {
-        ExchangeInstantiation::new(CoinbaseParameters {
-            sandbox,
-            ..Default::default()
-        })
-        .await
-    }
-
     pub async fn with_credential(
         api_key: &str,
         secret_key: &str,
@@ -64,6 +56,15 @@ pub struct CoinbaseCredentials {
 pub struct CoinbaseParameters {
     pub sandbox: bool,
     pub credentials: Option<CoinbaseCredentials>,
+}
+
+impl CoinbaseParameters {
+    pub fn sandbox() -> Self {
+        Self {
+            sandbox: true,
+            ..Default::default()
+        }
+    }
 }
 
 #[async_trait]

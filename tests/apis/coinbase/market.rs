@@ -1,26 +1,29 @@
 use chrono::naive::NaiveDateTime;
-use openlimits::coinbase::{
-    model::{BookRecordL1, CandleRequestParams, DateRange, Paginator},
-    Coinbase,
+use openlimits::{
+    coinbase::{
+        model::{BookRecordL1, CandleRequestParams, DateRange, Paginator},
+        Coinbase, CoinbaseParameters,
+    },
+    exchange::ExchangeInstantiation,
 };
 
 #[tokio::test]
 async fn products() {
-    let exchange = Coinbase::new(true).await;
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange.products().await.unwrap();
     println!("{:?}", res);
 }
 
 #[tokio::test]
 async fn product() {
-    let exchange = Coinbase::new(true).await;
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange.product("BTC-USD").await.unwrap();
     println!("{:?}", res);
 }
 
 #[tokio::test]
 async fn trades() {
-    let exchange = Coinbase::new(true).await;
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange.trades("BTC-USD", None).await.unwrap();
     println!("{:?}", res);
 
@@ -42,21 +45,21 @@ async fn trades() {
 
 #[tokio::test]
 async fn book() {
-    let exchange = Coinbase::new(true).await;
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange.book::<BookRecordL1>("BTC-USD").await.unwrap();
     println!("{:?}", res);
 }
 
 #[tokio::test]
 async fn ticker() {
-    let exchange = Coinbase::new(true).await;
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange.ticker("BTC-USD").await.unwrap();
     println!("{:?}", res);
 }
 
 #[tokio::test]
 async fn candles() {
-    let exchange = Coinbase::new(true).await;
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange.candles("BTC-USD", None).await.unwrap();
     println!("{:?}", res);
 
@@ -93,7 +96,7 @@ async fn candles() {
 
 #[tokio::test]
 async fn pair() {
-    let exchange = Coinbase::new(true).await;
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange.pair("BTC-USD").unwrap();
     println!("{:?}", res);
 }
