@@ -3,6 +3,7 @@ pub mod model;
 mod transport;
 use std::convert::TryFrom;
 
+use rust_decimal::prelude::Decimal;
 use client::websocket::BinanceWebsocket;
 
 use crate::{
@@ -10,6 +11,7 @@ use crate::{
     exchange::Exchange,
     exchange_info::{ExchangeInfo, MarketPairHandle},
     exchange_ws::ExchangeWs,
+    binance::model::websocket::TradeMessage,
     model::{
         websocket::{OpenLimitsWebsocketMessage, Subscription},
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
@@ -188,6 +190,26 @@ impl From<model::OrderBook> for OrderBookResponse {
             last_update_id: Some(book.last_update_id),
             bids: book.bids.into_iter().map(Into::into).collect(),
             asks: book.asks.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+impl From<TradeMessage> for Trade<String, String> {
+    fn from(trade: TradeMessage) -> Self {
+        Self {
+            id: trade.trade_id.to_string(),
+            order_id: trade.buyer_order_id.to_string(),
+            market_pair: trade.symbol,
+            price: trade.price,
+            qty: trade.qty,
+            fees: Decimal::from(0),
+            // https://money.stackexchange.com/questions/90686/what-does-buyer-is-maker-mean/102005#102005
+            side: match trade.is_buyer_maker {
+                true => Side::Sell,
+                false => Side::Buy,
+            },
+            liquidity: None,
+            created_at: trade.trade_order_time
         }
     }
 }
@@ -396,6 +418,9 @@ impl From<Subscription> for model::websocket::Subscription {
             Subscription::OrderBook(symbol, depth) => {
                 model::websocket::Subscription::OrderBook(symbol, depth)
             }
+            Subscription::Trade(symbol) => {
+                model::websocket::Subscription::Trade(symbol)
+            }
             _ => panic!("Not supported Subscription"),
         }
     }
@@ -405,6 +430,9 @@ impl From<model::websocket::BinanceWebsocketMessage> for OpenLimitsWebsocketMess
     fn from(message: model::websocket::BinanceWebsocketMessage) -> Self {
         match message {
             model::websocket::BinanceWebsocketMessage::Ping => OpenLimitsWebsocketMessage::Ping,
+            model::websocket::BinanceWebsocketMessage::Trade(trade) => {
+                OpenLimitsWebsocketMessage::Trades(vec![trade.into()])
+            }
             model::websocket::BinanceWebsocketMessage::OrderBook(orderbook) => {
                 OpenLimitsWebsocketMessage::OrderBook(orderbook.into())
             }
