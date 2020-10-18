@@ -3,15 +3,15 @@ pub mod model;
 mod transport;
 use std::convert::TryFrom;
 
-use rust_decimal::prelude::Decimal;
 use client::websocket::BinanceWebsocket;
+use rust_decimal::prelude::Decimal;
 
 use crate::{
+    binance::model::websocket::TradeMessage,
     errors::OpenLimitError,
     exchange::Exchange,
     exchange_info::{ExchangeInfo, MarketPairHandle},
     exchange_ws::ExchangeWs,
-    binance::model::websocket::TradeMessage,
     model::{
         websocket::{OpenLimitsWebsocketMessage, Subscription},
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
@@ -209,7 +209,7 @@ impl From<TradeMessage> for Trade<String, String> {
                 false => Side::Buy,
             },
             liquidity: None,
-            created_at: trade.trade_order_time
+            created_at: trade.trade_order_time,
         }
     }
 }
@@ -418,9 +418,7 @@ impl From<Subscription> for model::websocket::Subscription {
             Subscription::OrderBook(symbol, depth) => {
                 model::websocket::Subscription::OrderBook(symbol, depth)
             }
-            Subscription::Trade(symbol) => {
-                model::websocket::Subscription::Trade(symbol)
-            }
+            Subscription::Trade(symbol) => model::websocket::Subscription::Trade(symbol),
             _ => panic!("Not supported Subscription"),
         }
     }
