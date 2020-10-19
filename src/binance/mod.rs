@@ -94,9 +94,9 @@ impl ExchangeInstantiation for Binance {
 
 #[async_trait]
 impl Exchange for Binance {
-    type OrderIdType = u64;
-    type TradeIdType = u64;
-    type PaginationType = u64;
+    type OrderId = u64;
+    type TradeId = u64;
+    type Pagination = u64;
 
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.get_depth(req.market_pair.as_str(), None)
@@ -108,31 +108,31 @@ impl Exchange for Binance {
         self.exchange_info.refresh(self).await
     }
 
-    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderId>> {
         Binance::limit_buy(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
-    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderId>> {
         Binance::limit_sell(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderId>> {
         Binance::market_buy(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
-    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderId>> {
         Binance::market_sell(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
     async fn cancel_order(
         &self,
-        req: &CancelOrderRequest<Self::OrderIdType>,
-    ) -> Result<OrderCanceled<Self::OrderIdType>> {
+        req: &CancelOrderRequest<Self::OrderId>,
+    ) -> Result<OrderCanceled<Self::OrderId>> {
         if let Some(pair) = req.market_pair.as_ref() {
             Binance::cancel_order(self, pair.as_ref(), req.id)
                 .await
@@ -146,7 +146,7 @@ impl Exchange for Binance {
     async fn cancel_all_orders(
         &self,
         req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>> {
+    ) -> Result<Vec<OrderCanceled<Self::OrderId>>> {
         if let Some(pair) = req.market_pair.as_ref() {
             Binance::cancel_all_orders(self, pair.as_ref())
                 .await
@@ -157,7 +157,7 @@ impl Exchange for Binance {
             ))
         }
     }
-    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>> {
+    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderId>>> {
         Binance::get_all_open_orders(self)
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
@@ -165,8 +165,8 @@ impl Exchange for Binance {
 
     async fn get_order_history(
         &self,
-        req: &GetOrderHistoryRequest<Self::PaginationType>,
-    ) -> Result<Vec<Order<Self::OrderIdType>>> {
+        req: &GetOrderHistoryRequest<Self::Pagination>,
+    ) -> Result<Vec<Order<Self::OrderId>>> {
         let req = model::AllOrderReq::try_from(req)?;
         Binance::get_all_orders(self, &req)
             .await
@@ -175,7 +175,7 @@ impl Exchange for Binance {
 
     async fn get_account_balances(
         &self,
-        _paginator: Option<&Paginator<Self::PaginationType>>,
+        _paginator: Option<&Paginator<Self::Pagination>>,
     ) -> Result<Vec<Balance>> {
         Binance::get_account(self)
             .await
@@ -184,8 +184,8 @@ impl Exchange for Binance {
 
     async fn get_trade_history(
         &self,
-        req: &TradeHistoryRequest<Self::OrderIdType, Self::PaginationType>,
-    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+        req: &TradeHistoryRequest<Self::OrderId, Self::Pagination>,
+    ) -> Result<Vec<Trade<Self::TradeId, Self::OrderId>>> {
         let req = model::TradeHistoryReq::try_from(req)?;
         Binance::trade_history(self, &req)
             .await
@@ -200,7 +200,7 @@ impl Exchange for Binance {
 
     async fn get_historic_rates(
         &self,
-        req: &GetHistoricRatesRequest<Self::PaginationType>,
+        req: &GetHistoricRatesRequest<Self::Pagination>,
     ) -> Result<Vec<Candle>> {
         let params = req.into();
 
@@ -211,15 +211,15 @@ impl Exchange for Binance {
 
     async fn get_historic_trades(
         &self,
-        _req: &GetHistoricTradesRequest<Self::PaginationType>,
-    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+        _req: &GetHistoricTradesRequest<Self::Pagination>,
+    ) -> Result<Vec<Trade<Self::TradeId, Self::OrderId>>> {
         unimplemented!("Only implemented for Nash right now");
     }
 
     async fn get_order(
         &self,
-        req: &GetOrderRequest<Self::OrderIdType>,
-    ) -> Result<Order<Self::OrderIdType>> {
+        req: &GetOrderRequest<Self::OrderId>,
+    ) -> Result<Order<Self::OrderId>> {
         let pair = req.market_pair.clone().ok_or_else(|| {
             OpenLimitError::MissingParameter("market_pair parameter is required.".to_string())
         })?;

@@ -98,14 +98,14 @@ impl ExchangeInstantiation for Nash {
 
 #[async_trait]
 impl Exchange for Nash {
-    type OrderIdType = String;
-    type TradeIdType = String;
-    type PaginationType = String;
+    type OrderId = String;
+    type TradeId = String;
+    type Pagination = String;
 
     async fn cancel_all_orders(
         &self,
         req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>> {
+    ) -> Result<Vec<OrderCanceled<Self::OrderId>>> {
         let req: nash_protocol::protocol::cancel_all_orders::CancelAllOrders = req.into();
         self.transport.run(req).await?;
         Ok(vec![])
@@ -113,8 +113,8 @@ impl Exchange for Nash {
 
     async fn cancel_order(
         &self,
-        req: &CancelOrderRequest<Self::OrderIdType>,
-    ) -> Result<OrderCanceled<Self::OrderIdType>> {
+        req: &CancelOrderRequest<Self::OrderId>,
+    ) -> Result<OrderCanceled<Self::OrderId>> {
         let req: nash_protocol::protocol::cancel_order::CancelOrderRequest = req.into();
         let resp = self.transport.run(req).await;
         Ok(
@@ -127,7 +127,7 @@ impl Exchange for Nash {
 
     async fn get_account_balances(
         &self,
-        _paginator: Option<&Paginator<Self::PaginationType>>,
+        _paginator: Option<&Paginator<Self::Pagination>>,
     ) -> Result<Vec<Balance>> {
         let req = nash_protocol::protocol::list_account_balances::ListAccountBalancesRequest {
             filter: None,
@@ -162,7 +162,7 @@ impl Exchange for Nash {
         Ok(balances)
     }
 
-    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>> {
+    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderId>>> {
         let err = MissingImplementationContent {
             message: String::from("Not supported yet, market paramater is mandatory."),
         };
@@ -171,7 +171,7 @@ impl Exchange for Nash {
 
     async fn get_historic_rates(
         &self,
-        req: &GetHistoricRatesRequest<Self::PaginationType>,
+        req: &GetHistoricRatesRequest<Self::Pagination>,
     ) -> Result<Vec<Candle>> {
         let req: nash_protocol::protocol::list_candles::ListCandlesRequest = req.into();
 
@@ -187,8 +187,8 @@ impl Exchange for Nash {
 
     async fn get_historic_trades(
         &self,
-        req: &GetHistoricTradesRequest<Self::PaginationType>,
-    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+        req: &GetHistoricTradesRequest<Self::Pagination>,
+    ) -> Result<Vec<Trade<Self::TradeId, Self::OrderId>>> {
         let req: nash_protocol::protocol::list_trades::ListTradesRequest = req.try_into()?;
         let resp = self.transport.run(req).await;
 
@@ -201,8 +201,8 @@ impl Exchange for Nash {
 
     async fn get_order_history(
         &self,
-        req: &GetOrderHistoryRequest<Self::PaginationType>,
-    ) -> Result<Vec<Order<Self::OrderIdType>>> {
+        req: &GetOrderHistoryRequest<Self::Pagination>,
+    ) -> Result<Vec<Order<Self::OrderId>>> {
         let req: nash_protocol::protocol::list_account_orders::ListAccountOrdersRequest =
             req.try_into()?;
 
@@ -218,8 +218,8 @@ impl Exchange for Nash {
 
     async fn get_trade_history(
         &self,
-        req: &TradeHistoryRequest<Self::OrderIdType, Self::PaginationType>,
-    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+        req: &TradeHistoryRequest<Self::OrderId, Self::Pagination>,
+    ) -> Result<Vec<Trade<Self::TradeId, Self::OrderId>>> {
         let req: nash_protocol::protocol::list_account_trades::ListAccountTradesRequest =
             req.try_into()?;
 
@@ -233,7 +233,7 @@ impl Exchange for Nash {
         Ok(resp.trades.into_iter().map(Into::into).collect())
     }
 
-    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderId>> {
         let req: nash_protocol::protocol::place_order::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Buy);
 
@@ -248,7 +248,7 @@ impl Exchange for Nash {
         )
     }
 
-    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderId>> {
         let req: nash_protocol::protocol::place_order::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Sell);
 
@@ -263,14 +263,14 @@ impl Exchange for Nash {
         )
     }
 
-    async fn market_sell(&self, _req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn market_sell(&self, _req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderId>> {
         let err = MissingImplementationContent {
             message: String::from("Not supported order type"),
         };
         Err(OpenLimitError::MissingImplementation(err))
     }
 
-    async fn market_buy(&self, _req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn market_buy(&self, _req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderId>> {
         let err = MissingImplementationContent {
             message: String::from("Not supported order type"),
         };
@@ -297,8 +297,8 @@ impl Exchange for Nash {
 
     async fn get_order(
         &self,
-        req: &GetOrderRequest<Self::OrderIdType>,
-    ) -> Result<Order<Self::OrderIdType>> {
+        req: &GetOrderRequest<Self::OrderId>,
+    ) -> Result<Order<Self::OrderId>> {
         let req: nash_protocol::protocol::get_account_order::GetAccountOrderRequest = req.into();
         let resp = self.transport.run(req).await;
         let resp = Nash::unwrap_response::<

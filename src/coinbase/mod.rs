@@ -96,9 +96,9 @@ impl ExchangeInstantiation for Coinbase {
 
 #[async_trait]
 impl Exchange for Coinbase {
-    type OrderIdType = String;
-    type TradeIdType = u64;
-    type PaginationType = u64;
+    type OrderId = String;
+    type TradeId = u64;
+    type Pagination = u64;
 
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.book::<model::BookRecordL2>(&req.market_pair)
@@ -110,25 +110,25 @@ impl Exchange for Coinbase {
         self.exchange_info.refresh(self).await
     }
 
-    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderId>> {
         Coinbase::limit_buy(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderId>> {
         Coinbase::limit_sell(self, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderId>> {
         Coinbase::market_buy(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
 
-    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
+    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderId>> {
         Coinbase::market_sell(self, &req.market_pair, req.size)
             .await
             .map(Into::into)
@@ -136,8 +136,8 @@ impl Exchange for Coinbase {
 
     async fn cancel_order(
         &self,
-        req: &CancelOrderRequest<Self::OrderIdType>,
-    ) -> Result<OrderCanceled<Self::OrderIdType>> {
+        req: &CancelOrderRequest<Self::OrderId>,
+    ) -> Result<OrderCanceled<Self::OrderId>> {
         Coinbase::cancel_order(self, req.id.clone(), req.market_pair.as_deref())
             .await
             .map(Into::into)
@@ -146,13 +146,13 @@ impl Exchange for Coinbase {
     async fn cancel_all_orders(
         &self,
         req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>> {
+    ) -> Result<Vec<OrderCanceled<Self::OrderId>>> {
         Coinbase::cancel_all_orders(self, req.market_pair.as_deref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>> {
+    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderId>>> {
         let params = model::GetOrderRequest {
             status: Some(String::from("open")),
             paginator: None,
@@ -166,8 +166,8 @@ impl Exchange for Coinbase {
 
     async fn get_order_history(
         &self,
-        req: &GetOrderHistoryRequest<Self::PaginationType>,
-    ) -> Result<Vec<Order<Self::OrderIdType>>> {
+        req: &GetOrderHistoryRequest<Self::Pagination>,
+    ) -> Result<Vec<Order<Self::OrderId>>> {
         let req: model::GetOrderRequest = req.into();
 
         Coinbase::get_orders(self, Some(&req))
@@ -177,7 +177,7 @@ impl Exchange for Coinbase {
 
     async fn get_account_balances(
         &self,
-        paginator: Option<&Paginator<Self::PaginationType>>,
+        paginator: Option<&Paginator<Self::Pagination>>,
     ) -> Result<Vec<Balance>> {
         let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
 
@@ -188,8 +188,8 @@ impl Exchange for Coinbase {
 
     async fn get_trade_history(
         &self,
-        req: &TradeHistoryRequest<Self::OrderIdType, Self::PaginationType>,
-    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+        req: &TradeHistoryRequest<Self::OrderId, Self::Pagination>,
+    ) -> Result<Vec<Trade<Self::TradeId, Self::OrderId>>> {
         let req = req.into();
 
         Coinbase::get_fills(self, Some(&req))
@@ -205,7 +205,7 @@ impl Exchange for Coinbase {
 
     async fn get_historic_rates(
         &self,
-        req: &GetHistoricRatesRequest<Self::PaginationType>,
+        req: &GetHistoricRatesRequest<Self::Pagination>,
     ) -> Result<Vec<Candle>> {
         let params = model::CandleRequestParams::try_from(req)?;
         Coinbase::candles(self, &req.market_pair, Some(&params))
@@ -215,15 +215,15 @@ impl Exchange for Coinbase {
 
     async fn get_historic_trades(
         &self,
-        _req: &GetHistoricTradesRequest<Self::PaginationType>,
-    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+        _req: &GetHistoricTradesRequest<Self::Pagination>,
+    ) -> Result<Vec<Trade<Self::TradeId, Self::OrderId>>> {
         unimplemented!("Only implemented for Nash right now");
     }
 
     async fn get_order(
         &self,
-        req: &GetOrderRequest<Self::OrderIdType>,
-    ) -> Result<Order<Self::OrderIdType>> {
+        req: &GetOrderRequest<Self::OrderId>,
+    ) -> Result<Order<Self::OrderId>> {
         let id = req.id.clone();
 
         Coinbase::get_order(self, id).await.map(Into::into)
