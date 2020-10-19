@@ -405,7 +405,7 @@ impl From<nash_protocol::types::Trade> for Trade<String, String> {
         Self {
             id: resp.id,
             created_at: resp.executed_at.timestamp_millis() as u64,
-            fees,
+            fees: Some(fees),
             liquidity: Some(resp.account_side.into()),
             market_pair: resp.market.market_name(),
             order_id,

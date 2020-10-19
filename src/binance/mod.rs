@@ -4,7 +4,6 @@ mod transport;
 use std::convert::TryFrom;
 
 use client::websocket::BinanceWebsocket;
-use rust_decimal::prelude::Decimal;
 
 use crate::{
     binance::model::websocket::TradeMessage,
@@ -202,7 +201,7 @@ impl From<TradeMessage> for Trade<String, String> {
             market_pair: trade.symbol,
             price: trade.price,
             qty: trade.qty,
-            fees: Decimal::from(0), // TODO: Binance does not return fee on trades over WS stream
+            fees: None, // Binance does not return fee on trades over WS stream
             // https://money.stackexchange.com/questions/90686/what-does-buyer-is-maker-mean/102005#102005
             side: match trade.is_buyer_maker {
                 true => Side::Sell,
@@ -274,7 +273,7 @@ impl From<model::TradeHistory> for Trade<u64, u64> {
             market_pair: trade_history.symbol,
             price: trade_history.price,
             qty: trade_history.qty,
-            fees: trade_history.commission,
+            fees: Some(trade_history.commission),
             side: match trade_history.is_buyer {
                 true => Side::Buy,
                 false => Side::Sell,

@@ -91,7 +91,7 @@ pub struct Trade<T, O> {
     pub market_pair: String,
     pub price: Decimal,
     pub qty: Decimal,
-    pub fees: Decimal,
+    pub fees: Option<Decimal>,
     pub side: Side,
     pub liquidity: Option<Liquidity>,
     pub created_at: u64,
