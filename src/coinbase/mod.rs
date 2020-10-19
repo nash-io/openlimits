@@ -250,7 +250,7 @@ impl From<model::Fill> for Trade<u64, String> {
             market_pair: fill.product_id,
             price: fill.price,
             qty: fill.size,
-            fees: fill.fee,
+            fees: Some(fill.fee),
             side: match fill.side.as_str() {
                 "buy" => Side::Buy,
                 _ => Side::Sell,

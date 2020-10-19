@@ -6,6 +6,7 @@ use std::convert::TryFrom;
 use client::websocket::BinanceWebsocket;
 
 use crate::{
+    binance::model::websocket::TradeMessage,
     errors::OpenLimitError,
     exchange::Exchange,
     exchange_info::{ExchangeInfo, MarketPairHandle},
@@ -192,6 +193,26 @@ impl From<model::OrderBook> for OrderBookResponse {
     }
 }
 
+impl From<TradeMessage> for Trade<String, String> {
+    fn from(trade: TradeMessage) -> Self {
+        Self {
+            id: trade.trade_id.to_string(),
+            order_id: trade.buyer_order_id.to_string(),
+            market_pair: trade.symbol,
+            price: trade.price,
+            qty: trade.qty,
+            fees: None, // Binance does not return fee on trades over WS stream
+            // https://money.stackexchange.com/questions/90686/what-does-buyer-is-maker-mean/102005#102005
+            side: match trade.is_buyer_maker {
+                true => Side::Sell,
+                false => Side::Buy,
+            },
+            liquidity: None,
+            created_at: trade.trade_order_time,
+        }
+    }
+}
+
 impl From<model::AskBid> for AskBid {
     fn from(bids: model::AskBid) -> Self {
         Self {
@@ -252,7 +273,7 @@ impl From<model::TradeHistory> for Trade<u64, u64> {
             market_pair: trade_history.symbol,
             price: trade_history.price,
             qty: trade_history.qty,
-            fees: trade_history.commission,
+            fees: Some(trade_history.commission),
             side: match trade_history.is_buyer {
                 true => Side::Buy,
                 false => Side::Sell,
@@ -396,6 +417,7 @@ impl From<Subscription> for model::websocket::Subscription {
             Subscription::OrderBook(symbol, depth) => {
                 model::websocket::Subscription::OrderBook(symbol, depth)
             }
+            Subscription::Trade(symbol) => model::websocket::Subscription::Trade(symbol),
             _ => panic!("Not supported Subscription"),
         }
     }
@@ -405,6 +427,9 @@ impl From<model::websocket::BinanceWebsocketMessage> for OpenLimitsWebsocketMess
     fn from(message: model::websocket::BinanceWebsocketMessage) -> Self {
         match message {
             model::websocket::BinanceWebsocketMessage::Ping => OpenLimitsWebsocketMessage::Ping,
+            model::websocket::BinanceWebsocketMessage::Trade(trade) => {
+                OpenLimitsWebsocketMessage::Trades(vec![trade.into()])
+            }
             model::websocket::BinanceWebsocketMessage::OrderBook(orderbook) => {
                 OpenLimitsWebsocketMessage::OrderBook(orderbook.into())
             }

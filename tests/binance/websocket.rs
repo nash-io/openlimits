@@ -13,6 +13,15 @@ async fn orderbook() {
     println!("{:?}", v);
 }
 
+#[tokio::test]
+async fn trades() {
+    let mut ws = init();
+    let sub = Subscription::Trade("btcusdt".to_string());
+    ws.subscribe(sub).await.unwrap();
+    let v = ws.next().await;
+    println!("{:?}", v);
+}
+
 fn init() -> OpenLimitsWs<BinanceWebsocket> {
     OpenLimitsWs {
         websocket: BinanceWebsocket::new(),
