@@ -202,7 +202,7 @@ impl From<TradeMessage> for Trade<String, String> {
             market_pair: trade.symbol,
             price: trade.price,
             qty: trade.qty,
-            fees: Decimal::from(0),
+            fees: Decimal::from(0), // TODO: Binance does not return fee on trades over WS stream
             // https://money.stackexchange.com/questions/90686/what-does-buyer-is-maker-mean/102005#102005
             side: match trade.is_buyer_maker {
                 true => Side::Sell,
