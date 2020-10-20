@@ -1,5 +1,5 @@
 use super::{OrderBookResponse, Trade};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Subscription {
@@ -15,7 +15,7 @@ pub enum Subscription {
     Depth(String, Option<u16>), // (symbol, interval)
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum OpenLimitsWebsocketMessage {
     Ping,
     OrderBook(OrderBookResponse),

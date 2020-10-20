@@ -2,5 +2,6 @@
 
 members = [
     "openlimits",
-    "openlimits-wrapper"
+    "openlimits-wrapper",
+    "wrapper-client"
 ]
