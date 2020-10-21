@@ -1,6 +1,9 @@
+use std::marker::PhantomData;
+
 use futures::StreamExt;
 use openlimits::{
-    binance::client::websocket::BinanceWebsocket, exchange_ws::OpenLimitsWs,
+    binance::{client::websocket::BinanceWebsocket, Binance},
+    exchange_ws::OpenLimitsWs,
     model::websocket::Subscription,
 };
 
@@ -22,8 +25,9 @@ async fn trades() {
     println!("{:?}", v);
 }
 
-fn init() -> OpenLimitsWs<BinanceWebsocket> {
+fn init() -> OpenLimitsWs<BinanceWebsocket, Binance> {
     OpenLimitsWs {
         websocket: BinanceWebsocket::new(),
+        phantom: PhantomData,
     }
 }

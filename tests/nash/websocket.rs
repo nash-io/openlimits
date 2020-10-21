@@ -1,8 +1,10 @@
 use dotenv::dotenv;
 use futures::StreamExt;
 use nash_native_client::ws_client::client::Client;
-use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::NashStream};
-use std::env;
+use openlimits::{
+    exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::Nash, nash::NashStream,
+};
+use std::{env, marker::PhantomData};
 
 #[tokio::test]
 async fn orderbook() {
@@ -24,7 +26,7 @@ async fn trades() {
     println!("{:?}", item.unwrap().unwrap());
 }
 
-async fn init() -> OpenLimitsWs<NashStream> {
+async fn init() -> OpenLimitsWs<NashStream, Nash> {
     dotenv().ok();
 
     let websocket = NashStream::with_credential(
@@ -36,5 +38,8 @@ async fn init() -> OpenLimitsWs<NashStream> {
     )
     .await;
 
-    OpenLimitsWs { websocket }
+    OpenLimitsWs {
+        websocket,
+        phantom: PhantomData,
+    }
 }

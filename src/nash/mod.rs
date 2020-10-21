@@ -6,9 +6,11 @@ use crate::{
     errors::{MissingImplementationContent, OpenLimitError},
     exchange::Exchange,
     exchange::ExchangeInstantiation,
+    exchange::ExchangeMarketData,
+    exchange::{ExchangeAccount, ExchangeSpec},
     exchange_info::ExchangeInfo,
-    exchange_info::MarketPair,
-    exchange_info::{ExchangeInfoRetrieval, MarketPairHandle},
+    exchange_info::MarketPairHandle,
+    exchange_info::{ExchangeInfoRetrieval, MarketPair},
     exchange_ws::ExchangeWs,
     model::{
         websocket::{OpenLimitsWebsocketMessage, Subscription},
@@ -98,23 +100,77 @@ impl ExchangeInstantiation for Nash {
 
 #[async_trait]
 impl Exchange for Nash {
+    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
+        self.exchange_info.refresh(self).await
+    }
+}
+
+impl ExchangeSpec for Nash {
     type OrderId = String;
     type TradeId = String;
     type Pagination = String;
+}
 
+#[async_trait]
+impl ExchangeMarketData for Nash {
+    async fn get_historic_rates(&self, req: &GetHistoricRatesRequest<Self>) -> Result<Vec<Candle>> {
+        let req: nash_protocol::protocol::list_candles::ListCandlesRequest = req.into();
+
+        let resp = self.transport.run(req).await;
+
+        let resp: nash_protocol::protocol::list_candles::ListCandlesResponse =
+            Nash::unwrap_response::<nash_protocol::protocol::list_candles::ListCandlesResponse>(
+                resp,
+            )?;
+
+        Ok(resp.candles.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_trade_history(&self, req: &TradeHistoryRequest<Self>) -> Result<Vec<Trade<Self>>> {
+        let req: nash_protocol::protocol::list_account_trades::ListAccountTradesRequest =
+            req.try_into()?;
+
+        let resp = self.transport.run(req).await;
+
+        let resp: nash_protocol::protocol::list_account_trades::ListAccountTradesResponse =
+            Nash::unwrap_response::<
+                nash_protocol::protocol::list_account_trades::ListAccountTradesResponse,
+            >(resp)?;
+
+        Ok(resp.trades.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
+        let req: nash_protocol::protocol::get_ticker::TickerRequest = req.into();
+        let resp = self.transport.run(req).await;
+        Ok(
+            Nash::unwrap_response::<nash_protocol::protocol::get_ticker::TickerResponse>(resp)?
+                .into(),
+        )
+    }
+
+    async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
+        let req: nash_protocol::protocol::orderbook::OrderbookRequest = req.into();
+        let resp = self.transport.run(req).await;
+        Ok(
+            Nash::unwrap_response::<nash_protocol::protocol::orderbook::OrderbookResponse>(resp)?
+                .into(),
+        )
+    }
+}
+
+#[async_trait]
+impl ExchangeAccount for Nash {
     async fn cancel_all_orders(
         &self,
         req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled<Self::OrderId>>> {
+    ) -> Result<Vec<OrderCanceled<Self>>> {
         let req: nash_protocol::protocol::cancel_all_orders::CancelAllOrders = req.into();
         self.transport.run(req).await?;
         Ok(vec![])
     }
 
-    async fn cancel_order(
-        &self,
-        req: &CancelOrderRequest<Self::OrderId>,
-    ) -> Result<OrderCanceled<Self::OrderId>> {
+    async fn cancel_order(&self, req: &CancelOrderRequest<Self>) -> Result<OrderCanceled<Self>> {
         let req: nash_protocol::protocol::cancel_order::CancelOrderRequest = req.into();
         let resp = self.transport.run(req).await;
         Ok(
@@ -127,7 +183,7 @@ impl Exchange for Nash {
 
     async fn get_account_balances(
         &self,
-        _paginator: Option<&Paginator<Self::Pagination>>,
+        _paginator: Option<&Paginator<Self>>,
     ) -> Result<Vec<Balance>> {
         let req = nash_protocol::protocol::list_account_balances::ListAccountBalancesRequest {
             filter: None,
@@ -162,33 +218,17 @@ impl Exchange for Nash {
         Ok(balances)
     }
 
-    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderId>>> {
+    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self>>> {
         let err = MissingImplementationContent {
             message: String::from("Not supported yet, market paramater is mandatory."),
         };
         Err(OpenLimitError::MissingImplementation(err))
     }
 
-    async fn get_historic_rates(
-        &self,
-        req: &GetHistoricRatesRequest<Self::Pagination>,
-    ) -> Result<Vec<Candle>> {
-        let req: nash_protocol::protocol::list_candles::ListCandlesRequest = req.into();
-
-        let resp = self.transport.run(req).await;
-
-        let resp: nash_protocol::protocol::list_candles::ListCandlesResponse =
-            Nash::unwrap_response::<nash_protocol::protocol::list_candles::ListCandlesResponse>(
-                resp,
-            )?;
-
-        Ok(resp.candles.into_iter().map(Into::into).collect())
-    }
-
     async fn get_historic_trades(
         &self,
-        req: &GetHistoricTradesRequest<Self::Pagination>,
-    ) -> Result<Vec<Trade<Self::TradeId, Self::OrderId>>> {
+        req: &GetHistoricTradesRequest<Self>,
+    ) -> Result<Vec<Trade<Self>>> {
         let req: nash_protocol::protocol::list_trades::ListTradesRequest = req.try_into()?;
         let resp = self.transport.run(req).await;
 
@@ -201,8 +241,8 @@ impl Exchange for Nash {
 
     async fn get_order_history(
         &self,
-        req: &GetOrderHistoryRequest<Self::Pagination>,
-    ) -> Result<Vec<Order<Self::OrderId>>> {
+        req: &GetOrderHistoryRequest<Self>,
+    ) -> Result<Vec<Order<Self>>> {
         let req: nash_protocol::protocol::list_account_orders::ListAccountOrdersRequest =
             req.try_into()?;
 
@@ -216,24 +256,7 @@ impl Exchange for Nash {
         Ok(resp.orders.into_iter().map(Into::into).collect())
     }
 
-    async fn get_trade_history(
-        &self,
-        req: &TradeHistoryRequest<Self::OrderId, Self::Pagination>,
-    ) -> Result<Vec<Trade<Self::TradeId, Self::OrderId>>> {
-        let req: nash_protocol::protocol::list_account_trades::ListAccountTradesRequest =
-            req.try_into()?;
-
-        let resp = self.transport.run(req).await;
-
-        let resp: nash_protocol::protocol::list_account_trades::ListAccountTradesResponse =
-            Nash::unwrap_response::<
-                nash_protocol::protocol::list_account_trades::ListAccountTradesResponse,
-            >(resp)?;
-
-        Ok(resp.trades.into_iter().map(Into::into).collect())
-    }
-
-    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderId>> {
+    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self>> {
         let req: nash_protocol::protocol::place_order::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Buy);
 
@@ -248,7 +271,7 @@ impl Exchange for Nash {
         )
     }
 
-    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderId>> {
+    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self>> {
         let req: nash_protocol::protocol::place_order::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Sell);
 
@@ -263,52 +286,27 @@ impl Exchange for Nash {
         )
     }
 
-    async fn market_sell(&self, _req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderId>> {
+    async fn market_sell(&self, _req: &OpenMarketOrderRequest) -> Result<Order<Self>> {
         let err = MissingImplementationContent {
             message: String::from("Not supported order type"),
         };
         Err(OpenLimitError::MissingImplementation(err))
     }
 
-    async fn market_buy(&self, _req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderId>> {
+    async fn market_buy(&self, _req: &OpenMarketOrderRequest) -> Result<Order<Self>> {
         let err = MissingImplementationContent {
             message: String::from("Not supported order type"),
         };
         Err(OpenLimitError::MissingImplementation(err))
     }
 
-    async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
-        let req: nash_protocol::protocol::get_ticker::TickerRequest = req.into();
-        let resp = self.transport.run(req).await;
-        Ok(
-            Nash::unwrap_response::<nash_protocol::protocol::get_ticker::TickerResponse>(resp)?
-                .into(),
-        )
-    }
-
-    async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
-        let req: nash_protocol::protocol::orderbook::OrderbookRequest = req.into();
-        let resp = self.transport.run(req).await;
-        Ok(
-            Nash::unwrap_response::<nash_protocol::protocol::orderbook::OrderbookResponse>(resp)?
-                .into(),
-        )
-    }
-
-    async fn get_order(
-        &self,
-        req: &GetOrderRequest<Self::OrderId>,
-    ) -> Result<Order<Self::OrderId>> {
+    async fn get_order(&self, req: &GetOrderRequest<Self>) -> Result<Order<Self>> {
         let req: nash_protocol::protocol::get_account_order::GetAccountOrderRequest = req.into();
         let resp = self.transport.run(req).await;
         let resp = Nash::unwrap_response::<
             nash_protocol::protocol::get_account_order::GetAccountOrderResponse,
         >(resp)?;
         Ok(resp.order.into())
-    }
-
-    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
-        self.exchange_info.refresh(self).await
     }
 }
 
@@ -369,10 +367,8 @@ impl From<nash_protocol::types::OrderbookOrder> for AskBid {
     }
 }
 
-impl From<&CancelOrderRequest<String>>
-    for nash_protocol::protocol::cancel_order::CancelOrderRequest
-{
-    fn from(req: &CancelOrderRequest<String>) -> Self {
+impl From<&CancelOrderRequest<Nash>> for nash_protocol::protocol::cancel_order::CancelOrderRequest {
+    fn from(req: &CancelOrderRequest<Nash>) -> Self {
         let pair = req.market_pair.clone().unwrap();
         let market = nash_protocol::types::Market::from_str(&pair).unwrap();
 
@@ -383,7 +379,7 @@ impl From<&CancelOrderRequest<String>>
     }
 }
 
-impl From<nash_protocol::protocol::cancel_order::CancelOrderResponse> for OrderCanceled<String> {
+impl From<nash_protocol::protocol::cancel_order::CancelOrderResponse> for OrderCanceled<Nash> {
     fn from(resp: nash_protocol::protocol::cancel_order::CancelOrderResponse) -> Self {
         Self { id: resp.order_id }
     }
@@ -397,7 +393,7 @@ impl From<&CancelAllOrdersRequest> for nash_protocol::protocol::cancel_all_order
     }
 }
 
-impl From<nash_protocol::protocol::place_order::LimitOrderResponse> for Order<String> {
+impl From<nash_protocol::protocol::place_order::LimitOrderResponse> for Order<Nash> {
     fn from(resp: nash_protocol::protocol::place_order::LimitOrderResponse) -> Self {
         Self {
             created_at: None,
@@ -413,11 +409,11 @@ impl From<nash_protocol::protocol::place_order::LimitOrderResponse> for Order<St
     }
 }
 
-impl TryFrom<&TradeHistoryRequest<String, String>>
+impl TryFrom<&TradeHistoryRequest<Nash>>
     for nash_protocol::protocol::list_account_trades::ListAccountTradesRequest
 {
     type Error = OpenLimitError;
-    fn try_from(req: &TradeHistoryRequest<String, String>) -> crate::shared::Result<Self> {
+    fn try_from(req: &TradeHistoryRequest<Nash>) -> crate::shared::Result<Self> {
         let (before, limit) = match req.paginator.clone() {
             Some(paginator) => (
                 paginator.before,
@@ -447,7 +443,7 @@ impl TryFrom<&TradeHistoryRequest<String, String>>
     }
 }
 
-impl From<nash_protocol::types::Trade> for Trade<String, String> {
+impl From<nash_protocol::types::Trade> for Trade<Nash> {
     fn from(resp: nash_protocol::types::Trade) -> Self {
         let qty = Decimal::from_str(&format!("{}", &resp.amount.amount.value)).unwrap();
         let price = Decimal::from_str(&format!("{}", &resp.limit_price.amount.value)).unwrap();
@@ -483,8 +479,8 @@ impl From<nash_protocol::types::BuyOrSell> for Side {
     }
 }
 
-impl From<Paginator<String>> for nash_protocol::types::DateTimeRange {
-    fn from(paginator: Paginator<String>) -> Self {
+impl From<Paginator<Nash>> for nash_protocol::types::DateTimeRange {
+    fn from(paginator: Paginator<Nash>) -> Self {
         Self {
             start: paginator.start_time.map(timestamp_to_utc_datetime).unwrap(),
             stop: paginator.end_time.map(timestamp_to_utc_datetime).unwrap(),
@@ -501,10 +497,10 @@ impl From<nash_protocol::types::AccountTradeSide> for Liquidity {
     }
 }
 
-impl From<&GetHistoricRatesRequest<String>>
+impl From<&GetHistoricRatesRequest<Nash>>
     for nash_protocol::protocol::list_candles::ListCandlesRequest
 {
-    fn from(req: &GetHistoricRatesRequest<String>) -> Self {
+    fn from(req: &GetHistoricRatesRequest<Nash>) -> Self {
         let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
 
         let (before, limit) = match req.paginator.clone() {
@@ -523,7 +519,7 @@ impl From<&GetHistoricRatesRequest<String>>
     }
 }
 
-fn try_split_paginator(paginator: Option<Paginator<String>>) -> (Option<String>, Option<i64>) {
+fn try_split_paginator(paginator: Option<Paginator<Nash>>) -> (Option<String>, Option<i64>) {
     match paginator {
         Some(paginator) => (
             paginator.before,
@@ -533,11 +529,11 @@ fn try_split_paginator(paginator: Option<Paginator<String>>) -> (Option<String>,
     }
 }
 
-impl TryFrom<&GetHistoricTradesRequest<String>>
+impl TryFrom<&GetHistoricTradesRequest<Nash>>
     for nash_protocol::protocol::list_trades::ListTradesRequest
 {
     type Error = OpenLimitError;
-    fn try_from(req: &GetHistoricTradesRequest<String>) -> crate::shared::Result<Self> {
+    fn try_from(req: &GetHistoricTradesRequest<Nash>) -> crate::shared::Result<Self> {
         let market = nash_protocol::types::Market::from_str(&req.market_pair)?;
         let (before, limit) = try_split_paginator(req.paginator.clone());
         //FIXME: Some issues with the graphql protocol for the market to be non nil
@@ -590,11 +586,11 @@ impl From<nash_protocol::types::Candle> for Candle {
     }
 }
 
-impl TryFrom<&GetOrderHistoryRequest<String>>
+impl TryFrom<&GetOrderHistoryRequest<Nash>>
     for nash_protocol::protocol::list_account_orders::ListAccountOrdersRequest
 {
     type Error = OpenLimitError;
-    fn try_from(req: &GetOrderHistoryRequest<String>) -> crate::shared::Result<Self> {
+    fn try_from(req: &GetOrderHistoryRequest<Nash>) -> crate::shared::Result<Self> {
         let market = match req.clone().market_pair {
             Some(pair) => {
                 let market = nash_protocol::types::Market::from_str(&pair)?;
@@ -620,7 +616,7 @@ impl TryFrom<&GetOrderHistoryRequest<String>>
     }
 }
 
-impl From<nash_protocol::types::Order> for Order<String> {
+impl From<nash_protocol::types::Order> for Order<Nash> {
     fn from(order: nash_protocol::types::Order) -> Self {
         let size = Decimal::from_str(&format!("{}", &order.amount_placed.amount.value)).unwrap();
         let order_type = match order.order_type {
@@ -674,10 +670,10 @@ impl From<nash_protocol::protocol::get_ticker::TickerResponse> for Ticker {
     }
 }
 
-impl From<&GetOrderRequest<String>>
+impl From<&GetOrderRequest<Nash>>
     for nash_protocol::protocol::get_account_order::GetAccountOrderRequest
 {
-    fn from(req: &GetOrderRequest<String>) -> Self {
+    fn from(req: &GetOrderRequest<Nash>) -> Self {
         Self {
             order_id: req.id.clone(),
         }
@@ -745,8 +741,12 @@ impl ExchangeWs for NashStream {
         Ok(())
     }
 
-    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
-        Ok(message.unwrap().consume_response().unwrap().into())
+    fn parse_message<Nash: ExchangeSpec>(
+        &self,
+        message: Self::Item,
+    ) -> Result<OpenLimitsWebsocketMessage<Nash>> {
+        //Ok(message.unwrap().consume_response().unwrap().into())
+        Ok(OpenLimitsWebsocketMessage::Ping)
     }
 }
 
@@ -773,7 +773,7 @@ impl From<Subscription> for nash_protocol::protocol::subscriptions::Subscription
 }
 
 impl From<nash_protocol::protocol::subscriptions::SubscriptionResponse>
-    for OpenLimitsWebsocketMessage
+    for OpenLimitsWebsocketMessage<Nash>
 {
     fn from(message: nash_protocol::protocol::subscriptions::SubscriptionResponse) -> Self {
         match message {
