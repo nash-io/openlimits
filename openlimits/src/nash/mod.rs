@@ -610,25 +610,21 @@ use futures::stream::{Stream, StreamExt};
 use nash_protocol::protocol::ResponseOrError;
 use std::{pin::Pin, task::Context, task::Poll};
 
-pub struct NashStream {
-    pub client: Client,
-}
-
-impl Stream for NashStream {
+impl Stream for Nash {
     type Item = std::result::Result<
         ResponseOrError<nash_protocol::protocol::subscriptions::SubscriptionResponse>,
         nash_protocol::errors::ProtocolError,
     >;
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        self.client.poll_next_unpin(cx)
+        self.transport.poll_next_unpin(cx)
     }
 }
 
 #[async_trait]
-impl ExchangeWs for NashStream {
+impl ExchangeWs for Nash {
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
         let sub: nash_protocol::protocol::subscriptions::SubscriptionRequest = subscription.into();
-        let _stream = Client::subscribe_protocol(&self.client, sub).await.unwrap();
+        let _stream = Client::subscribe_protocol(&self.transport, sub).await.unwrap();
 
         Ok(())
     }

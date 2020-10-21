@@ -1,7 +1,7 @@
 use dotenv::dotenv;
 use futures::StreamExt;
 use nash_native_client::ws_client::client::Client;
-use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::NashStream};
+use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::Nash, exchange_info::ExchangeInfo};
 use std::env;
 
 #[tokio::test]
@@ -24,21 +24,16 @@ async fn trades() {
     println!("{:?}", item.unwrap().unwrap());
 }
 
-async fn init() -> OpenLimitsWs<NashStream> {
+async fn init() -> OpenLimitsWs<Nash> {
     dotenv().ok();
 
-    let ws = Client::from_key_data(
-        &env::var("NASH_API_SECRET").unwrap(),
-        &env::var("NASH_API_KEY").unwrap(),
-        None,
-        1234,
-        nash_native_client::ws_client::client::Environment::Production,
-        100000,
-    )
-    .await
-    .unwrap();
-
     OpenLimitsWs {
-        websocket: NashStream { client: ws },
+        websocket: Nash::with_credential(
+            &env::var("NASH_API_SECRET").unwrap(),
+        &env::var("NASH_API_KEY").unwrap(),
+        1,
+        false,
+        100000,
+        ).await,
     }
 }
