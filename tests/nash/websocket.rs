@@ -27,18 +27,15 @@ async fn trades() {
 async fn init() -> OpenLimitsWs<NashStream> {
     dotenv().ok();
 
-    let ws = Client::from_key_data(
+    let websocket = NashStream::with_credential(
         &env::var("NASH_API_SECRET").unwrap(),
         &env::var("NASH_API_KEY").unwrap(),
-        None,
         1234,
-        nash_native_client::ws_client::client::Environment::Production,
-        100000,
-    )
-    .await
-    .unwrap();
+        false,
+        10000
+    ).await;
 
     OpenLimitsWs {
-        websocket: NashStream { client: ws },
+        websocket
     }
 }
