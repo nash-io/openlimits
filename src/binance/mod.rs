@@ -8,10 +8,8 @@ use client::websocket::BinanceWebsocket;
 use crate::{
     binance::model::websocket::TradeMessage,
     errors::OpenLimitError,
-    exchange::Exchange,
-    exchange::ExchangeInstantiation,
-    exchange::ExchangeMarketData,
-    exchange::{ExchangeAccount, ExchangeSpec},
+    exchange::ExchangeAccount,
+    exchange::{Exchange, ExchangeMarketData},
     exchange_info::ExchangeInfo,
     exchange_info::MarketPairHandle,
     exchange_ws::ExchangeWs,
@@ -37,7 +35,7 @@ pub struct Binance {
 
 impl Binance {
     pub async fn with_credential(api_key: &str, api_secret: &str, sandbox: bool) -> Self {
-        ExchangeInstantiation::new(BinanceParameters {
+        Exchange::new(BinanceParameters {
             sandbox,
             credentials: Some(BinanceCredentials {
                 api_key: api_key.to_string(),
@@ -69,7 +67,10 @@ impl BinanceParameters {
 }
 
 #[async_trait]
-impl ExchangeInstantiation for Binance {
+impl Exchange for Binance {
+    type OrderId = u64;
+    type TradeId = u64;
+    type Pagination = u64;
     type Parameters = BinanceParameters;
 
     async fn new(parameters: Self::Parameters) -> Self {
@@ -92,19 +93,10 @@ impl ExchangeInstantiation for Binance {
         binance.refresh_market_info().await.unwrap();
         binance
     }
-}
 
-#[async_trait]
-impl Exchange for Binance {
     async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
         self.exchange_info.refresh(self).await
     }
-}
-
-impl ExchangeSpec for Binance {
-    type OrderId = u64;
-    type TradeId = u64;
-    type Pagination = u64;
 }
 
 #[async_trait]
@@ -451,7 +443,7 @@ impl ExchangeWs for BinanceWebsocket {
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
         BinanceWebsocket::subscribe(self, subscription.into()).await
     }
-    fn parse_message<Binance: ExchangeSpec>(
+    fn parse_message<Binance: Exchange>(
         &self,
         message: Self::Item,
     ) -> Result<OpenLimitsWebsocketMessage<Binance>> {

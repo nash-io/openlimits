@@ -17,9 +17,7 @@ use crate::{
 pub struct OpenLimits {}
 
 impl OpenLimits {
-    pub async fn instantiate<Exc: Exchange + ExchangeInstantiation>(
-        parameters: Exc::Parameters,
-    ) -> ExchangeWrapper<Exc> {
+    pub async fn instantiate<Exc: Exchange>(parameters: Exc::Parameters) -> ExchangeWrapper<Exc> {
         ExchangeWrapper::new(Exc::new(parameters).await)
     }
 }
@@ -33,31 +31,21 @@ impl<Exc: Exchange> ExchangeWrapper<Exc> {
         Self { inner }
     }
 }
-/*
-impl<Exc: 'static + Exchange> Deref for ExchangeWrapper<Exc> {
-    type Target =
-        dyn Exchange<OrderId = Exc::OrderId, TradeId = Exc::TradeId, Pagination = Exc::Pagination>;
 
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
-}
-*/
 #[async_trait]
-pub trait ExchangeInstantiation {
-    type Parameters;
-
-    async fn new(parameters: Self::Parameters) -> Self;
-}
-
-pub trait ExchangeSpec: Unpin {
+pub trait Exchange: Unpin {
     type OrderId: Debug + Clone + Serialize + DeserializeOwned;
     type TradeId: Debug + Clone + Serialize + DeserializeOwned;
     type Pagination: Debug + Clone + Serialize + DeserializeOwned;
+    type Parameters;
+
+    async fn new(parameters: Self::Parameters) -> Self;
+
+    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>>;
 }
 
 #[async_trait]
-pub trait ExchangeMarketData: ExchangeSpec + Sized {
+pub trait ExchangeMarketData: Exchange + Sized {
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker>;
     async fn get_trade_history(&self, req: &TradeHistoryRequest<Self>) -> Result<Vec<Trade<Self>>>;
@@ -65,7 +53,7 @@ pub trait ExchangeMarketData: ExchangeSpec + Sized {
 }
 
 #[async_trait]
-pub trait ExchangeAccount: ExchangeSpec + Sized {
+pub trait ExchangeAccount: Exchange + Sized {
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self>>;
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self>>;
     async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self>>;
@@ -89,9 +77,4 @@ pub trait ExchangeAccount: ExchangeSpec + Sized {
         req: &GetHistoricTradesRequest<Self>,
     ) -> Result<Vec<Trade<Self>>>;
     async fn get_order(&self, req: &GetOrderRequest<Self>) -> Result<Order<Self>>;
-}
-
-#[async_trait]
-pub trait Exchange {
-    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>>;
 }

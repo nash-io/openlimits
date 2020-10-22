@@ -5,9 +5,8 @@ mod transport;
 use crate::{
     errors::OpenLimitError,
     exchange::Exchange,
-    exchange::ExchangeInstantiation,
+    exchange::ExchangeAccount,
     exchange::ExchangeMarketData,
-    exchange::{ExchangeAccount, ExchangeSpec},
     exchange_info::ExchangeInfo,
     exchange_info::MarketPairHandle,
     model::{
@@ -37,7 +36,7 @@ impl Coinbase {
         passphrase: &str,
         sandbox: bool,
     ) -> Self {
-        ExchangeInstantiation::new(CoinbaseParameters {
+        Exchange::new(CoinbaseParameters {
             sandbox,
             credentials: Some(CoinbaseCredentials {
                 api_key: api_key.to_string(),
@@ -71,7 +70,10 @@ impl CoinbaseParameters {
 }
 
 #[async_trait]
-impl ExchangeInstantiation for Coinbase {
+impl Exchange for Coinbase {
+    type OrderId = String;
+    type TradeId = u64;
+    type Pagination = u64;
     type Parameters = CoinbaseParameters;
 
     async fn new(parameters: Self::Parameters) -> Self {
@@ -95,19 +97,10 @@ impl ExchangeInstantiation for Coinbase {
         coinbase.refresh_market_info().await.unwrap();
         coinbase
     }
-}
 
-#[async_trait]
-impl Exchange for Coinbase {
     async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
         self.exchange_info.refresh(self).await
     }
-}
-
-impl<'a> ExchangeSpec for Coinbase {
-    type OrderId = String;
-    type TradeId = u64;
-    type Pagination = u64;
 }
 
 #[async_trait]

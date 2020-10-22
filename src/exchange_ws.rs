@@ -1,5 +1,5 @@
 use crate::{
-    exchange::ExchangeSpec,
+    exchange::Exchange,
     model::websocket::{OpenLimitsWebsocketMessage, Subscription},
 };
 use async_trait::async_trait;
@@ -10,12 +10,12 @@ use crate::shared::Result;
 use std::{marker::PhantomData, pin::Pin, task::Context, task::Poll};
 
 #[derive(Constructor)]
-pub struct OpenLimitsWs<E: ExchangeWs, S: ExchangeSpec> {
+pub struct OpenLimitsWs<E: ExchangeWs, S: Exchange> {
     pub websocket: E,
     phantom: PhantomData<S>,
 }
 
-impl<E: ExchangeWs, S: ExchangeSpec> OpenLimitsWs<E, S> {
+impl<E: ExchangeWs, S: Exchange> OpenLimitsWs<E, S> {
     pub async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
         self.websocket.subscribe(subscription).await
     }
@@ -24,13 +24,13 @@ impl<E: ExchangeWs, S: ExchangeSpec> OpenLimitsWs<E, S> {
 #[async_trait]
 pub trait ExchangeWs: Stream + Unpin {
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()>;
-    fn parse_message<S: ExchangeSpec>(
+    fn parse_message<S: Exchange>(
         &self,
         message: Self::Item,
     ) -> Result<OpenLimitsWebsocketMessage<S>>;
 }
 
-impl<E: ExchangeWs, S: ExchangeSpec> Stream for OpenLimitsWs<E, S> {
+impl<E: ExchangeWs, S: Exchange> Stream for OpenLimitsWs<E, S> {
     type Item = Result<OpenLimitsWebsocketMessage<S>>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {

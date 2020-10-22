@@ -5,9 +5,8 @@ use std::convert::{TryFrom, TryInto};
 use crate::{
     errors::{MissingImplementationContent, OpenLimitError},
     exchange::Exchange,
-    exchange::ExchangeInstantiation,
+    exchange::ExchangeAccount,
     exchange::ExchangeMarketData,
-    exchange::{ExchangeAccount, ExchangeSpec},
     exchange_info::ExchangeInfo,
     exchange_info::MarketPairHandle,
     exchange_info::{ExchangeInfoRetrieval, MarketPair},
@@ -51,7 +50,7 @@ impl Nash {
         environment: Environment,
         timeout: u64,
     ) -> Self {
-        ExchangeInstantiation::new(NashParameters {
+        Exchange::new(NashParameters {
             credentials: Some(NashCredentials {
                 secret: secret.to_string(),
                 session: session.to_string(),
@@ -77,7 +76,10 @@ pub struct NashParameters {
 }
 
 #[async_trait]
-impl ExchangeInstantiation for Nash {
+impl Exchange for Nash {
+    type OrderId = String;
+    type TradeId = String;
+    type Pagination = String;
     type Parameters = NashParameters;
 
     async fn new(parameters: Self::Parameters) -> Self {
@@ -96,19 +98,10 @@ impl ExchangeInstantiation for Nash {
             exchange_info: ExchangeInfo::new(),
         }
     }
-}
 
-#[async_trait]
-impl Exchange for Nash {
     async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
         self.exchange_info.refresh(self).await
     }
-}
-
-impl ExchangeSpec for Nash {
-    type OrderId = String;
-    type TradeId = String;
-    type Pagination = String;
 }
 
 #[async_trait]
@@ -741,7 +734,7 @@ impl ExchangeWs for NashStream {
         Ok(())
     }
 
-    fn parse_message<Nash: ExchangeSpec>(
+    fn parse_message<Nash: Exchange>(
         &self,
         message: Self::Item,
     ) -> Result<OpenLimitsWebsocketMessage<Nash>> {

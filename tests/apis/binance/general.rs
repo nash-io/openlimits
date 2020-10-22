@@ -1,5 +1,7 @@
-use crate::openlimits::exchange::ExchangeInstantiation;
-use openlimits::binance::{Binance, BinanceParameters};
+use openlimits::{
+    binance::{Binance, BinanceParameters},
+    exchange::Exchange,
+};
 
 #[tokio::test]
 async fn ping() {

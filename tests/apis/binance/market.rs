@@ -1,5 +1,7 @@
-use crate::openlimits::exchange::ExchangeInstantiation;
-use openlimits::binance::{model::KlineParams, Binance, BinanceParameters};
+use openlimits::{
+    binance::{model::KlineParams, Binance, BinanceParameters},
+    exchange::Exchange,
+};
 
 #[tokio::test]
 async fn get_depth() {
