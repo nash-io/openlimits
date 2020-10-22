@@ -43,13 +43,13 @@ impl fmt::Display for MissingImplementationContent {
 
 #[derive(Error, Debug)]
 pub enum OpenLimitError {
-    #[error("")]
+    #[error(transparent)]
     BinanceError(#[from] BinanceContentError),
-    #[error("")]
+    #[error(transparent)]
     CoinbaseError(#[from] CoinbaseContentError),
-    #[error("")]
+    #[error(transparent)]
     NashProtocolError(#[from] nash_protocol::errors::ProtocolError),
-    #[error("")]
+    #[error(transparent)]
     MissingImplementation(#[from] MissingImplementationContent),
     #[error("")]
     AssetNotFound(),
@@ -67,25 +67,25 @@ pub enum OpenLimitError {
     SocketError(),
     #[error("")]
     GetTimestampFailed(),
-    #[error("")]
+    #[error(transparent)]
     ReqError(#[from] reqwest::Error),
-    #[error("")]
+    #[error(transparent)]
     InvalidHeaderError(#[from] reqwest::header::InvalidHeaderValue),
-    #[error("")]
+    #[error(transparent)]
     InvalidPayloadSignature(#[from] serde_urlencoded::ser::Error),
-    #[error("")]
+    #[error(transparent)]
     IoError(#[from] std::io::Error),
     #[error("")]
     PoisonError(),
-    #[error("")]
+    #[error(transparent)]
     JsonError(#[from] serde_json::Error),
-    #[error("")]
+    #[error(transparent)]
     ParseFloatError(#[from] std::num::ParseFloatError),
-    #[error("")]
+    #[error(transparent)]
     UrlParserError(#[from] url::ParseError),
-    #[error("")]
+    #[error(transparent)]
     Tungstenite(#[from] tokio_tungstenite::tungstenite::Error),
-    #[error("")]
+    #[error(transparent)]
     TimestampError(#[from] std::time::SystemTimeError),
     #[error("")]
     UnkownResponse(String),

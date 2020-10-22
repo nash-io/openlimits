@@ -5,9 +5,9 @@ use crate::{
     exchange_info::MarketPairHandle,
     model::{
         Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
-        GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest, OpenLimitOrderRequest,
-        OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
-        Paginator, Ticker, Trade, TradeHistoryRequest,
+        GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
+        OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
+        OrderCanceled, Paginator, Ticker, Trade, TradeHistoryRequest,
     },
     shared::Result,
 };
@@ -88,6 +88,13 @@ impl<E: Exchange> OpenLimits<E> {
         self.exchange.get_historic_rates(req).await
     }
 
+    pub async fn get_historic_trades(
+        &self,
+        req: &GetHistoricTradesRequest<E::PaginationType>,
+    ) -> Result<Vec<Trade<E::TradeIdType, E::OrderIdType>>> {
+        self.exchange.get_historic_trades(req).await
+    }
+
     pub async fn get_order(
         &self,
         req: GetOrderRequest<E::OrderIdType>,
@@ -137,6 +144,10 @@ pub trait Exchange {
         &self,
         req: &GetHistoricRatesRequest<Self::PaginationType>,
     ) -> Result<Vec<Candle>>;
+    async fn get_historic_trades(
+        &self,
+        req: &GetHistoricTradesRequest<Self::PaginationType>,
+    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>>;
     async fn get_order(
         &self,
         req: &GetOrderRequest<Self::OrderIdType>,
