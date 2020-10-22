@@ -2,8 +2,8 @@ use openlimits::{
     exchange::OpenLimits,
     exchange_info::ExchangeInfoRetrieval,
     model::{
-        GetHistoricRatesRequest, GetHistoricTradesRequest, GetPriceTickerRequest,
-        Interval, OrderBookRequest, Paginator
+        GetHistoricRatesRequest, GetHistoricTradesRequest, GetPriceTickerRequest, Interval,
+        OrderBookRequest, Paginator,
     },
     nash::Nash,
 };

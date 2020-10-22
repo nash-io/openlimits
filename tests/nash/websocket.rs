@@ -32,10 +32,9 @@ async fn init() -> OpenLimitsWs<NashStream> {
         &env::var("NASH_API_KEY").unwrap(),
         1234,
         false,
-        10000
-    ).await;
+        10000,
+    )
+    .await;
 
-    OpenLimitsWs {
-        websocket
-    }
+    OpenLimitsWs { websocket }
 }
