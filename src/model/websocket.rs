@@ -1,7 +1,7 @@
 use super::{OrderBookResponse, Trade};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Subscription {
     UserData(String),            // listen key
     AggregateTrade(String),      // symbol

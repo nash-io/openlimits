@@ -1,7 +1,10 @@
 use openlimits::{
     exchange::OpenLimits,
     exchange_info::ExchangeInfoRetrieval,
-    model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
+    model::{
+        GetHistoricRatesRequest, GetHistoricTradesRequest, GetPriceTickerRequest, Interval,
+        OrderBookRequest, Paginator,
+    },
     nash::Nash,
 };
 
@@ -37,6 +40,20 @@ async fn get_historic_rates() {
         paginator: None,
     };
     let resp = exchange.get_historic_rates(&req).await.unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn get_historic_trades() {
+    let exchange = init().await;
+    let req = GetHistoricTradesRequest {
+        market_pair: "eth_btc".to_string(),
+        paginator: Some(Paginator {
+            limit: Some(100),
+            ..Default::default()
+        }),
+    };
+    let resp = exchange.get_historic_trades(&req).await.unwrap();
     println!("{:?}", resp);
 }
 

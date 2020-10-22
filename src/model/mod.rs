@@ -144,6 +144,12 @@ pub struct GetHistoricRatesRequest<T> {
     pub interval: Interval,
 }
 
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
+pub struct GetHistoricTradesRequest<T> {
+    pub market_pair: String,
+    pub paginator: Option<Paginator<T>>,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 pub enum Side {
     Buy,

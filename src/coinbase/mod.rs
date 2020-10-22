@@ -8,10 +8,10 @@ use crate::{
     exchange_info::{ExchangeInfo, MarketPairHandle},
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
-        GetHistoricRatesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
-        Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
-        OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, Paginator, Side, Ticker,
-        Trade, TradeHistoryRequest,
+        GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
+        GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
+        Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, Paginator, Side,
+        Ticker, Trade, TradeHistoryRequest,
     },
     shared::{timestamp_to_naive_datetime, Result},
 };
@@ -170,6 +170,13 @@ impl Exchange for Coinbase {
         Coinbase::candles(self, &req.market_pair, Some(&params))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_historic_trades(
+        &self,
+        _req: &GetHistoricTradesRequest<Self::PaginationType>,
+    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+        unimplemented!("Only implemented for Nash right now");
     }
 
     async fn get_order(

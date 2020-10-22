@@ -10,10 +10,10 @@ use crate::{
     model::{
         websocket::{OpenLimitsWebsocketMessage, Subscription},
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
-        GetHistoricRatesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
-        Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
-        OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, Paginator, Side, Ticker,
-        Trade, TradeHistoryRequest,
+        GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
+        GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
+        Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, Paginator, Side,
+        Ticker, Trade, TradeHistoryRequest,
     },
     shared::{timestamp_to_utc_datetime, Result},
 };
@@ -25,6 +25,20 @@ pub struct Nash {
 }
 
 impl Nash {
+    pub async fn public(client_id: u64, sandbox: bool, timeout: u64) -> Self {
+        let environment = if sandbox {
+            Environment::Sandbox
+        } else {
+            Environment::Production
+        };
+        Nash {
+            transport: Client::new(None, client_id, None, environment, timeout)
+                .await
+                .unwrap(),
+            exchange_info: ExchangeInfo::new(),
+        }
+    }
+
     pub async fn with_credential(
         secret: &str,
         session: &str,
@@ -140,6 +154,20 @@ impl Exchange for Nash {
             )?;
 
         Ok(resp.candles.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_historic_trades(
+        &self,
+        req: &GetHistoricTradesRequest<Self::PaginationType>,
+    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+        let req: nash_protocol::protocol::list_trades::ListTradesRequest = req.try_into()?;
+        let resp = self.transport.run(req).await;
+
+        let resp: nash_protocol::protocol::list_trades::ListTradesResponse = Nash::unwrap_response::<
+            nash_protocol::protocol::list_trades::ListTradesResponse,
+        >(resp)?;
+
+        Ok(resp.trades.into_iter().map(Into::into).collect())
     }
 
     async fn get_order_history(
@@ -286,6 +314,7 @@ impl Nash {
         }
     }
 }
+
 impl From<&OrderBookRequest> for nash_protocol::protocol::orderbook::OrderbookRequest {
     fn from(req: &OrderBookRequest) -> Self {
         let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
@@ -465,6 +494,32 @@ impl From<&GetHistoricRatesRequest<String>>
     }
 }
 
+fn try_split_paginator(paginator: Option<Paginator<String>>) -> (Option<String>, Option<i64>) {
+    match paginator {
+        Some(paginator) => (
+            paginator.before,
+            paginator.limit.map(|v| i64::try_from(v).unwrap()),
+        ),
+        None => (None, None),
+    }
+}
+
+impl TryFrom<&GetHistoricTradesRequest<String>>
+    for nash_protocol::protocol::list_trades::ListTradesRequest
+{
+    type Error = OpenLimitError;
+    fn try_from(req: &GetHistoricTradesRequest<String>) -> crate::shared::Result<Self> {
+        let market = nash_protocol::types::Market::from_str(&req.market_pair)?;
+        let (before, limit) = try_split_paginator(req.paginator.clone());
+        //FIXME: Some issues with the graphql protocol for the market to be non nil
+        Ok(Self {
+            market,
+            before,
+            limit,
+        })
+    }
+}
+
 impl TryFrom<Interval> for nash_protocol::types::CandleInterval {
     type Error = OpenLimitError;
     fn try_from(interval: Interval) -> crate::shared::Result<Self> {
@@ -511,14 +566,6 @@ impl TryFrom<&GetOrderHistoryRequest<String>>
 {
     type Error = OpenLimitError;
     fn try_from(req: &GetOrderHistoryRequest<String>) -> crate::shared::Result<Self> {
-        let (before, limit) = match req.clone().paginator {
-            Some(paginator) => (
-                paginator.before,
-                paginator.limit.map(|v| i64::try_from(v).unwrap()),
-            ),
-            None => (None, None),
-        };
-
         let market = match req.clone().market_pair {
             Some(pair) => {
                 let market = nash_protocol::types::Market::from_str(&pair)?;
@@ -526,6 +573,7 @@ impl TryFrom<&GetOrderHistoryRequest<String>>
             }
             None => None,
         };
+        let (before, limit) = try_split_paginator(req.paginator.clone());
         let range: Option<nash_protocol::types::DateTimeRange> =
             req.paginator.clone().map(Into::into);
 
@@ -567,6 +615,7 @@ impl From<nash_protocol::types::Order> for Order<String> {
         }
     }
 }
+
 impl From<nash_protocol::types::OrderStatus> for OrderStatus {
     fn from(status: nash_protocol::types::OrderStatus) -> Self {
         match status {
@@ -612,6 +661,40 @@ use std::{pin::Pin, task::Context, task::Poll};
 
 pub struct NashStream {
     pub client: Client,
+}
+
+impl NashStream {
+    pub async fn public(client_id: u64, sandbox: bool, timeout: u64) -> Self {
+        let environment = if sandbox {
+            Environment::Sandbox
+        } else {
+            Environment::Production
+        };
+        NashStream {
+            client: Client::new(None, client_id, None, environment, timeout)
+                .await
+                .unwrap(),
+        }
+    }
+
+    pub async fn with_credential(
+        secret: &str,
+        session: &str,
+        client_id: u64,
+        sandbox: bool,
+        timeout: u64,
+    ) -> Self {
+        let environment = if sandbox {
+            Environment::Sandbox
+        } else {
+            Environment::Production
+        };
+        NashStream {
+            client: Client::from_key_data(secret, session, None, client_id, environment, timeout)
+                .await
+                .unwrap(),
+        }
+    }
 }
 
 impl Stream for NashStream {
@@ -712,10 +795,10 @@ impl ExchangeInfoRetrieval for Nash {
             .iter()
             .map(|(symbol, v)| MarketPair {
                 symbol: symbol.to_string(),
-                base: v.asset_b.asset.name().to_string(),
-                quote: v.asset_a.asset.name().to_string(),
-                base_increment: Decimal::new(1, v.asset_b.precision),
-                quote_increment: Decimal::new(1, v.asset_a.precision),
+                base: v.asset_a.asset.name().to_string(),
+                quote: v.asset_b.asset.name().to_string(),
+                base_increment: Decimal::new(1, v.asset_a.precision),
+                quote_increment: Decimal::new(1, v.asset_b.precision),
             })
             .collect())
     }
