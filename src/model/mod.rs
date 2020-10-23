@@ -3,6 +3,7 @@ use derive_more::Constructor;
 use rust_decimal::prelude::Decimal;
 use serde::{Deserialize, Serialize};
 pub mod websocket;
+pub mod python;
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct OrderBookRequest {
