@@ -24,7 +24,18 @@ impl OpenLimits {
     }
 }
 
+pub enum ExchangeId {
+    Binance,
+    Coinbase,
+    Nash,
+}
+
+pub trait ExchangeParameters {
+    fn get_id(&self) -> ExchangeId;
+}
+
 pub struct Exchange<Exc: ExchangeEssentials + ?Sized> {
+    pub parameters: Exc::Parameters,
     pub inner: Exc,
 }
 
@@ -49,6 +60,7 @@ impl<Exc: ExchangeEssentials> Default for Exchange<Exc> {
 impl<Exc: ExchangeEssentials> Exchange<Exc> {
     pub async fn new(parameters: Exc::Parameters) -> Self {
         Self {
+            parameters: parameters.clone(),
             inner: Exc::new(parameters).await,
         }
     }
@@ -60,33 +72,9 @@ impl<Exc: ExchangeEssentials + ExchangeInfoRetrieval> Exchange<Exc> {
     }
 }
 
-/*
-impl<Exc: ExchangeSpec + ExchangeAccount> Exchange<Exc> {
-    pub async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Exc>> {
-        self.inner.limit_buy(req).await
-    }
-
-    pub async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Exc>> {
-        self.inner.limit_sell(req).await
-    }
-
-    pub async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Exc>> {
-        self.inner.market_buy(req).await
-    }
-
-    pub async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Exc>> {
-        self.inner.market_sell(req).await
-    }
-
-    pub async fn cancel_order(&self, req: &CancelOrderRequest<Exc>) -> Result<OrderCanceled<Exc>> {
-        self.inner.cancel_order(req).await
-    }
-}
-*/
-
 #[async_trait]
 pub trait ExchangeEssentials {
-    type Parameters;
+    type Parameters: ExchangeParameters + Clone;
 
     async fn new(parameters: Self::Parameters) -> Self;
 }

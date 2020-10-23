@@ -6,7 +6,8 @@ use crate::{
     errors::{MissingImplementationContent, OpenLimitError},
     exchange::ExchangeAccount,
     exchange::ExchangeMarketData,
-    exchange::{Exchange, ExchangeEssentials, ExchangeSpec},
+    exchange::ExchangeParameters,
+    exchange::{Exchange, ExchangeEssentials, ExchangeId, ExchangeSpec},
     exchange_info::ExchangeInfo,
     exchange_info::MarketPairHandle,
     exchange_info::{ExchangeInfoRetrieval, MarketPair},
@@ -28,6 +29,7 @@ pub struct Nash {
     exchange_info: ExchangeInfo,
 }
 
+#[derive(Clone)]
 pub struct NashCredentials {
     pub secret: String,
     pub session: String,
@@ -38,6 +40,27 @@ pub struct NashParameters {
     pub client_id: u64,
     pub environment: Environment,
     pub timeout: u64,
+}
+
+impl Clone for NashParameters {
+    fn clone(&self) -> Self {
+        NashParameters {
+            credentials: self.credentials.clone(),
+            client_id: self.client_id,
+            environment: match self.environment {
+                Environment::Production => Environment::Production,
+                Environment::Sandbox => Environment::Sandbox,
+                Environment::Dev(s) => Environment::Dev(s),
+            },
+            timeout: self.timeout,
+        }
+    }
+}
+
+impl ExchangeParameters for NashParameters {
+    fn get_id(&self) -> ExchangeId {
+        ExchangeId::Nash
+    }
 }
 
 #[async_trait]

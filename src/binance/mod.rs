@@ -3,12 +3,11 @@ pub mod model;
 mod transport;
 use std::convert::TryFrom;
 
-use crate::exchange_info::ExchangeInfoRetrieval;
 use crate::{
     binance::model::websocket::TradeMessage,
     errors::OpenLimitError,
     exchange::ExchangeAccount,
-    exchange::{Exchange, ExchangeEssentials, ExchangeMarketData, ExchangeSpec},
+    exchange::{Exchange, ExchangeEssentials, ExchangeId, ExchangeMarketData, ExchangeSpec},
     exchange_info::ExchangeInfo,
     exchange_ws::ExchangeWs,
     model::{
@@ -21,6 +20,7 @@ use crate::{
     },
     shared::Result,
 };
+use crate::{exchange::ExchangeParameters, exchange_info::ExchangeInfoRetrieval};
 use async_trait::async_trait;
 use client::websocket::BinanceWebsocket;
 use model::KlineSummaries;
@@ -32,15 +32,22 @@ pub struct Binance {
     transport: Transport,
 }
 
+#[derive(Clone)]
 pub struct BinanceCredentials {
     pub api_key: String,
     pub api_secret: String,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct BinanceParameters {
     pub sandbox: bool,
     pub credentials: Option<BinanceCredentials>,
+}
+
+impl ExchangeParameters for BinanceParameters {
+    fn get_id(&self) -> ExchangeId {
+        ExchangeId::Binance
+    }
 }
 
 impl BinanceParameters {

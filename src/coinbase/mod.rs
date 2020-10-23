@@ -6,7 +6,8 @@ use crate::{
     errors::OpenLimitError,
     exchange::ExchangeAccount,
     exchange::ExchangeMarketData,
-    exchange::{Exchange, ExchangeEssentials, ExchangeSpec},
+    exchange::ExchangeParameters,
+    exchange::{Exchange, ExchangeEssentials, ExchangeId, ExchangeSpec},
     exchange_info::ExchangeInfo,
     exchange_info::ExchangeInfoRetrieval,
     model::{
@@ -29,13 +30,14 @@ pub struct Coinbase {
     transport: Transport,
 }
 
+#[derive(Clone)]
 pub struct CoinbaseCredentials {
     pub api_key: String,
     pub api_secret: String,
     pub passphrase: String,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct CoinbaseParameters {
     pub sandbox: bool,
     pub credentials: Option<CoinbaseCredentials>,
@@ -54,6 +56,12 @@ impl CoinbaseParameters {
             sandbox: false,
             ..Default::default()
         }
+    }
+}
+
+impl ExchangeParameters for CoinbaseParameters {
+    fn get_id(&self) -> ExchangeId {
+        ExchangeId::Coinbase
     }
 }
 
