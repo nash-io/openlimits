@@ -12,8 +12,8 @@ use crate::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
-        Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, Paginator, Side,
-        Ticker, Trade, TradeHistoryRequest,
+        Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
+        Paginator, Side, Ticker, Trade, TradeHistoryRequest,
     },
     shared::{timestamp_to_utc_datetime, Result},
 };
@@ -366,17 +366,28 @@ impl From<&CancelAllOrdersRequest> for nash_protocol::protocol::cancel_all_order
     }
 }
 
+impl From<nash_protocol::types::OrderType> for OrderType {
+    fn from(order_type: nash_protocol::types::OrderType) -> Self {
+        match order_type {
+            nash_protocol::types::OrderType::Limit => OrderType::Limit,
+            nash_protocol::types::OrderType::Market => OrderType::Market,
+            nash_protocol::types::OrderType::StopLimit => OrderType::StopLimit,
+            nash_protocol::types::OrderType::StopMarket => OrderType::StopMarket,
+        }
+    }
+}
+
 impl From<nash_protocol::protocol::place_order::LimitOrderResponse> for Order<String> {
     fn from(resp: nash_protocol::protocol::place_order::LimitOrderResponse) -> Self {
         Self {
-            created_at: None,
-            client_order_id: None,
             id: resp.order_id,
+            client_order_id: None,
+            created_at: Some(resp.placed_at.timestamp_millis() as u64),
             market_pair: resp.market_name,
-            order_type: resp.order_type.to_string(),
-            price: None,
+            order_type: resp.order_type.into(),
             size: Decimal::from(0),
-            side: Side::Buy,
+            price: None,
+            side: resp.buy_or_sell.into(),
             status: resp.status.into(),
         }
     }
@@ -592,18 +603,13 @@ impl TryFrom<&GetOrderHistoryRequest<String>>
 impl From<nash_protocol::types::Order> for Order<String> {
     fn from(order: nash_protocol::types::Order) -> Self {
         let size = Decimal::from_str(&format!("{}", &order.amount_placed.amount.value)).unwrap();
-        let order_type = match order.order_type {
-            nash_protocol::types::OrderType::Limit => "limit",
-            nash_protocol::types::OrderType::Market => "market",
-            nash_protocol::types::OrderType::StopLimit => "stop_limit",
-            nash_protocol::types::OrderType::StopMarket => "stop_market",
-        };
+
         Self {
             id: order.id,
             client_order_id: None,
             created_at: Some(order.placed_at.timestamp_millis() as u64),
             market_pair: order.market.market_name(),
-            order_type: String::from(order_type),
+            order_type: order.order_type.into(),
             price: order
                 .limit_price
                 .map(|p| Decimal::from_str(&format!("{}", &p.amount.value)).unwrap()),

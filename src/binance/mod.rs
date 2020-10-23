@@ -6,7 +6,10 @@ use std::convert::TryFrom;
 use client::websocket::BinanceWebsocket;
 
 use crate::{
-    binance::model::websocket::TradeMessage,
+    binance::model::{
+        websocket::TradeMessage,
+        ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET
+    },
     errors::OpenLimitError,
     exchange::Exchange,
     exchange_info::{ExchangeInfo, MarketPairHandle},
@@ -16,8 +19,8 @@ use crate::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
-        Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, Paginator, Side,
-        Ticker, Trade, TradeHistoryRequest, Transaction,
+        Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
+        Paginator, Side, Ticker, Trade, TradeHistoryRequest, Transaction,
     },
     shared::Result,
 };
@@ -242,12 +245,18 @@ impl From<model::Transaction> for Transaction<u64> {
 
 impl From<model::Order> for Order<u64> {
     fn from(order: model::Order) -> Self {
+        let order_type = match order.type_name.as_str() {
+            ORDER_TYPE_LIMIT => OrderType::Limit,
+            ORDER_TYPE_MARKET=> OrderType::Market,
+            _ => OrderType::Unknown,
+        };
+
         Self {
             id: order.order_id,
             market_pair: order.symbol,
             client_order_id: Some(order.client_order_id),
             created_at: order.time,
-            order_type: order.type_name,
+            order_type,
             side: order.side.into(),
             status: order.status.into(),
             price: Some(order.price),
