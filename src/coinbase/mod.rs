@@ -112,6 +112,13 @@ impl ExchangeMarketData for Exchange<Coinbase> {
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
+
+    async fn get_historic_trades(
+        &self,
+        _req: &GetHistoricTradesRequest<Self>,
+    ) -> Result<Vec<Trade<Self>>> {
+        unimplemented!("Only implemented for Nash right now");
+    }
 }
 
 impl From<model::Book<model::BookRecordL2>> for OrderBookResponse {
@@ -239,13 +246,6 @@ impl ExchangeAccount for Exchange<Coinbase> {
         Coinbase::get_account(&self.inner, paginator.as_ref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
-    }
-
-    async fn get_historic_trades(
-        &self,
-        _req: &GetHistoricTradesRequest<Self>,
-    ) -> Result<Vec<Trade<Self>>> {
-        unimplemented!("Only implemented for Nash right now");
     }
 
     async fn get_order(&self, req: &GetOrderRequest<Self>) -> Result<Order<Self>> {

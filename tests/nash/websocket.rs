@@ -1,6 +1,5 @@
 use dotenv::dotenv;
 use futures::StreamExt;
-use nash_native_client::ws_client::client::Client;
 use openlimits::{
     exchange::Exchange, exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::Nash,
     nash::NashStream,

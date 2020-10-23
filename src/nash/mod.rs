@@ -84,6 +84,20 @@ impl ExchangeMarketData for Exchange<Nash> {
         Ok(resp.candles.into_iter().map(Into::into).collect())
     }
 
+    async fn get_historic_trades(
+        &self,
+        req: &GetHistoricTradesRequest<Self>,
+    ) -> Result<Vec<Trade<Self>>> {
+        let req: nash_protocol::protocol::list_trades::ListTradesRequest = req.try_into()?;
+        let resp = self.inner.transport.run(req).await;
+
+        let resp: nash_protocol::protocol::list_trades::ListTradesResponse = Nash::unwrap_response::<
+            nash_protocol::protocol::list_trades::ListTradesResponse,
+        >(resp)?;
+
+        Ok(resp.trades.into_iter().map(Into::into).collect())
+    }
+
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         let req: nash_protocol::protocol::get_ticker::TickerRequest = req.into();
         let resp = self.inner.transport.run(req).await;
@@ -167,20 +181,6 @@ impl ExchangeAccount for Exchange<Nash> {
             message: String::from("Not supported yet, market paramater is mandatory."),
         };
         Err(OpenLimitError::MissingImplementation(err))
-    }
-
-    async fn get_historic_trades(
-        &self,
-        req: &GetHistoricTradesRequest<Self>,
-    ) -> Result<Vec<Trade<Self>>> {
-        let req: nash_protocol::protocol::list_trades::ListTradesRequest = req.try_into()?;
-        let resp = self.inner.transport.run(req).await;
-
-        let resp: nash_protocol::protocol::list_trades::ListTradesResponse = Nash::unwrap_response::<
-            nash_protocol::protocol::list_trades::ListTradesResponse,
-        >(resp)?;
-
-        Ok(resp.trades.into_iter().map(Into::into).collect())
     }
 
     async fn get_order_history(

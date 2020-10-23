@@ -103,6 +103,10 @@ pub trait ExchangeMarketData: ExchangeSpec + Sized {
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker>;
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest<Self>) -> Result<Vec<Candle>>;
+    async fn get_historic_trades(
+        &self,
+        req: &GetHistoricTradesRequest<Self>,
+    ) -> Result<Vec<Trade<Self>>>;
 }
 
 #[async_trait]
@@ -126,9 +130,5 @@ pub trait ExchangeAccount: ExchangeSpec + Sized {
         &self,
         paginator: Option<&Paginator<Self>>,
     ) -> Result<Vec<Balance>>;
-    async fn get_historic_trades(
-        &self,
-        req: &GetHistoricTradesRequest<Self>,
-    ) -> Result<Vec<Trade<Self>>>;
     async fn get_order(&self, req: &GetOrderRequest<Self>) -> Result<Order<Self>>;
 }

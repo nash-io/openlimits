@@ -114,6 +114,13 @@ impl ExchangeMarketData for Exchange<Binance> {
             .await
             .map(|KlineSummaries::AllKlineSummaries(v)| v.into_iter().map(Into::into).collect())
     }
+
+    async fn get_historic_trades(
+        &self,
+        _req: &GetHistoricTradesRequest<Self>,
+    ) -> Result<Vec<Trade<Self>>> {
+        unimplemented!("Only implemented for Nash right now");
+    }
 }
 
 #[async_trait]
@@ -194,13 +201,6 @@ impl ExchangeAccount for Exchange<Binance> {
         Binance::get_account(&self.inner)
             .await
             .map(|v| v.balances.into_iter().map(Into::into).collect())
-    }
-
-    async fn get_historic_trades(
-        &self,
-        _req: &GetHistoricTradesRequest<Self>,
-    ) -> Result<Vec<Trade<Self>>> {
-        unimplemented!("Only implemented for Nash right now");
     }
 
     async fn get_order(&self, req: &GetOrderRequest<Self>) -> Result<Order<Self>> {
