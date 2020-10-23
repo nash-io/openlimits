@@ -102,6 +102,7 @@ pub struct Trade<T, O> {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Liquidity {
     Maker,
     Taker,
@@ -155,6 +156,7 @@ pub struct GetHistoricTradesRequest<T> {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Side {
     Buy,
     Sell,
@@ -162,20 +164,35 @@ pub enum Side {
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum Interval {
+    #[serde(rename = "1m")]
     OneMinute,
+    #[serde(rename = "3m")]
     ThreeMinutes,
+    #[serde(rename = "5m")]
     FiveMinutes,
+    #[serde(rename = "15m")]
     FifteenMinutes,
+    #[serde(rename = "30m")]
     ThirtyMinutes,
+    #[serde(rename = "1h")]
     OneHour,
+    #[serde(rename = "2h")]
     TwoHours,
+    #[serde(rename = "4h")]
     FourHours,
+    #[serde(rename = "6h")]
     SixHours,
+    #[serde(rename = "8h")]
     EightHours,
+    #[serde(rename = "12h")]
     TwelveHours,
+    #[serde(rename = "1d")]
     OneDay,
+    #[serde(rename = "3d")]
     ThreeDays,
+    #[serde(rename = "1w")]
     OneWeek,
+    #[serde(rename = "1mo")]
     OneMonth,
 }
 impl Into<Duration> for Interval {
@@ -231,7 +248,6 @@ pub enum OrderType {
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct Paginator<T> {
     pub start_time: Option<u64>,
     pub end_time: Option<u64>,
