@@ -10,27 +10,24 @@ use crate::shared::Result;
 use std::{marker::PhantomData, pin::Pin, task::Context, task::Poll};
 
 #[derive(Constructor)]
-pub struct OpenLimitsWs<E: ExchangeWs, S: ExchangeSpec> {
+pub struct OpenLimitsWs<E: ExchangeWs<S>, S: ExchangeSpec> {
     pub websocket: E,
     pub phantom: PhantomData<S>,
 }
 
-impl<E: ExchangeWs, S: ExchangeSpec> OpenLimitsWs<E, S> {
+impl<E: ExchangeWs<S>, S: ExchangeSpec> OpenLimitsWs<E, S> {
     pub async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
         self.websocket.subscribe(subscription).await
     }
 }
 
 #[async_trait]
-pub trait ExchangeWs: Stream + Unpin {
+pub trait ExchangeWs<S: ExchangeSpec>: Stream + Unpin {
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()>;
-    fn parse_message<S: ExchangeSpec>(
-        &self,
-        message: Self::Item,
-    ) -> Result<OpenLimitsWebsocketMessage<S>>;
+    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage<S>>;
 }
 
-impl<E: ExchangeWs, S: ExchangeSpec> Stream for OpenLimitsWs<E, S> {
+impl<E: ExchangeWs<S>, S: ExchangeSpec> Stream for OpenLimitsWs<E, S> {
     type Item = Result<OpenLimitsWebsocketMessage<S>>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {

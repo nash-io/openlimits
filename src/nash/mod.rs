@@ -697,7 +697,7 @@ impl Stream for NashStream {
 }
 
 #[async_trait]
-impl ExchangeWs for NashStream {
+impl ExchangeWs<Exchange<Nash>> for NashStream {
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
         let sub: nash_protocol::protocol::subscriptions::SubscriptionRequest = subscription.into();
         let _stream = Client::subscribe_protocol(&self.client, sub).await.unwrap();
@@ -705,12 +705,11 @@ impl ExchangeWs for NashStream {
         Ok(())
     }
 
-    fn parse_message<Nash: ExchangeSpec>(
+    fn parse_message(
         &self,
         message: Self::Item,
-    ) -> Result<OpenLimitsWebsocketMessage<Nash>> {
-        //Ok(message.unwrap().consume_response().unwrap().into())
-        Ok(OpenLimitsWebsocketMessage::Ping)
+    ) -> Result<OpenLimitsWebsocketMessage<Exchange<Nash>>> {
+        Ok(message.unwrap().consume_response().unwrap().into())
     }
 }
 
@@ -743,8 +742,8 @@ impl From<nash_protocol::protocol::subscriptions::SubscriptionResponse>
         match message {
             nash_protocol::protocol::subscriptions::SubscriptionResponse::Orderbook(resp) => {
                 OpenLimitsWebsocketMessage::OrderBook(OrderBookResponse {
-                    asks: resp.asks.clone().into_iter().map(Into::into).collect(),
-                    bids: resp.bids.clone().into_iter().map(Into::into).collect(),
+                    asks: resp.asks.into_iter().map(Into::into).collect(),
+                    bids: resp.bids.into_iter().map(Into::into).collect(),
                     last_update_id: None,
                 })
             }

@@ -433,16 +433,15 @@ impl From<model::OrderStatus> for OrderStatus {
 }
 
 #[async_trait]
-impl ExchangeWs for BinanceWebsocket {
+impl ExchangeWs<Exchange<Binance>> for BinanceWebsocket {
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
         BinanceWebsocket::subscribe(self, subscription.into()).await
     }
-    fn parse_message<Binance: ExchangeSpec>(
+    fn parse_message(
         &self,
         message: Self::Item,
-    ) -> Result<OpenLimitsWebsocketMessage<Binance>> {
-        //Ok(message?.into())
-        Ok(OpenLimitsWebsocketMessage::Ping)
+    ) -> Result<OpenLimitsWebsocketMessage<Exchange<Binance>>> {
+        Ok(message?.into())
     }
 }
 impl From<Subscription> for model::websocket::Subscription {
