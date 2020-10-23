@@ -1,8 +1,8 @@
 use openlimits::{
     coinbase::Coinbase,
     coinbase::CoinbaseParameters,
-    exchange::ExchangeWrapper,
-    exchange::OpenLimits,
+    exchange::Exchange,
+    exchange::{ExchangeMarketData, OpenLimits},
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
 };
 
@@ -50,7 +50,7 @@ async fn get_historic_rates_invalid_interval() {
     assert!(resp.is_err());
 }
 
-async fn init() -> ExchangeWrapper<Coinbase> {
+async fn init() -> Exchange<Coinbase> {
     let parameters = CoinbaseParameters {
         credentials: None,
         sandbox: true,

@@ -5,8 +5,8 @@ use openlimits::{
     binance::Binance,
     binance::BinanceCredentials,
     binance::BinanceParameters,
-    exchange::ExchangeWrapper,
-    exchange::OpenLimits,
+    exchange::Exchange,
+    exchange::{ExchangeAccount, ExchangeMarketData, OpenLimits},
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         OpenMarketOrderRequest, TradeHistoryRequest,
@@ -145,7 +145,7 @@ async fn get_trade_history() {
     println!("{:?}", resp);
 }
 
-async fn init() -> ExchangeWrapper<Binance> {
+async fn init() -> Exchange<Binance> {
     dotenv().ok();
 
     let parameters = BinanceParameters {

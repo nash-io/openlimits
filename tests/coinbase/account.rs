@@ -5,8 +5,8 @@ use openlimits::{
     coinbase::Coinbase,
     coinbase::CoinbaseCredentials,
     coinbase::CoinbaseParameters,
-    exchange::ExchangeWrapper,
-    exchange::OpenLimits,
+    exchange::Exchange,
+    exchange::{ExchangeAccount, ExchangeMarketData, OpenLimits},
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         OpenMarketOrderRequest, TradeHistoryRequest,
@@ -143,7 +143,7 @@ async fn get_trade_history() {
     println!("{:?}", resp);
 }
 
-async fn init() -> ExchangeWrapper<Coinbase> {
+async fn init() -> Exchange<Coinbase> {
     dotenv().ok();
 
     let parameters = CoinbaseParameters {

@@ -69,4 +69,10 @@ impl ExchangeInfoRetrieval for Coinbase {
                 .collect()
         })
     }
+
+    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
+        self.exchange_info
+            .refresh(self as &dyn ExchangeInfoRetrieval)
+            .await
+    }
 }

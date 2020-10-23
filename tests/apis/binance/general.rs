@@ -1,6 +1,7 @@
+use crate::openlimits::exchange::ExchangeSpec;
 use openlimits::{
     binance::{Binance, BinanceParameters},
-    exchange::Exchange,
+    exchange::ExchangeEssentials,
 };
 
 #[tokio::test]

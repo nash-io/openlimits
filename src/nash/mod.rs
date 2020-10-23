@@ -4,9 +4,9 @@ use std::convert::{TryFrom, TryInto};
 
 use crate::{
     errors::{MissingImplementationContent, OpenLimitError},
-    exchange::Exchange,
     exchange::ExchangeAccount,
     exchange::ExchangeMarketData,
+    exchange::{Exchange, ExchangeEssentials, ExchangeSpec},
     exchange_info::ExchangeInfo,
     exchange_info::MarketPairHandle,
     exchange_info::{ExchangeInfoRetrieval, MarketPair},
@@ -28,41 +28,6 @@ pub struct Nash {
     exchange_info: ExchangeInfo,
 }
 
-impl Nash {
-    pub async fn public(client_id: u64, sandbox: bool, timeout: u64) -> Self {
-        let environment = if sandbox {
-            Environment::Sandbox
-        } else {
-            Environment::Production
-        };
-        Nash {
-            transport: Client::new(None, client_id, None, environment, timeout)
-                .await
-                .unwrap(),
-            exchange_info: ExchangeInfo::new(),
-        }
-    }
-
-    pub async fn with_credential(
-        secret: &str,
-        session: &str,
-        client_id: u64,
-        environment: Environment,
-        timeout: u64,
-    ) -> Self {
-        Exchange::new(NashParameters {
-            credentials: Some(NashCredentials {
-                secret: secret.to_string(),
-                session: session.to_string(),
-            }),
-            client_id,
-            environment,
-            timeout,
-        })
-        .await
-    }
-}
-
 pub struct NashCredentials {
     pub secret: String,
     pub session: String,
@@ -76,10 +41,7 @@ pub struct NashParameters {
 }
 
 #[async_trait]
-impl Exchange for Nash {
-    type OrderId = String;
-    type TradeId = String;
-    type Pagination = String;
+impl ExchangeEssentials for Nash {
     type Parameters = NashParameters;
 
     async fn new(parameters: Self::Parameters) -> Self {
@@ -98,18 +60,21 @@ impl Exchange for Nash {
             exchange_info: ExchangeInfo::new(),
         }
     }
-
-    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
-        self.exchange_info.refresh(self).await
-    }
 }
 
 #[async_trait]
-impl ExchangeMarketData for Nash {
+impl ExchangeSpec for Exchange<Nash> {
+    type OrderId = String;
+    type TradeId = String;
+    type Pagination = String;
+}
+
+#[async_trait]
+impl ExchangeMarketData for Exchange<Nash> {
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest<Self>) -> Result<Vec<Candle>> {
         let req: nash_protocol::protocol::list_candles::ListCandlesRequest = req.into();
 
-        let resp = self.transport.run(req).await;
+        let resp = self.inner.transport.run(req).await;
 
         let resp: nash_protocol::protocol::list_candles::ListCandlesResponse =
             Nash::unwrap_response::<nash_protocol::protocol::list_candles::ListCandlesResponse>(
@@ -123,7 +88,7 @@ impl ExchangeMarketData for Nash {
         let req: nash_protocol::protocol::list_account_trades::ListAccountTradesRequest =
             req.try_into()?;
 
-        let resp = self.transport.run(req).await;
+        let resp = self.inner.transport.run(req).await;
 
         let resp: nash_protocol::protocol::list_account_trades::ListAccountTradesResponse =
             Nash::unwrap_response::<
@@ -135,7 +100,7 @@ impl ExchangeMarketData for Nash {
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         let req: nash_protocol::protocol::get_ticker::TickerRequest = req.into();
-        let resp = self.transport.run(req).await;
+        let resp = self.inner.transport.run(req).await;
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::get_ticker::TickerResponse>(resp)?
                 .into(),
@@ -144,7 +109,7 @@ impl ExchangeMarketData for Nash {
 
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         let req: nash_protocol::protocol::orderbook::OrderbookRequest = req.into();
-        let resp = self.transport.run(req).await;
+        let resp = self.inner.transport.run(req).await;
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::orderbook::OrderbookResponse>(resp)?
                 .into(),
@@ -153,19 +118,19 @@ impl ExchangeMarketData for Nash {
 }
 
 #[async_trait]
-impl ExchangeAccount for Nash {
+impl ExchangeAccount for Exchange<Nash> {
     async fn cancel_all_orders(
         &self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled<Self>>> {
         let req: nash_protocol::protocol::cancel_all_orders::CancelAllOrders = req.into();
-        self.transport.run(req).await?;
+        self.inner.transport.run(req).await?;
         Ok(vec![])
     }
 
     async fn cancel_order(&self, req: &CancelOrderRequest<Self>) -> Result<OrderCanceled<Self>> {
         let req: nash_protocol::protocol::cancel_order::CancelOrderRequest = req.into();
-        let resp = self.transport.run(req).await;
+        let resp = self.inner.transport.run(req).await;
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::cancel_order::CancelOrderResponse>(
                 resp,
@@ -181,7 +146,7 @@ impl ExchangeAccount for Nash {
         let req = nash_protocol::protocol::list_account_balances::ListAccountBalancesRequest {
             filter: None,
         };
-        let resp = self.transport.run(req).await;
+        let resp = self.inner.transport.run(req).await;
 
         let resp: nash_protocol::protocol::list_account_balances::ListAccountBalancesResponse =
             Nash::unwrap_response::<
@@ -223,7 +188,7 @@ impl ExchangeAccount for Nash {
         req: &GetHistoricTradesRequest<Self>,
     ) -> Result<Vec<Trade<Self>>> {
         let req: nash_protocol::protocol::list_trades::ListTradesRequest = req.try_into()?;
-        let resp = self.transport.run(req).await;
+        let resp = self.inner.transport.run(req).await;
 
         let resp: nash_protocol::protocol::list_trades::ListTradesResponse = Nash::unwrap_response::<
             nash_protocol::protocol::list_trades::ListTradesResponse,
@@ -239,7 +204,7 @@ impl ExchangeAccount for Nash {
         let req: nash_protocol::protocol::list_account_orders::ListAccountOrdersRequest =
             req.try_into()?;
 
-        let resp = self.transport.run(req).await;
+        let resp = self.inner.transport.run(req).await;
 
         let resp: nash_protocol::protocol::list_account_orders::ListAccountOrdersResponse =
             Nash::unwrap_response::<
@@ -253,7 +218,7 @@ impl ExchangeAccount for Nash {
         let req: nash_protocol::protocol::place_order::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Buy);
 
-        let resp = self.transport.run(req).await;
+        let resp = self.inner.transport.run(req).await;
         println!("{:?}", resp);
 
         Ok(
@@ -268,7 +233,7 @@ impl ExchangeAccount for Nash {
         let req: nash_protocol::protocol::place_order::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Sell);
 
-        let resp = self.transport.run(req).await;
+        let resp = self.inner.transport.run(req).await;
         println!("{:?}", resp);
 
         Ok(
@@ -295,7 +260,7 @@ impl ExchangeAccount for Nash {
 
     async fn get_order(&self, req: &GetOrderRequest<Self>) -> Result<Order<Self>> {
         let req: nash_protocol::protocol::get_account_order::GetAccountOrderRequest = req.into();
-        let resp = self.transport.run(req).await;
+        let resp = self.inner.transport.run(req).await;
         let resp = Nash::unwrap_response::<
             nash_protocol::protocol::get_account_order::GetAccountOrderResponse,
         >(resp)?;
@@ -360,8 +325,10 @@ impl From<nash_protocol::types::OrderbookOrder> for AskBid {
     }
 }
 
-impl From<&CancelOrderRequest<Nash>> for nash_protocol::protocol::cancel_order::CancelOrderRequest {
-    fn from(req: &CancelOrderRequest<Nash>) -> Self {
+impl From<&CancelOrderRequest<Exchange<Nash>>>
+    for nash_protocol::protocol::cancel_order::CancelOrderRequest
+{
+    fn from(req: &CancelOrderRequest<Exchange<Nash>>) -> Self {
         let pair = req.market_pair.clone().unwrap();
         let market = nash_protocol::types::Market::from_str(&pair).unwrap();
 
@@ -372,7 +339,9 @@ impl From<&CancelOrderRequest<Nash>> for nash_protocol::protocol::cancel_order::
     }
 }
 
-impl From<nash_protocol::protocol::cancel_order::CancelOrderResponse> for OrderCanceled<Nash> {
+impl From<nash_protocol::protocol::cancel_order::CancelOrderResponse>
+    for OrderCanceled<Exchange<Nash>>
+{
     fn from(resp: nash_protocol::protocol::cancel_order::CancelOrderResponse) -> Self {
         Self { id: resp.order_id }
     }
@@ -386,7 +355,7 @@ impl From<&CancelAllOrdersRequest> for nash_protocol::protocol::cancel_all_order
     }
 }
 
-impl From<nash_protocol::protocol::place_order::LimitOrderResponse> for Order<Nash> {
+impl From<nash_protocol::protocol::place_order::LimitOrderResponse> for Order<Exchange<Nash>> {
     fn from(resp: nash_protocol::protocol::place_order::LimitOrderResponse) -> Self {
         Self {
             created_at: None,
@@ -402,11 +371,11 @@ impl From<nash_protocol::protocol::place_order::LimitOrderResponse> for Order<Na
     }
 }
 
-impl TryFrom<&TradeHistoryRequest<Nash>>
+impl TryFrom<&TradeHistoryRequest<Exchange<Nash>>>
     for nash_protocol::protocol::list_account_trades::ListAccountTradesRequest
 {
     type Error = OpenLimitError;
-    fn try_from(req: &TradeHistoryRequest<Nash>) -> crate::shared::Result<Self> {
+    fn try_from(req: &TradeHistoryRequest<Exchange<Nash>>) -> crate::shared::Result<Self> {
         let (before, limit) = match req.paginator.clone() {
             Some(paginator) => (
                 paginator.before,
@@ -436,7 +405,7 @@ impl TryFrom<&TradeHistoryRequest<Nash>>
     }
 }
 
-impl From<nash_protocol::types::Trade> for Trade<Nash> {
+impl From<nash_protocol::types::Trade> for Trade<Exchange<Nash>> {
     fn from(resp: nash_protocol::types::Trade) -> Self {
         let qty = Decimal::from_str(&format!("{}", &resp.amount.amount.value)).unwrap();
         let price = Decimal::from_str(&format!("{}", &resp.limit_price.amount.value)).unwrap();
@@ -472,8 +441,8 @@ impl From<nash_protocol::types::BuyOrSell> for Side {
     }
 }
 
-impl From<Paginator<Nash>> for nash_protocol::types::DateTimeRange {
-    fn from(paginator: Paginator<Nash>) -> Self {
+impl From<Paginator<Exchange<Nash>>> for nash_protocol::types::DateTimeRange {
+    fn from(paginator: Paginator<Exchange<Nash>>) -> Self {
         Self {
             start: paginator.start_time.map(timestamp_to_utc_datetime).unwrap(),
             stop: paginator.end_time.map(timestamp_to_utc_datetime).unwrap(),
@@ -490,10 +459,10 @@ impl From<nash_protocol::types::AccountTradeSide> for Liquidity {
     }
 }
 
-impl From<&GetHistoricRatesRequest<Nash>>
+impl From<&GetHistoricRatesRequest<Exchange<Nash>>>
     for nash_protocol::protocol::list_candles::ListCandlesRequest
 {
-    fn from(req: &GetHistoricRatesRequest<Nash>) -> Self {
+    fn from(req: &GetHistoricRatesRequest<Exchange<Nash>>) -> Self {
         let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
 
         let (before, limit) = match req.paginator.clone() {
@@ -512,7 +481,9 @@ impl From<&GetHistoricRatesRequest<Nash>>
     }
 }
 
-fn try_split_paginator(paginator: Option<Paginator<Nash>>) -> (Option<String>, Option<i64>) {
+fn try_split_paginator(
+    paginator: Option<Paginator<Exchange<Nash>>>,
+) -> (Option<String>, Option<i64>) {
     match paginator {
         Some(paginator) => (
             paginator.before,
@@ -522,11 +493,11 @@ fn try_split_paginator(paginator: Option<Paginator<Nash>>) -> (Option<String>, O
     }
 }
 
-impl TryFrom<&GetHistoricTradesRequest<Nash>>
+impl TryFrom<&GetHistoricTradesRequest<Exchange<Nash>>>
     for nash_protocol::protocol::list_trades::ListTradesRequest
 {
     type Error = OpenLimitError;
-    fn try_from(req: &GetHistoricTradesRequest<Nash>) -> crate::shared::Result<Self> {
+    fn try_from(req: &GetHistoricTradesRequest<Exchange<Nash>>) -> crate::shared::Result<Self> {
         let market = nash_protocol::types::Market::from_str(&req.market_pair)?;
         let (before, limit) = try_split_paginator(req.paginator.clone());
         //FIXME: Some issues with the graphql protocol for the market to be non nil
@@ -579,11 +550,11 @@ impl From<nash_protocol::types::Candle> for Candle {
     }
 }
 
-impl TryFrom<&GetOrderHistoryRequest<Nash>>
+impl TryFrom<&GetOrderHistoryRequest<Exchange<Nash>>>
     for nash_protocol::protocol::list_account_orders::ListAccountOrdersRequest
 {
     type Error = OpenLimitError;
-    fn try_from(req: &GetOrderHistoryRequest<Nash>) -> crate::shared::Result<Self> {
+    fn try_from(req: &GetOrderHistoryRequest<Exchange<Nash>>) -> crate::shared::Result<Self> {
         let market = match req.clone().market_pair {
             Some(pair) => {
                 let market = nash_protocol::types::Market::from_str(&pair)?;
@@ -609,7 +580,7 @@ impl TryFrom<&GetOrderHistoryRequest<Nash>>
     }
 }
 
-impl From<nash_protocol::types::Order> for Order<Nash> {
+impl From<nash_protocol::types::Order> for Order<Exchange<Nash>> {
     fn from(order: nash_protocol::types::Order) -> Self {
         let size = Decimal::from_str(&format!("{}", &order.amount_placed.amount.value)).unwrap();
         let order_type = match order.order_type {
@@ -663,10 +634,10 @@ impl From<nash_protocol::protocol::get_ticker::TickerResponse> for Ticker {
     }
 }
 
-impl From<&GetOrderRequest<Nash>>
+impl From<&GetOrderRequest<Exchange<Nash>>>
     for nash_protocol::protocol::get_account_order::GetAccountOrderRequest
 {
-    fn from(req: &GetOrderRequest<Nash>) -> Self {
+    fn from(req: &GetOrderRequest<Exchange<Nash>>) -> Self {
         Self {
             order_id: req.id.clone(),
         }
@@ -734,7 +705,7 @@ impl ExchangeWs for NashStream {
         Ok(())
     }
 
-    fn parse_message<Nash: Exchange>(
+    fn parse_message<Nash: ExchangeSpec>(
         &self,
         message: Self::Item,
     ) -> Result<OpenLimitsWebsocketMessage<Nash>> {
@@ -766,7 +737,7 @@ impl From<Subscription> for nash_protocol::protocol::subscriptions::Subscription
 }
 
 impl From<nash_protocol::protocol::subscriptions::SubscriptionResponse>
-    for OpenLimitsWebsocketMessage<Nash>
+    for OpenLimitsWebsocketMessage<Exchange<Nash>>
 {
     fn from(message: nash_protocol::protocol::subscriptions::SubscriptionResponse) -> Self {
         match message {
@@ -823,5 +794,11 @@ impl ExchangeInfoRetrieval for Nash {
                 quote_increment: Decimal::new(1, v.asset_b.precision),
             })
             .collect())
+    }
+
+    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
+        self.exchange_info
+            .refresh(self as &dyn ExchangeInfoRetrieval)
+            .await
     }
 }

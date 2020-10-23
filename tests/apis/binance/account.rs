@@ -2,9 +2,12 @@ use dotenv::dotenv;
 use rust_decimal::prelude::Decimal;
 use std::env;
 
-use openlimits::binance::{
-    model::{AllOrderReq, TradeHistoryReq},
-    Binance,
+use openlimits::{
+    binance::{
+        model::{AllOrderReq, TradeHistoryReq},
+        Binance, BinanceCredentials, BinanceParameters,
+    },
+    exchange::ExchangeEssentials,
 };
 
 #[tokio::test]
@@ -140,10 +143,12 @@ async fn trade_history() {
 
 async fn init() -> Binance {
     dotenv().ok();
-    Binance::with_credential(
-        &env::var("BINANCE_API_KEY").unwrap(),
-        &env::var("BINANCE_API_SECRET").unwrap(),
-        true,
-    )
+    Binance::new(BinanceParameters {
+        sandbox: true,
+        credentials: Some(BinanceCredentials {
+            api_key: env::var("BINANCE_API_KEY").unwrap(),
+            api_secret: env::var("BINANCE_API_SECRET").unwrap(),
+        }),
+    })
     .await
 }

@@ -2,9 +2,12 @@ use dotenv::dotenv;
 use rust_decimal::prelude::Decimal;
 use std::env;
 
-use openlimits::coinbase::{
-    model::{GetFillsReq, GetOrderRequest},
-    Coinbase,
+use openlimits::{
+    coinbase::{
+        model::{GetFillsReq, GetOrderRequest},
+        Coinbase, CoinbaseCredentials, CoinbaseParameters,
+    },
+    exchange::ExchangeEssentials,
 };
 
 #[tokio::test]
@@ -180,11 +183,13 @@ async fn get_fills_for_product() {
 
 async fn init() -> Coinbase {
     dotenv().ok();
-    Coinbase::with_credential(
-        &env::var("COINBASE_API_KEY").unwrap(),
-        &env::var("COINBASE_API_SECRET").unwrap(),
-        &env::var("COINBASE_PASSPHRASE").unwrap(),
-        true,
-    )
+    Coinbase::new(CoinbaseParameters {
+        sandbox: true,
+        credentials: Some(CoinbaseCredentials {
+            api_key: env::var("COINBASE_API_KEY").unwrap(),
+            api_secret: env::var("COINBASE_API_SECRET").unwrap(),
+            passphrase: env::var("COINBASE_PASSPHRASE").unwrap(),
+        }),
+    })
     .await
 }

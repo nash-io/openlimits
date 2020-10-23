@@ -1,12 +1,10 @@
 use nash_native_client::ws_client::client::Environment;
 use openlimits::{
-    exchange::ExchangeWrapper,
-    exchange::OpenLimits,
-    exchange_info::ExchangeInfoRetrieval,
-    model::{
-        GetHistoricRatesRequest, GetHistoricTradesRequest, GetPriceTickerRequest, Interval,
-        OrderBookRequest, Paginator,
-    },
+    exchange::Exchange,
+    exchange::{ExchangeAccount, ExchangeMarketData, OpenLimits},
+    model::GetHistoricTradesRequest,
+    model::Paginator,
+    model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
     nash::Nash,
     nash::NashCredentials,
     nash::NashParameters,
@@ -80,7 +78,7 @@ async fn retrieve_pairs() {
 //     assert!(resp.is_err());
 // }
 
-async fn init() -> ExchangeWrapper<Nash> {
+async fn init() -> Exchange<Nash> {
     dotenv().ok();
 
     let parameters = NashParameters {

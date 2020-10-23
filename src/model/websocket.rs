@@ -1,4 +1,4 @@
-use crate::exchange::Exchange;
+use crate::exchange::ExchangeSpec;
 
 use super::{OrderBookResponse, Trade};
 use serde::{Deserialize, Serialize};
@@ -18,7 +18,7 @@ pub enum Subscription {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub enum OpenLimitsWebsocketMessage<E: Exchange> {
+pub enum OpenLimitsWebsocketMessage<E: ExchangeSpec> {
     Ping,
     OrderBook(OrderBookResponse),
     Trades(Vec<Trade<E>>),

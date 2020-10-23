@@ -4,7 +4,7 @@ use openlimits::{
         model::{BookRecordL1, CandleRequestParams, DateRange, Paginator},
         Coinbase, CoinbaseParameters,
     },
-    exchange::Exchange,
+    exchange::ExchangeEssentials,
 };
 
 #[tokio::test]

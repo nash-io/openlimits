@@ -3,8 +3,8 @@ use nash_native_client::ws_client::client::Environment;
 use std::env;
 
 use openlimits::{
-    exchange::ExchangeWrapper,
-    exchange::OpenLimits,
+    exchange::Exchange,
+    exchange::{ExchangeAccount, ExchangeMarketData, OpenLimits},
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         TradeHistoryRequest,
@@ -122,7 +122,7 @@ async fn get_trade_history() {
     println!("{:?}", resp);
 }
 
-async fn init() -> ExchangeWrapper<Nash> {
+async fn init() -> Exchange<Nash> {
     dotenv().ok();
 
     let parameters = NashParameters {

@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{
-    exchange_info::MarketPairHandle,
+    exchange_info::{ExchangeInfoRetrieval, MarketPairHandle},
     model::{
         Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
         GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
@@ -17,35 +17,83 @@ use crate::{
 pub struct OpenLimits {}
 
 impl OpenLimits {
-    pub async fn instantiate<Exc: Exchange>(parameters: Exc::Parameters) -> ExchangeWrapper<Exc> {
-        ExchangeWrapper::new(Exc::new(parameters).await)
+    pub async fn instantiate<Exc: ExchangeEssentials>(
+        parameters: Exc::Parameters,
+    ) -> Exchange<Exc> {
+        Exchange::new(parameters).await
     }
 }
 
-pub struct ExchangeWrapper<Exc: Exchange + ?Sized> {
-    inner: Exc,
+pub struct Exchange<Exc: ExchangeEssentials + ?Sized> {
+    pub inner: Exc,
 }
 
-impl<Exc: Exchange> ExchangeWrapper<Exc> {
-    pub fn new(inner: Exc) -> Self {
-        Self { inner }
+impl<Exc: ExchangeEssentials> Debug for Exchange<Exc> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
     }
 }
+
+impl<Exc: ExchangeEssentials> Default for Exchange<Exc> {
+    fn default() -> Self {
+        todo!()
+    }
+}
+
+impl<Exc: ExchangeEssentials> Exchange<Exc> {
+    pub async fn new(parameters: Exc::Parameters) -> Self {
+        Self {
+            inner: Exc::new(parameters).await,
+        }
+    }
+}
+
+impl<Exc: ExchangeEssentials + ExchangeInfoRetrieval> Exchange<Exc> {
+    pub async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
+        self.inner.refresh_market_info().await
+    }
+}
+
+/*
+impl<Exc: ExchangeSpec + ExchangeAccount> Exchange<Exc> {
+    pub async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Exc>> {
+        self.inner.limit_buy(req).await
+    }
+
+    pub async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Exc>> {
+        self.inner.limit_sell(req).await
+    }
+
+    pub async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Exc>> {
+        self.inner.market_buy(req).await
+    }
+
+    pub async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Exc>> {
+        self.inner.market_sell(req).await
+    }
+
+    pub async fn cancel_order(&self, req: &CancelOrderRequest<Exc>) -> Result<OrderCanceled<Exc>> {
+        self.inner.cancel_order(req).await
+    }
+}
+*/
 
 #[async_trait]
-pub trait Exchange: Unpin {
-    type OrderId: Debug + Clone + Serialize + DeserializeOwned;
-    type TradeId: Debug + Clone + Serialize + DeserializeOwned;
-    type Pagination: Debug + Clone + Serialize + DeserializeOwned;
+pub trait ExchangeEssentials {
     type Parameters;
 
     async fn new(parameters: Self::Parameters) -> Self;
-
-    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>>;
 }
 
 #[async_trait]
-pub trait ExchangeMarketData: Exchange + Sized {
+pub trait ExchangeSpec: Unpin {
+    type OrderId: Debug + Clone + Serialize + DeserializeOwned;
+    type TradeId: Debug + Clone + Serialize + DeserializeOwned;
+    type Pagination: Debug + Clone + Serialize + DeserializeOwned;
+}
+
+#[async_trait]
+pub trait ExchangeMarketData: ExchangeSpec + Sized {
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker>;
     async fn get_trade_history(&self, req: &TradeHistoryRequest<Self>) -> Result<Vec<Trade<Self>>>;
@@ -53,7 +101,7 @@ pub trait ExchangeMarketData: Exchange + Sized {
 }
 
 #[async_trait]
-pub trait ExchangeAccount: Exchange + Sized {
+pub trait ExchangeAccount: ExchangeSpec + Sized {
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self>>;
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self>>;
     async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self>>;
