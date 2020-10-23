@@ -136,7 +136,7 @@ impl Exchange for Coinbase {
 
     async fn get_account_balances(
         &self,
-        paginator: Option<&Paginator<Self::PaginationType>>,
+        paginator: Option<Paginator<Self::PaginationType>>,
     ) -> Result<Vec<Balance>> {
         let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
 

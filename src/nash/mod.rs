@@ -98,7 +98,7 @@ impl Exchange for Nash {
 
     async fn get_account_balances(
         &self,
-        _paginator: Option<&Paginator<Self::PaginationType>>,
+        _paginator: Option<Paginator<Self::PaginationType>>,
     ) -> Result<Vec<Balance>> {
         let req = nash_protocol::protocol::list_account_balances::ListAccountBalancesRequest {
             filter: None,
