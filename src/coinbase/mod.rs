@@ -100,14 +100,6 @@ impl ExchangeMarketData for Exchange<Coinbase> {
             .map(Into::into)
     }
 
-    async fn get_trade_history(&self, req: &TradeHistoryRequest<Self>) -> Result<Vec<Trade<Self>>> {
-        let req = req.into();
-
-        Coinbase::get_fills(&self.inner, Some(&req))
-            .await
-            .map(|v| v.into_iter().map(Into::into).collect())
-    }
-
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         Coinbase::ticker(&self.inner, &req.market_pair)
             .await
@@ -226,6 +218,14 @@ impl ExchangeAccount for Exchange<Coinbase> {
         let req: model::GetOrderRequest = req.into();
 
         Coinbase::get_orders(&self.inner, Some(&req))
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_trade_history(&self, req: &TradeHistoryRequest<Self>) -> Result<Vec<Trade<Self>>> {
+        let req = req.into();
+
+        Coinbase::get_fills(&self.inner, Some(&req))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }

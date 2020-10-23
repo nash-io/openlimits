@@ -6,7 +6,7 @@ use openlimits::{
     binance::BinanceCredentials,
     binance::BinanceParameters,
     exchange::Exchange,
-    exchange::{ExchangeAccount, ExchangeMarketData, OpenLimits},
+    exchange::{ExchangeAccount, OpenLimits},
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         OpenMarketOrderRequest, TradeHistoryRequest,

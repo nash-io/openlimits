@@ -101,13 +101,6 @@ impl ExchangeMarketData for Exchange<Binance> {
             .map(Into::into)
     }
 
-    async fn get_trade_history(&self, req: &TradeHistoryRequest<Self>) -> Result<Vec<Trade<Self>>> {
-        let req = model::TradeHistoryReq::try_from(req)?;
-        Binance::trade_history(&self.inner, &req)
-            .await
-            .map(|v| v.into_iter().map(Into::into).collect())
-    }
-
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         Binance::get_price(&self.inner, &req.market_pair)
             .await
@@ -183,6 +176,13 @@ impl ExchangeAccount for Exchange<Binance> {
     ) -> Result<Vec<Order<Self>>> {
         let req = model::AllOrderReq::try_from(req)?;
         Binance::get_all_orders(&self.inner, &req)
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_trade_history(&self, req: &TradeHistoryRequest<Self>) -> Result<Vec<Trade<Self>>> {
+        let req = model::TradeHistoryReq::try_from(req)?;
+        Binance::trade_history(&self.inner, &req)
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }

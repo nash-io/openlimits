@@ -4,7 +4,7 @@ use std::env;
 
 use openlimits::{
     exchange::Exchange,
-    exchange::{ExchangeAccount, ExchangeMarketData, OpenLimits},
+    exchange::{ExchangeAccount, OpenLimits},
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         TradeHistoryRequest,
