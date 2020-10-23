@@ -34,6 +34,12 @@ impl<Exc: ExchangeEssentials> Debug for Exchange<Exc> {
     }
 }
 
+impl<Exc: ExchangeEssentials> Clone for Exchange<Exc> {
+    fn clone(&self) -> Self {
+        todo!()
+    }
+}
+
 impl<Exc: ExchangeEssentials> Default for Exchange<Exc> {
     fn default() -> Self {
         todo!()

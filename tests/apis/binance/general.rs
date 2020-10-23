@@ -1,4 +1,3 @@
-use crate::openlimits::exchange::ExchangeSpec;
 use openlimits::{
     binance::{Binance, BinanceParameters},
     exchange::ExchangeEssentials,

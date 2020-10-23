@@ -76,19 +76,10 @@ pub struct CancelAllOrdersRequest {
     pub market_pair: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Constructor, Debug)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
 pub struct GetOrderHistoryRequest<E: ExchangeSpec> {
     pub market_pair: Option<String>,
     pub paginator: Option<Paginator<E>>,
-}
-
-impl<E: ExchangeSpec> Clone for GetOrderHistoryRequest<E> {
-    fn clone(&self) -> Self {
-        Self {
-            market_pair: self.market_pair.clone(),
-            paginator: self.paginator.clone(),
-        }
-    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
@@ -228,7 +219,7 @@ pub enum OrderStatus {
     Active,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct Paginator<E: ExchangeSpec> {
     pub start_time: Option<u64>,
@@ -236,16 +227,4 @@ pub struct Paginator<E: ExchangeSpec> {
     pub limit: Option<u64>,
     pub before: Option<<E as ExchangeSpec>::Pagination>,
     pub after: Option<<E as ExchangeSpec>::Pagination>,
-}
-
-impl<E: ExchangeSpec> Clone for Paginator<E> {
-    fn clone(&self) -> Self {
-        Self {
-            start_time: self.start_time.clone(),
-            end_time: self.end_time.clone(),
-            limit: self.limit.clone(),
-            before: self.before.clone(),
-            after: self.after.clone(),
-        }
-    }
 }
