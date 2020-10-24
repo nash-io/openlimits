@@ -1,11 +1,69 @@
 use super::websocket::{Subscription, OpenLimitsWebsocketMessage};
+use super::super::model::{Paginator, Interval};
 
-use pyo3::prelude::{FromPyObject, IntoPy, PyObject, ToPyObject, Python};
+use pyo3::prelude::{FromPyObject, IntoPy, PyObject, ToPyObject, Python, PyResult};
 use pyo3::types::PyDict;
 use pyo3::exceptions::PyException;
 
+impl<'a> FromPyObject<'a> for Interval {
+    fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
+        let interval_str: String = ob.get_item("interval")?.extract()?;
+        match &interval_str[..] {
+            "one_minute" => Ok(Interval::OneMinute),
+            "three_minutes" => Ok(Interval::ThreeMinutes),
+            "five_minutes" => Ok(Interval::FiveMinutes),
+            "fifteen_minutes" => Ok(Interval::FifteenMinutes),
+            "thirty_minutes" => Ok(Interval::ThirtyMinutes),
+            "one_hour" => Ok(Interval::OneHour),
+            "two_hours" => Ok(Interval::TwoHours),
+            "four_hours" => Ok(Interval::FourHours),
+            "six_hours" => Ok(Interval::SixHours),
+            "eight_hours" => Ok(Interval::EightHours),
+            "twelve_hours" => Ok(Interval::TwelveHours),
+            "one_day" => Ok(Interval::OneDay),
+            "three_days" => Ok(Interval::ThreeDays),
+            "one_week" => Ok(Interval::OneWeek),
+            "one_month" => Ok(Interval::OneMonth),
+            _ => Err(PyException::new_err("Interval value not supported"))
+        }
+    }
+}
+
+impl<'a> FromPyObject<'a> for Paginator<String> {
+    fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
+        let page_values = ob.get_item("paginator")?.downcast::<PyDict>()?;
+        let start_time: Option<u64> = match page_values.get_item("start_time") {
+            Some(value) => value.extract()?,
+            None => None
+        };
+        let end_time: Option<u64> = match page_values.get_item("end_time") {
+            Some(value) => value.extract()?,
+            None => None
+        };
+        let limit: Option<u64> = match page_values.get_item("limit") {
+            Some(value) => value.extract()?,
+            None => None
+        };
+        let after: Option<String> = match page_values.get_item("after") {
+            Some(value) => value.extract()?,
+            None => None
+        };
+        let before: Option<String> = match page_values.get_item("before") {
+            Some(value) => value.extract()?,
+            None => None
+        };
+        Ok(Paginator {
+            start_time,
+            end_time,
+            after,
+            before,
+            limit
+        })
+    }
+}
+
 impl<'a> FromPyObject<'a> for Subscription {
-    fn extract(pyobj: &'a pyo3::PyAny) -> Result<Self, pyo3::PyErr> {
+    fn extract(pyobj: &'a pyo3::PyAny) -> PyResult<Self> {
         // we will simulate an enum in Python via dictionary keys
         if let Ok(trade) = pyobj.get_item("trade") {
             Ok(Subscription::Trade(trade.extract()?))
@@ -14,7 +72,7 @@ impl<'a> FromPyObject<'a> for Subscription {
             let orderbook_args: (String, i64) = orderbook.extract()?;
             Ok(Subscription::OrderBook(orderbook_args.0, orderbook_args.1))
         } else {
-            Err(PyException::new_err("Not a valid input subscription"))
+            Err(PyException::new_err("Not a supported input subscription"))
         }
      }
 }
@@ -44,7 +102,67 @@ impl IntoPy<PyObject> for OpenLimitsWebsocketMessage {
 
 // Responses 
 
-use super::{OrderBookResponse, Trade, AskBid, Side, Liquidity, OrderCanceled, Order, OrderStatus, Balance};
+use super::{OrderBookResponse, Trade, AskBid, Side, Liquidity, OrderCanceled, Order, OrderStatus, Balance, Candle, Ticker};
+use super::super::exchange_info::MarketPair;
+
+impl ToPyObject for Ticker {
+    fn to_object(&self, py: Python) -> PyObject {
+        let dict = PyDict::new(py);
+        let inner_dict = PyDict::new(py);
+        // TODO: why does ticker have so few fields?
+        inner_dict.set_item("price", self.price.to_string()).unwrap();
+        dict.set_item("ticker", inner_dict).unwrap();
+        dict.into()
+    }
+}
+
+impl IntoPy<PyObject> for Ticker {
+    fn into_py(self, py: Python) -> PyObject {
+        self.to_object(py)
+    }
+}
+
+impl ToPyObject for Candle {
+    fn to_object(&self, py: Python) -> PyObject {
+        let dict = PyDict::new(py);
+        let inner_dict = PyDict::new(py);
+        inner_dict.set_item("low", self.low.to_string()).unwrap();
+        inner_dict.set_item("high", self.high.to_string()).unwrap();
+        inner_dict.set_item("close", self.close.to_string()).unwrap();
+        inner_dict.set_item("open", self.open.to_string()).unwrap();
+        inner_dict.set_item("time", self.time).unwrap();
+        inner_dict.set_item("volume", self.volume.to_string()).unwrap();
+        dict.set_item("candle", inner_dict).unwrap();
+        dict.into()
+    }
+}
+
+impl IntoPy<PyObject> for Candle {
+    fn into_py(self, py: Python) -> PyObject {
+        self.to_object(py)
+    }
+}
+
+impl ToPyObject for MarketPair {
+    fn to_object(&self, py: Python) -> PyObject {
+        let dict = PyDict::new(py);
+        let inner_dict = PyDict::new(py);
+        inner_dict.set_item("quote", self.quote.clone()).unwrap();
+        inner_dict.set_item("quote_decimal", self.quote_increment.to_string()).unwrap();
+        inner_dict.set_item("base", self.base.clone()).unwrap();
+        inner_dict.set_item("base_increment", self.base_increment.to_string()).unwrap();
+        inner_dict.set_item("symbol", self.symbol.clone()).unwrap();
+        dict.set_item("market_pair", inner_dict).unwrap();
+        dict.into()
+    }
+}
+
+impl IntoPy<PyObject> for MarketPair {
+    fn into_py(self, py: Python) -> PyObject {
+        self.to_object(py)
+    }
+}
+
 
 impl ToPyObject for Balance {
     fn to_object(&self, py: Python) -> PyObject {
@@ -160,16 +278,11 @@ impl ToPyObject for Trade<String, String> {
     }
 }
 
-// New,
-// PartiallyFilled,
-// Filled,
-// Canceled,
-// PendingCancel,
-// Rejected,
-// Expired,
-// Open,
-// Pending,
-// Active,
+impl IntoPy<PyObject> for Trade<String, String> {
+    fn into_py(self, py: Python) -> PyObject {
+        self.to_object(py)
+    }
+}
 
 impl ToPyObject for OrderStatus {
     fn to_object(&self, py: Python) -> PyObject {
