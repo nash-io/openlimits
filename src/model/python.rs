@@ -5,6 +5,8 @@ use pyo3::exceptions::PyException;
 use pyo3::prelude::{FromPyObject, IntoPy, PyObject, PyResult, Python, ToPyObject};
 use pyo3::types::PyDict;
 
+// Python to Rust...
+
 impl<'a> FromPyObject<'a> for Interval {
     fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
         let interval_str: String = ob.get_item("interval")?.extract()?;
@@ -97,9 +99,7 @@ impl IntoPy<PyObject> for OpenLimitsWebsocketMessage {
     }
 }
 
-// Responses
-
-// Responses
+// Rust to Python... (Responses)
 
 use super::super::exchange_info::MarketPair;
 use super::{
