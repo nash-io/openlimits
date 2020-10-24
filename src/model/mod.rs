@@ -2,6 +2,10 @@ use chrono::Duration;
 use derive_more::Constructor;
 use rust_decimal::prelude::Decimal;
 use serde::{Deserialize, Serialize};
+
+#[cfg(feature = "python")]
+pub mod python;
+
 pub mod websocket;
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]

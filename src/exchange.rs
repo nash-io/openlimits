@@ -69,7 +69,7 @@ impl<E: Exchange> OpenLimits<E> {
 
     pub async fn get_account_balances(
         &self,
-        paginator: Option<&Paginator<E::PaginationType>>,
+        paginator: Option<Paginator<E::PaginationType>>,
     ) -> Result<Vec<Balance>> {
         self.exchange.get_account_balances(paginator).await
     }
@@ -133,7 +133,7 @@ pub trait Exchange {
     ) -> Result<Vec<Order<Self::OrderIdType>>>;
     async fn get_account_balances(
         &self,
-        paginator: Option<&Paginator<Self::PaginationType>>,
+        paginator: Option<Paginator<Self::PaginationType>>,
     ) -> Result<Vec<Balance>>;
     async fn get_trade_history(
         &self,

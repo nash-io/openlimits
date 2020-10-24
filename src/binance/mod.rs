@@ -136,7 +136,7 @@ impl Exchange for Binance {
 
     async fn get_account_balances(
         &self,
-        _paginator: Option<&Paginator<Self::PaginationType>>,
+        _paginator: Option<Paginator<Self::PaginationType>>,
     ) -> Result<Vec<Balance>> {
         Binance::get_account(self)
             .await
