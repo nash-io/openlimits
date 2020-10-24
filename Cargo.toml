@@ -9,6 +9,9 @@ repository = "https://github.com/nash-io/openlimits"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+python = ["pyo3"]
+
 [dependencies]
 async-trait = "0.1"
 base64 = "0.12.3"
@@ -33,4 +36,4 @@ url = "2.1.1"
 derive_more = "0.99"
 nash-protocol  = "0.1.8"
 nash-native-client = "0.1.4"
-pyo3 = "0.12.3"
+pyo3 = {version = "0.12.3", optional = true }

@@ -29,6 +29,8 @@ async fn get_price_ticker() {
     };
     let resp = exchange.get_price_ticker(&req).await.unwrap();
     println!("{:?}", resp);
+    let resp = exchange.get_price_ticker(&req).await.unwrap();
+    println!("{:?}", resp);
 }
 
 #[tokio::test]

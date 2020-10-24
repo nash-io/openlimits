@@ -327,7 +327,7 @@ impl ToPyObject for OrderStatus {
             Self::Pending => "pending",
             Self::Active => "active",
         };
-        dict.set_item("status", to_string).unwrap();
+        dict.set_item("order_status", to_string).unwrap();
         dict.into()
     }
 }
