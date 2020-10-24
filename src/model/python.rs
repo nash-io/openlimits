@@ -1,10 +1,9 @@
-use super::websocket::{Subscription, OpenLimitsWebsocketMessage};
-use super::super::model::{Paginator, Interval};
+use super::super::model::{Interval, Paginator};
+use super::websocket::{OpenLimitsWebsocketMessage, Subscription};
 
-use pyo3::prelude::{FromPyObject, IntoPy, PyObject, ToPyObject, Python, PyResult};
-use pyo3::types::PyDict;
 use pyo3::exceptions::PyException;
-
+use pyo3::prelude::{FromPyObject, IntoPy, PyObject, PyResult, Python, ToPyObject};
+use pyo3::types::PyDict;
 
 impl<'a> FromPyObject<'a> for Interval {
     fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
@@ -25,7 +24,7 @@ impl<'a> FromPyObject<'a> for Interval {
             "three_days" => Ok(Interval::ThreeDays),
             "one_week" => Ok(Interval::OneWeek),
             "one_month" => Ok(Interval::OneMonth),
-            _ => Err(PyException::new_err("Interval value not supported"))
+            _ => Err(PyException::new_err("Interval value not supported")),
         }
     }
 }
@@ -35,30 +34,30 @@ impl<'a> FromPyObject<'a> for Paginator<String> {
         let page_values = ob.get_item("paginator")?.downcast::<PyDict>()?;
         let start_time: Option<u64> = match page_values.get_item("start_time") {
             Some(value) => value.extract()?,
-            None => None
+            None => None,
         };
         let end_time: Option<u64> = match page_values.get_item("end_time") {
             Some(value) => value.extract()?,
-            None => None
+            None => None,
         };
         let limit: Option<u64> = match page_values.get_item("limit") {
             Some(value) => value.extract()?,
-            None => None
+            None => None,
         };
         let after: Option<String> = match page_values.get_item("after") {
             Some(value) => value.extract()?,
-            None => None
+            None => None,
         };
         let before: Option<String> = match page_values.get_item("before") {
             Some(value) => value.extract()?,
-            None => None
+            None => None,
         };
         Ok(Paginator {
             start_time,
             end_time,
             after,
             before,
-            limit
+            limit,
         })
     }
 }
@@ -100,17 +99,22 @@ impl IntoPy<PyObject> for OpenLimitsWebsocketMessage {
 
 // Responses
 
-// Responses 
+// Responses
 
-use super::{OrderBookResponse, Trade, AskBid, Side, Liquidity, OrderCanceled, Order, OrderStatus, Balance, Candle, Ticker};
 use super::super::exchange_info::MarketPair;
+use super::{
+    AskBid, Balance, Candle, Liquidity, Order, OrderBookResponse, OrderCanceled, OrderStatus, Side,
+    Ticker, Trade,
+};
 
 impl ToPyObject for Ticker {
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
         let inner_dict = PyDict::new(py);
         // TODO: why does ticker have so few fields?
-        inner_dict.set_item("price", self.price.to_string()).unwrap();
+        inner_dict
+            .set_item("price", self.price.to_string())
+            .unwrap();
         dict.set_item("ticker", inner_dict).unwrap();
         dict.into()
     }
@@ -128,10 +132,14 @@ impl ToPyObject for Candle {
         let inner_dict = PyDict::new(py);
         inner_dict.set_item("low", self.low.to_string()).unwrap();
         inner_dict.set_item("high", self.high.to_string()).unwrap();
-        inner_dict.set_item("close", self.close.to_string()).unwrap();
+        inner_dict
+            .set_item("close", self.close.to_string())
+            .unwrap();
         inner_dict.set_item("open", self.open.to_string()).unwrap();
         inner_dict.set_item("time", self.time).unwrap();
-        inner_dict.set_item("volume", self.volume.to_string()).unwrap();
+        inner_dict
+            .set_item("volume", self.volume.to_string())
+            .unwrap();
         dict.set_item("candle", inner_dict).unwrap();
         dict.into()
     }
@@ -148,9 +156,13 @@ impl ToPyObject for MarketPair {
         let dict = PyDict::new(py);
         let inner_dict = PyDict::new(py);
         inner_dict.set_item("quote", self.quote.clone()).unwrap();
-        inner_dict.set_item("quote_decimal", self.quote_increment.to_string()).unwrap();
+        inner_dict
+            .set_item("quote_decimal", self.quote_increment.to_string())
+            .unwrap();
         inner_dict.set_item("base", self.base.clone()).unwrap();
-        inner_dict.set_item("base_increment", self.base_increment.to_string()).unwrap();
+        inner_dict
+            .set_item("base_increment", self.base_increment.to_string())
+            .unwrap();
         inner_dict.set_item("symbol", self.symbol.clone()).unwrap();
         dict.set_item("market_pair", inner_dict).unwrap();
         dict.into()
@@ -162,7 +174,6 @@ impl IntoPy<PyObject> for MarketPair {
         self.to_object(py)
     }
 }
-
 
 impl ToPyObject for Balance {
     fn to_object(&self, py: Python) -> PyObject {
