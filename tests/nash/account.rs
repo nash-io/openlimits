@@ -9,15 +9,15 @@ use openlimits::{
     },
     nash::Nash,
 };
-use rust_decimal::prelude::Decimal;
+use rust_decimal::prelude::{Decimal, FromStr};
 
 #[tokio::test]
 async fn limit_buy() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
-        price: Decimal::new(1, 3),
-        size: Decimal::new(1, 1),
-        market_pair: String::from("eth_btc"),
+        price: Decimal::from_str("414.46").unwrap(),
+        size: Decimal::from_str("0.0168").unwrap(),
+        market_pair: String::from("eth_usdc"),
     };
     let resp = exchange.limit_buy(&req).await.unwrap();
     println!("{:?}", resp);
