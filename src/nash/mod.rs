@@ -209,7 +209,6 @@ impl Exchange for Nash {
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Buy);
 
         let resp = self.transport.run(req).await;
-        println!("{:?}", resp);
 
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::place_order::LimitOrderResponse>(
@@ -224,7 +223,6 @@ impl Exchange for Nash {
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Sell);
 
         let resp = self.transport.run(req).await;
-        println!("{:?}", resp);
 
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::place_order::LimitOrderResponse>(
