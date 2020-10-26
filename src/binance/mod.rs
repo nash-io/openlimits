@@ -6,10 +6,7 @@ use std::convert::TryFrom;
 use client::websocket::BinanceWebsocket;
 
 use crate::{
-    binance::model::{
-        websocket::TradeMessage,
-        ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET
-    },
+    binance::model::{websocket::TradeMessage, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET},
     errors::OpenLimitError,
     exchange::Exchange,
     exchange_info::{ExchangeInfo, MarketPairHandle},
@@ -247,7 +244,7 @@ impl From<model::Order> for Order<u64> {
     fn from(order: model::Order) -> Self {
         let order_type = match order.type_name.as_str() {
             ORDER_TYPE_LIMIT => OrderType::Limit,
-            ORDER_TYPE_MARKET=> OrderType::Market,
+            ORDER_TYPE_MARKET => OrderType::Market,
             _ => OrderType::Unknown,
         };
 

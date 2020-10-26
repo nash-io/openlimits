@@ -244,7 +244,7 @@ pub enum OrderType {
     Market,
     StopLimit,
     StopMarket,
-    Unknown
+    Unknown,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, Default)]
