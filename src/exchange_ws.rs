@@ -1,6 +1,4 @@
-use crate::{
-    model::websocket::{OpenLimitsWebsocketMessage, Subscription},
-};
+use crate::model::websocket::{OpenLimitsWebsocketMessage, Subscription};
 use async_trait::async_trait;
 use derive_more::Constructor;
 use futures::stream::Stream;

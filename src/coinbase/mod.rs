@@ -114,10 +114,7 @@ impl ExchangeMarketData for Exchange<Coinbase> {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_historic_trades(
-        &self,
-        _req: &GetHistoricTradesRequest,
-    ) -> Result<Vec<Trade>> {
+    async fn get_historic_trades(&self, _req: &GetHistoricTradesRequest) -> Result<Vec<Trade>> {
         unimplemented!("Only implemented for Nash right now");
     }
 }
@@ -198,10 +195,7 @@ impl ExchangeAccount for Exchange<Coinbase> {
             .map(Into::into)
     }
 
-    async fn cancel_all_orders(
-        &self,
-        req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled>> {
+    async fn cancel_all_orders(&self, req: &CancelAllOrdersRequest) -> Result<Vec<OrderCanceled>> {
         Coinbase::cancel_all_orders(&self.inner, req.market_pair.as_deref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
@@ -219,10 +213,7 @@ impl ExchangeAccount for Exchange<Coinbase> {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_order_history(
-        &self,
-        req: &GetOrderHistoryRequest,
-    ) -> Result<Vec<Order>> {
+    async fn get_order_history(&self, req: &GetOrderHistoryRequest) -> Result<Vec<Order>> {
         let req: model::GetOrderRequest = req.into();
 
         Coinbase::get_orders(&self.inner, Some(&req))
@@ -238,10 +229,7 @@ impl ExchangeAccount for Exchange<Coinbase> {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_account_balances(
-        &self,
-        paginator: Option<Paginator>,
-    ) -> Result<Vec<Balance>> {
+    async fn get_account_balances(&self, paginator: Option<Paginator>) -> Result<Vec<Balance>> {
         let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
 
         Coinbase::get_account(&self.inner, paginator.as_ref())
@@ -368,8 +356,14 @@ impl From<Paginator> for model::Paginator {
 impl From<&Paginator> for model::Paginator {
     fn from(paginator: &Paginator) -> Self {
         Self {
-            after: paginator.after.as_ref().map(|s| s.parse().expect("coinbase page id did not parse as u64")),
-            before: paginator.before.as_ref().map(|s| s.parse().expect("coinbase page id did not parse as u64")),
+            after: paginator
+                .after
+                .as_ref()
+                .map(|s| s.parse().expect("coinbase page id did not parse as u64")),
+            before: paginator
+                .before
+                .as_ref()
+                .map(|s| s.parse().expect("coinbase page id did not parse as u64")),
             limit: paginator.limit,
         }
     }

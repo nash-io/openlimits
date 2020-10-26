@@ -115,10 +115,7 @@ impl ExchangeMarketData for Exchange<Binance> {
             .map(|KlineSummaries::AllKlineSummaries(v)| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_historic_trades(
-        &self,
-        _req: &GetHistoricTradesRequest,
-    ) -> Result<Vec<Trade>> {
+    async fn get_historic_trades(&self, _req: &GetHistoricTradesRequest) -> Result<Vec<Trade>> {
         unimplemented!("Only implemented for Nash right now");
     }
 }
@@ -148,7 +145,10 @@ impl ExchangeAccount for Exchange<Binance> {
     }
     async fn cancel_order(&self, req: &CancelOrderRequest) -> Result<OrderCanceled> {
         if let Some(pair) = req.market_pair.as_ref() {
-            let u64_id = req.id.parse::<u64>().expect("binance order id did not parse as u64");
+            let u64_id = req
+                .id
+                .parse::<u64>()
+                .expect("binance order id did not parse as u64");
             Binance::cancel_order(&self.inner, pair.as_ref(), u64_id)
                 .await
                 .map(Into::into)
@@ -158,10 +158,7 @@ impl ExchangeAccount for Exchange<Binance> {
             ))
         }
     }
-    async fn cancel_all_orders(
-        &self,
-        req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled>> {
+    async fn cancel_all_orders(&self, req: &CancelAllOrdersRequest) -> Result<Vec<OrderCanceled>> {
         if let Some(pair) = req.market_pair.as_ref() {
             Binance::cancel_all_orders(&self.inner, pair.as_ref())
                 .await
@@ -178,10 +175,7 @@ impl ExchangeAccount for Exchange<Binance> {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_order_history(
-        &self,
-        req: &GetOrderHistoryRequest,
-    ) -> Result<Vec<Order>> {
+    async fn get_order_history(&self, req: &GetOrderHistoryRequest) -> Result<Vec<Order>> {
         let req = model::AllOrderReq::try_from(req)?;
         Binance::get_all_orders(&self.inner, &req)
             .await
@@ -195,10 +189,7 @@ impl ExchangeAccount for Exchange<Binance> {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_account_balances(
-        &self,
-        _paginator: Option<Paginator>,
-    ) -> Result<Vec<Balance>> {
+    async fn get_account_balances(&self, _paginator: Option<Paginator>) -> Result<Vec<Balance>> {
         Binance::get_account(&self.inner)
             .await
             .map(|v| v.balances.into_iter().map(Into::into).collect())
@@ -208,7 +199,10 @@ impl ExchangeAccount for Exchange<Binance> {
         let pair = req.market_pair.clone().ok_or_else(|| {
             OpenLimitError::MissingParameter("market_pair parameter is required.".to_string())
         })?;
-        let u64_id = req.id.parse::<u64>().expect("binance order id did not parse as u64");
+        let u64_id = req
+            .id
+            .parse::<u64>()
+            .expect("binance order id did not parse as u64");
         Binance::get_order(&self.inner, &pair, u64_id)
             .await
             .map(Into::into)
@@ -289,7 +283,9 @@ impl From<model::Order> for Order {
 
 impl From<model::OrderCanceled> for OrderCanceled {
     fn from(order: model::OrderCanceled) -> Self {
-        Self { id: order.order_id.to_string() }
+        Self {
+            id: order.order_id.to_string(),
+        }
     }
 }
 
@@ -407,9 +403,14 @@ impl From<model::KlineSummary> for Candle {
 impl From<Paginator> for model::Paginator {
     fn from(paginator: Paginator) -> Self {
         Self {
-            from_id: paginator.after.as_ref().map(|s| s.parse().expect("binance page id did not parse as u64")),
+            from_id: paginator
+                .after
+                .as_ref()
+                .map(|s| s.parse().expect("binance page id did not parse as u64")),
             // TODO: what is this, and why do we reuse "after"?
-            order_id: paginator.after.map(|s| s.parse().expect("binance order id did not parse as u64")),
+            order_id: paginator
+                .after
+                .map(|s| s.parse().expect("binance order id did not parse as u64")),
             end_time: paginator.end_time,
             start_time: paginator.start_time,
             limit: paginator.limit,
@@ -446,10 +447,7 @@ impl ExchangeWs for BinanceWebsocket {
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
         BinanceWebsocket::subscribe(self, subscription.into()).await
     }
-    fn parse_message(
-        &self,
-        message: Self::Item,
-    ) -> Result<OpenLimitsWebsocketMessage> {
+    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
         Ok(message?.into())
     }
 }
@@ -465,9 +463,7 @@ impl From<Subscription> for model::websocket::Subscription {
     }
 }
 
-impl From<model::websocket::BinanceWebsocketMessage>
-    for OpenLimitsWebsocketMessage
-{
+impl From<model::websocket::BinanceWebsocketMessage> for OpenLimitsWebsocketMessage {
     fn from(message: model::websocket::BinanceWebsocketMessage) -> Self {
         match message {
             model::websocket::BinanceWebsocketMessage::Ping => OpenLimitsWebsocketMessage::Ping,

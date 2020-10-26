@@ -28,6 +28,6 @@ async fn trades() {
 
 fn init() -> OpenLimitsWs<BinanceWebsocket> {
     OpenLimitsWs {
-        websocket: BinanceWebsocket::new()
+        websocket: BinanceWebsocket::new(),
     }
 }
