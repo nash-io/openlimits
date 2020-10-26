@@ -216,10 +216,7 @@ impl From<model::Order> for Order<String> {
                 size,
                 time_in_force: _,
             } => (Some(price), size, OrderType::Limit),
-            model::OrderType::Market {
-                size,
-                funds: _
-            } => (None, size, OrderType::Market),
+            model::OrderType::Market { size, funds: _ } => (None, size, OrderType::Market),
         };
 
         Self {
