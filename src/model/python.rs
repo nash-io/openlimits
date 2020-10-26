@@ -1,9 +1,12 @@
 use super::super::model::{Interval, Paginator};
 use super::websocket::{OpenLimitsWebsocketMessage, Subscription};
+use super::ExchangeSpec;
 
 use pyo3::exceptions::PyException;
 use pyo3::prelude::{FromPyObject, IntoPy, PyObject, PyResult, Python, ToPyObject};
 use pyo3::types::PyDict;
+
+use std::str::FromStr;
 
 // Python to Rust...
 
@@ -31,7 +34,11 @@ impl<'a> FromPyObject<'a> for Interval {
     }
 }
 
-impl<'a> FromPyObject<'a> for Paginator<String> {
+impl<'a, T> FromPyObject<'a> for Paginator<T>
+where 
+    T: ExchangeSpec,
+    T::Pagination: FromStr,
+{
     fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
         let page_values = ob.get_item("paginator")?.downcast::<PyDict>()?;
         let start_time: Option<u64> = match page_values.get_item("start_time") {
@@ -46,14 +53,24 @@ impl<'a> FromPyObject<'a> for Paginator<String> {
             Some(value) => value.extract()?,
             None => None,
         };
-        let after: Option<String> = match page_values.get_item("after") {
+        let after_str: Option<String> = match page_values.get_item("after") {
             Some(value) => value.extract()?,
             None => None,
         };
-        let before: Option<String> = match page_values.get_item("before") {
+        let after = after_str.map(|x| 
+            <T as ExchangeSpec>::Pagination::from_str(&x).map_err(|_| 
+                PyException::new_err("Pagination FromStr failed")
+            ).unwrap()
+        );
+        let before_str: Option<String> = match page_values.get_item("before") {
             Some(value) => value.extract()?,
             None => None,
         };
+        let before = before_str.map( |x| 
+            <T as ExchangeSpec>::Pagination::from_str(&x).map_err(|_| 
+                PyException::new_err("Pagination FromStr failed")
+            ).unwrap()
+        );
         Ok(Paginator {
             start_time,
             end_time,
@@ -78,7 +95,12 @@ impl<'a> FromPyObject<'a> for Subscription {
     }
 }
 
-impl ToPyObject for OpenLimitsWebsocketMessage {
+impl<T> ToPyObject for OpenLimitsWebsocketMessage<T> 
+where
+    T: ExchangeSpec,
+    T::OrderId: ToString,
+    T::TradeId: ToString
+{
     fn to_object(&self, py: Python) -> PyObject {
         match self {
             Self::Ping => {
@@ -93,7 +115,12 @@ impl ToPyObject for OpenLimitsWebsocketMessage {
     }
 }
 
-impl IntoPy<PyObject> for OpenLimitsWebsocketMessage {
+impl<T> IntoPy<PyObject> for OpenLimitsWebsocketMessage<T>
+where 
+    T: ExchangeSpec,
+    T::OrderId: ToString,
+    T::TradeId: ToString
+{
     fn into_py(self, py: Python) -> PyObject {
         self.to_object(py)
     }
@@ -218,7 +245,8 @@ impl IntoPy<PyObject> for Balance {
 
 impl<T> ToPyObject for OrderCanceled<T>
 where
-    T: ToString,
+    T: ExchangeSpec,
+    T::OrderId: ToString
 {
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
@@ -230,7 +258,8 @@ where
 
 impl<T> IntoPy<PyObject> for OrderCanceled<T>
 where
-    T: ToString,
+    T: ExchangeSpec,
+    T::OrderId: ToString
 {
     fn into_py(self, py: Python) -> PyObject {
         self.to_object(py)
@@ -239,7 +268,8 @@ where
 
 impl<T> ToPyObject for Order<T>
 where
-    T: ToString,
+    T: ExchangeSpec,
+    T::OrderId: ToString
 {
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
@@ -273,7 +303,8 @@ where
 
 impl<T> IntoPy<PyObject> for Order<T>
 where
-    T: ToString,
+    T: ExchangeSpec,
+    T::OrderId: ToString
 {
     fn into_py(self, py: Python) -> PyObject {
         self.to_object(py)
@@ -310,7 +341,12 @@ impl ToPyObject for AskBid {
     }
 }
 
-impl ToPyObject for Trade<String, String> {
+impl<T> ToPyObject for Trade<T> 
+where 
+    T: ExchangeSpec,
+    T::OrderId: ToString,
+    T::TradeId: ToString
+{
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
         let inner_dict = PyDict::new(py);
@@ -325,20 +361,25 @@ impl ToPyObject for Trade<String, String> {
             .unwrap();
         inner_dict.set_item("qty", self.qty.to_string()).unwrap();
         inner_dict
-            .set_item("order_id", self.order_id.clone())
+            .set_item("order_id", self.order_id.to_string())
             .unwrap();
         inner_dict.set_item("side", self.side.clone()).unwrap();
         inner_dict.set_item("created_at", self.created_at).unwrap();
         inner_dict
             .set_item("fees", self.fees.map(|fee| fee.to_string()))
             .unwrap();
-        inner_dict.set_item("id", self.id.clone()).unwrap();
+        inner_dict.set_item("id", self.id.to_string()).unwrap();
         dict.set_item("trade", inner_dict).unwrap();
         dict.into()
     }
 }
 
-impl IntoPy<PyObject> for Trade<String, String> {
+impl<T> IntoPy<PyObject> for Trade<T> 
+where 
+    T: ExchangeSpec,
+    T::OrderId: ToString,
+    T::TradeId: ToString
+{
     fn into_py(self, py: Python) -> PyObject {
         self.to_object(py)
     }
