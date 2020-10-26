@@ -4,6 +4,12 @@ use serde::{Deserialize, Serialize};
 
 use rust_decimal::prelude::Decimal;
 
+pub const ORDER_TYPE_LIMIT: &str = "LIMIT";
+pub const ORDER_TYPE_MARKET: &str = "MARKET";
+pub const ORDER_SIDE_BUY: &str = "BUY";
+pub const ORDER_SIDE_SELL: &str = "SELL";
+pub const TIME_IN_FORCE_GTC: &str = "GTC";
+
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct ServerTime {

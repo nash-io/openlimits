@@ -104,8 +104,29 @@ impl IntoPy<PyObject> for OpenLimitsWebsocketMessage {
 use super::super::exchange_info::MarketPair;
 use super::{
     AskBid, Balance, Candle, Liquidity, Order, OrderBookResponse, OrderCanceled, OrderStatus, Side,
-    Ticker, Trade,
+    Ticker, Trade, OrderType
 };
+
+impl ToPyObject for OrderType {
+    fn to_object(&self, py: Python) -> PyObject {
+        let dict = PyDict::new(py);
+        let inner_str = match self {
+            Self::Limit => "limit",
+            Self::Market => "market",
+            Self::StopLimit => "stop_limit",
+            Self::StopMarket => "stop_market",
+            Self::Unknown => "unknown"
+        };
+        dict.set_item("order_type", inner_str).unwrap();
+        dict.into()
+    }
+}
+
+impl IntoPy<PyObject> for OrderType {
+    fn into_py(self, py: Python) -> PyObject {
+        self.to_object(py)
+    }
+}
 
 impl ToPyObject for Ticker {
     fn to_object(&self, py: Python) -> PyObject {
