@@ -5,7 +5,8 @@ use crate::{
     binance::{
         model::{
             AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest,
-            TradeHistory, TradeHistoryReq,
+            TradeHistory, TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
+            ORDER_TYPE_MARKET, TIME_IN_FORCE_GTC,
         },
         Binance,
     },
@@ -14,12 +15,6 @@ use crate::{
 };
 
 use rust_decimal::prelude::*;
-
-static ORDER_TYPE_LIMIT: &str = "LIMIT";
-static ORDER_TYPE_MARKET: &str = "MARKET";
-static ORDER_SIDE_BUY: &str = "BUY";
-static ORDER_SIDE_SELL: &str = "SELL";
-static TIME_IN_FORCE_GTC: &str = "GTC";
 
 impl Binance {
     // Account Information

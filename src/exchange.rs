@@ -116,7 +116,7 @@ pub trait ExchangeAccount: ExchangeSpec + Sized {
     async fn get_trade_history(&self, req: &TradeHistoryRequest<Self>) -> Result<Vec<Trade<Self>>>;
     async fn get_account_balances(
         &self,
-        paginator: Option<&Paginator<Self>>,
+        paginator: Option<Paginator<Self>>,
     ) -> Result<Vec<Balance>>;
     async fn get_order(&self, req: &GetOrderRequest<Self>) -> Result<Order<Self>>;
 }

@@ -14,8 +14,8 @@ use crate::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
-        Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, Paginator, Side,
-        Ticker, Trade, TradeHistoryRequest,
+        Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
+        Paginator, Side, Ticker, Trade, TradeHistoryRequest,
     },
     shared::{timestamp_to_naive_datetime, Result},
 };
@@ -155,8 +155,8 @@ impl From<model::Order> for Order<Exchange<Coinbase>> {
                 price,
                 size,
                 time_in_force: _,
-            } => (Some(price), size, "limit"),
-            model::OrderType::Market { size, funds: _ } => (None, size, "market"),
+            } => (Some(price), size, OrderType::Limit),
+            model::OrderType::Market { size, funds: _ } => (None, size, OrderType::Market),
         };
 
         Self {
@@ -168,7 +168,7 @@ impl From<model::Order> for Order<Exchange<Coinbase>> {
             size,
             side: order.side.into(),
             status: order.status.into(),
-            order_type: String::from(order_type),
+            order_type
         }
     }
 }
@@ -247,7 +247,7 @@ impl ExchangeAccount for Exchange<Coinbase> {
 
     async fn get_account_balances(
         &self,
-        paginator: Option<&Paginator<Self>>,
+        paginator: Option<Paginator<Self>>,
     ) -> Result<Vec<Balance>> {
         let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
 

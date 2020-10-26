@@ -5,6 +5,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::exchange::ExchangeSpec;
 
+#[cfg(feature = "python")]
+pub mod python;
+
 pub mod websocket;
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
@@ -44,7 +47,7 @@ pub struct Order<E: ExchangeSpec> {
     pub market_pair: String,
     pub client_order_id: Option<String>,
     pub created_at: Option<u64>,
-    pub order_type: String,
+    pub order_type: OrderType,
     pub side: Side,
     pub status: OrderStatus,
     pub size: Decimal,
@@ -101,6 +104,7 @@ pub struct Trade<E: ExchangeSpec> {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Liquidity {
     Maker,
     Taker,
@@ -154,6 +158,7 @@ pub struct GetHistoricTradesRequest<S: ExchangeSpec> {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Side {
     Buy,
     Sell,
@@ -161,20 +166,35 @@ pub enum Side {
 
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum Interval {
+    #[serde(rename = "1m")]
     OneMinute,
+    #[serde(rename = "3m")]
     ThreeMinutes,
+    #[serde(rename = "5m")]
     FiveMinutes,
+    #[serde(rename = "15m")]
     FifteenMinutes,
+    #[serde(rename = "30m")]
     ThirtyMinutes,
+    #[serde(rename = "1h")]
     OneHour,
+    #[serde(rename = "2h")]
     TwoHours,
+    #[serde(rename = "4h")]
     FourHours,
+    #[serde(rename = "6h")]
     SixHours,
+    #[serde(rename = "8h")]
     EightHours,
+    #[serde(rename = "12h")]
     TwelveHours,
+    #[serde(rename = "1d")]
     OneDay,
+    #[serde(rename = "3d")]
     ThreeDays,
+    #[serde(rename = "1w")]
     OneWeek,
+    #[serde(rename = "1mo")]
     OneMonth,
 }
 impl Into<Duration> for Interval {
@@ -220,11 +240,21 @@ pub enum OrderStatus {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub struct Paginator<E: ExchangeSpec> {
     pub start_time: Option<u64>,
     pub end_time: Option<u64>,
     pub limit: Option<u64>,
     pub before: Option<<E as ExchangeSpec>::Pagination>,
     pub after: Option<<E as ExchangeSpec>::Pagination>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderType {
+    Limit,
+    Market,
+    StopLimit,
+    StopMarket,
+    Unknown,
 }
