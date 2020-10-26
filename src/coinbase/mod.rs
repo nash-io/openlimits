@@ -168,7 +168,7 @@ impl From<model::Order> for Order<Exchange<Coinbase>> {
             size,
             side: order.side.into(),
             status: order.status.into(),
-            order_type
+            order_type,
         }
     }
 }
