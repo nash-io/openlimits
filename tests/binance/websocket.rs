@@ -26,9 +26,8 @@ async fn trades() {
     println!("{:?}", v);
 }
 
-fn init() -> OpenLimitsWs<BinanceWebsocket, Exchange<Binance>> {
+fn init() -> OpenLimitsWs<BinanceWebsocket> {
     OpenLimitsWs {
-        websocket: BinanceWebsocket::new(),
-        phantom: PhantomData,
+        websocket: BinanceWebsocket::new()
     }
 }

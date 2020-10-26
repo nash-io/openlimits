@@ -7,7 +7,7 @@ use crate::{
     exchange::ExchangeAccount,
     exchange::ExchangeMarketData,
     exchange::ExchangeParameters,
-    exchange::{Exchange, ExchangeEssentials, ExchangeId, ExchangeSpec},
+    exchange::{Exchange, ExchangeEssentials, ExchangeId},
     exchange_info::ExchangeInfo,
     exchange_info::ExchangeInfoRetrieval,
     model::{
@@ -93,13 +93,6 @@ impl ExchangeEssentials for Coinbase {
 }
 
 #[async_trait]
-impl ExchangeSpec for Exchange<Coinbase> {
-    type OrderId = String;
-    type TradeId = u64;
-    type Pagination = u64;
-}
-
-#[async_trait]
 impl ExchangeMarketData for Exchange<Coinbase> {
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.inner
@@ -114,7 +107,7 @@ impl ExchangeMarketData for Exchange<Coinbase> {
             .map(Into::into)
     }
 
-    async fn get_historic_rates(&self, req: &GetHistoricRatesRequest<Self>) -> Result<Vec<Candle>> {
+    async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
         let params = model::CandleRequestParams::try_from(req)?;
         Coinbase::candles(&self.inner, &req.market_pair, Some(&params))
             .await
@@ -123,8 +116,8 @@ impl ExchangeMarketData for Exchange<Coinbase> {
 
     async fn get_historic_trades(
         &self,
-        _req: &GetHistoricTradesRequest<Self>,
-    ) -> Result<Vec<Trade<Self>>> {
+        _req: &GetHistoricTradesRequest,
+    ) -> Result<Vec<Trade>> {
         unimplemented!("Only implemented for Nash right now");
     }
 }
@@ -148,7 +141,7 @@ impl From<model::BookRecordL2> for AskBid {
     }
 }
 
-impl From<model::Order> for Order<Exchange<Coinbase>> {
+impl From<model::Order> for Order {
     fn from(order: model::Order) -> Self {
         let (price, size, order_type) = match order._type {
             model::OrderType::Limit {
@@ -175,31 +168,31 @@ impl From<model::Order> for Order<Exchange<Coinbase>> {
 
 #[async_trait]
 impl ExchangeAccount for Exchange<Coinbase> {
-    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self>> {
+    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         Coinbase::limit_buy(&self.inner, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self>> {
+    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         Coinbase::limit_sell(&self.inner, &req.market_pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
-    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self>> {
+    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
         Coinbase::market_buy(&self.inner, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
 
-    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self>> {
+    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
         Coinbase::market_sell(&self.inner, &req.market_pair, req.size)
             .await
             .map(Into::into)
     }
 
-    async fn cancel_order(&self, req: &CancelOrderRequest<Self>) -> Result<OrderCanceled<Self>> {
+    async fn cancel_order(&self, req: &CancelOrderRequest) -> Result<OrderCanceled> {
         Coinbase::cancel_order(&self.inner, req.id.clone(), req.market_pair.as_deref())
             .await
             .map(Into::into)
@@ -208,13 +201,13 @@ impl ExchangeAccount for Exchange<Coinbase> {
     async fn cancel_all_orders(
         &self,
         req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled<Self>>> {
+    ) -> Result<Vec<OrderCanceled>> {
         Coinbase::cancel_all_orders(&self.inner, req.market_pair.as_deref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self>>> {
+    async fn get_all_open_orders(&self) -> Result<Vec<Order>> {
         let params = model::GetOrderRequest {
             status: Some(String::from("open")),
             paginator: None,
@@ -228,8 +221,8 @@ impl ExchangeAccount for Exchange<Coinbase> {
 
     async fn get_order_history(
         &self,
-        req: &GetOrderHistoryRequest<Self>,
-    ) -> Result<Vec<Order<Self>>> {
+        req: &GetOrderHistoryRequest,
+    ) -> Result<Vec<Order>> {
         let req: model::GetOrderRequest = req.into();
 
         Coinbase::get_orders(&self.inner, Some(&req))
@@ -237,7 +230,7 @@ impl ExchangeAccount for Exchange<Coinbase> {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_trade_history(&self, req: &TradeHistoryRequest<Self>) -> Result<Vec<Trade<Self>>> {
+    async fn get_trade_history(&self, req: &TradeHistoryRequest) -> Result<Vec<Trade>> {
         let req = req.into();
 
         Coinbase::get_fills(&self.inner, Some(&req))
@@ -247,7 +240,7 @@ impl ExchangeAccount for Exchange<Coinbase> {
 
     async fn get_account_balances(
         &self,
-        paginator: Option<Paginator<Self>>,
+        paginator: Option<Paginator>,
     ) -> Result<Vec<Balance>> {
         let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
 
@@ -256,14 +249,14 @@ impl ExchangeAccount for Exchange<Coinbase> {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_order(&self, req: &GetOrderRequest<Self>) -> Result<Order<Self>> {
+    async fn get_order(&self, req: &GetOrderRequest) -> Result<Order> {
         let id = req.id.clone();
 
         Coinbase::get_order(&self.inner, id).await.map(Into::into)
     }
 }
 
-impl From<String> for OrderCanceled<Exchange<Coinbase>> {
+impl From<String> for OrderCanceled {
     fn from(id: String) -> Self {
         Self { id }
     }
@@ -279,10 +272,10 @@ impl From<model::Account> for Balance {
     }
 }
 
-impl From<model::Fill> for Trade<Exchange<Coinbase>> {
+impl From<model::Fill> for Trade {
     fn from(fill: model::Fill) -> Self {
         Self {
-            id: fill.trade_id,
+            id: fill.trade_id.to_string(),
             order_id: fill.order_id,
             market_pair: fill.product_id,
             price: fill.price,
@@ -341,9 +334,9 @@ impl TryFrom<Interval> for u32 {
     }
 }
 
-impl TryFrom<&GetHistoricRatesRequest<Exchange<Coinbase>>> for model::CandleRequestParams {
+impl TryFrom<&GetHistoricRatesRequest> for model::CandleRequestParams {
     type Error = OpenLimitError;
-    fn try_from(params: &GetHistoricRatesRequest<Exchange<Coinbase>>) -> Result<Self> {
+    fn try_from(params: &GetHistoricRatesRequest) -> Result<Self> {
         let granularity = u32::try_from(params.interval)?;
         Ok(Self {
             daterange: params.paginator.clone().map(|p| p.into()),
@@ -352,8 +345,8 @@ impl TryFrom<&GetHistoricRatesRequest<Exchange<Coinbase>>> for model::CandleRequ
     }
 }
 
-impl From<&GetOrderHistoryRequest<Exchange<Coinbase>>> for model::GetOrderRequest {
-    fn from(req: &GetOrderHistoryRequest<Exchange<Coinbase>>) -> Self {
+impl From<&GetOrderHistoryRequest> for model::GetOrderRequest {
+    fn from(req: &GetOrderHistoryRequest) -> Self {
         Self {
             product_id: req.market_pair.clone(),
             paginator: req.paginator.clone().map(|p| p.into()),
@@ -362,28 +355,28 @@ impl From<&GetOrderHistoryRequest<Exchange<Coinbase>>> for model::GetOrderReques
     }
 }
 
-impl From<Paginator<Exchange<Coinbase>>> for model::Paginator {
-    fn from(paginator: Paginator<Exchange<Coinbase>>) -> Self {
+impl From<Paginator> for model::Paginator {
+    fn from(paginator: Paginator) -> Self {
         Self {
-            after: paginator.after,
-            before: paginator.before,
+            after: paginator.after.map(|s| s.parse::<u64>().unwrap()),
+            before: paginator.before.map(|s| s.parse::<u64>().unwrap()),
             limit: paginator.limit,
         }
     }
 }
 
-impl From<&Paginator<Exchange<Coinbase>>> for model::Paginator {
-    fn from(paginator: &Paginator<Exchange<Coinbase>>) -> Self {
+impl From<&Paginator> for model::Paginator {
+    fn from(paginator: &Paginator) -> Self {
         Self {
-            after: paginator.after,
-            before: paginator.before,
+            after: paginator.after.as_ref().map(|s| s.parse().expect("coinbase page id did not parse as u64")),
+            before: paginator.before.as_ref().map(|s| s.parse().expect("coinbase page id did not parse as u64")),
             limit: paginator.limit,
         }
     }
 }
 
-impl From<Paginator<Exchange<Coinbase>>> for model::DateRange {
-    fn from(paginator: Paginator<Exchange<Coinbase>>) -> Self {
+impl From<Paginator> for model::DateRange {
+    fn from(paginator: Paginator) -> Self {
         Self {
             start: paginator.start_time.map(timestamp_to_naive_datetime),
             end: paginator.end_time.map(timestamp_to_naive_datetime),
@@ -391,8 +384,8 @@ impl From<Paginator<Exchange<Coinbase>>> for model::DateRange {
     }
 }
 
-impl From<&Paginator<Exchange<Coinbase>>> for model::DateRange {
-    fn from(paginator: &Paginator<Exchange<Coinbase>>) -> Self {
+impl From<&Paginator> for model::DateRange {
+    fn from(paginator: &Paginator) -> Self {
         Self {
             start: paginator.start_time.map(timestamp_to_naive_datetime),
             end: paginator.end_time.map(timestamp_to_naive_datetime),
@@ -400,8 +393,8 @@ impl From<&Paginator<Exchange<Coinbase>>> for model::DateRange {
     }
 }
 
-impl From<&TradeHistoryRequest<Exchange<Coinbase>>> for model::GetFillsReq {
-    fn from(req: &TradeHistoryRequest<Exchange<Coinbase>>) -> Self {
+impl From<&TradeHistoryRequest> for model::GetFillsReq {
+    fn from(req: &TradeHistoryRequest) -> Self {
         Self {
             order_id: req.order_id.clone(),
             paginator: req.paginator.clone().map(|p| p.into()),

@@ -3,8 +3,6 @@ use derive_more::Constructor;
 use rust_decimal::prelude::Decimal;
 use serde::{Deserialize, Serialize};
 
-use crate::exchange::ExchangeSpec;
-
 #[cfg(feature = "python")]
 pub mod python;
 
@@ -42,8 +40,8 @@ pub struct OpenMarketOrderRequest {
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct Order<E: ExchangeSpec> {
-    pub id: <E as ExchangeSpec>::OrderId,
+pub struct Order {
+    pub id: String,
     pub market_pair: String,
     pub client_order_id: Option<String>,
     pub created_at: Option<u64>,
@@ -55,8 +53,8 @@ pub struct Order<E: ExchangeSpec> {
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct GetOrderRequest<E: ExchangeSpec> {
-    pub id: <E as ExchangeSpec>::OrderId,
+pub struct GetOrderRequest {
+    pub id: String,
     pub market_pair: Option<String>,
 }
 
@@ -69,8 +67,8 @@ pub struct Transaction<T> {
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct CancelOrderRequest<E: ExchangeSpec> {
-    pub id: <E as ExchangeSpec>::OrderId,
+pub struct CancelOrderRequest {
+    pub id: String,
     pub market_pair: Option<String>,
 }
 
@@ -80,20 +78,20 @@ pub struct CancelAllOrdersRequest {
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct GetOrderHistoryRequest<E: ExchangeSpec> {
+pub struct GetOrderHistoryRequest {
     pub market_pair: Option<String>,
-    pub paginator: Option<Paginator<E>>,
+    pub paginator: Option<Paginator>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct OrderCanceled<E: ExchangeSpec> {
-    pub id: <E as ExchangeSpec>::OrderId,
+pub struct OrderCanceled {
+    pub id: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct Trade<E: ExchangeSpec> {
-    pub id: <E as ExchangeSpec>::TradeId,
-    pub order_id: <E as ExchangeSpec>::OrderId,
+pub struct Trade {
+    pub id: String,
+    pub order_id: String,
     pub market_pair: String,
     pub price: Decimal,
     pub qty: Decimal,
@@ -111,10 +109,10 @@ pub enum Liquidity {
 }
 
 #[derive(Serialize, Deserialize, Default)]
-pub struct TradeHistoryRequest<E: ExchangeSpec> {
+pub struct TradeHistoryRequest {
     pub market_pair: Option<String>,
-    pub order_id: Option<<E as ExchangeSpec>::OrderId>,
-    pub paginator: Option<Paginator<E>>,
+    pub order_id: Option<String>,
+    pub paginator: Option<Paginator>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq)]
@@ -145,16 +143,16 @@ pub struct GetPriceTickerRequest {
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct GetHistoricRatesRequest<E: ExchangeSpec> {
+pub struct GetHistoricRatesRequest {
     pub market_pair: String,
-    pub paginator: Option<Paginator<E>>,
+    pub paginator: Option<Paginator>,
     pub interval: Interval,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct GetHistoricTradesRequest<S: ExchangeSpec> {
+pub struct GetHistoricTradesRequest {
     pub market_pair: String,
-    pub paginator: Option<Paginator<S>>,
+    pub paginator: Option<Paginator>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -241,12 +239,12 @@ pub enum OrderStatus {
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub struct Paginator<E: ExchangeSpec> {
+pub struct Paginator {
     pub start_time: Option<u64>,
     pub end_time: Option<u64>,
     pub limit: Option<u64>,
-    pub before: Option<<E as ExchangeSpec>::Pagination>,
-    pub after: Option<<E as ExchangeSpec>::Pagination>,
+    pub before: Option<String>,
+    pub after: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]

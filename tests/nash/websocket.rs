@@ -4,7 +4,7 @@ use openlimits::{
     exchange::Exchange, exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::Nash,
     nash::NashStream,
 };
-use std::{env, marker::PhantomData};
+use std::env;
 
 #[tokio::test]
 async fn orderbook() {
@@ -26,7 +26,7 @@ async fn trades() {
     println!("{:?}", item.unwrap().unwrap());
 }
 
-async fn init() -> OpenLimitsWs<NashStream, Exchange<Nash>> {
+async fn init() -> OpenLimitsWs<NashStream> {
     dotenv().ok();
 
     let websocket = NashStream::with_credential(
@@ -39,7 +39,6 @@ async fn init() -> OpenLimitsWs<NashStream, Exchange<Nash>> {
     .await;
 
     OpenLimitsWs {
-        websocket,
-        phantom: PhantomData,
+        websocket
     }
 }
