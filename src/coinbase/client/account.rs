@@ -8,11 +8,11 @@ use crate::{
     exchange_info::MarketPair,
     shared::Result,
 };
-use super::Client;
+use super::BaseClient;
 
 use rust_decimal::prelude::*;
 
-impl Client {
+impl BaseClient {
     pub async fn get_account(&self, paginator: Option<&Paginator>) -> Result<Vec<Account>> {
         self.transport.signed_get("/accounts", paginator).await
     }

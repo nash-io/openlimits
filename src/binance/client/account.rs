@@ -8,15 +8,15 @@ use crate::{
             TradeHistory, TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
             ORDER_TYPE_MARKET, TIME_IN_FORCE_GTC,
         },
-        Binance,
     },
+    exchange_info::MarketPair,
     errors::OpenLimitError,
     shared::Result,
 };
-
+use super::BaseClient;
 use rust_decimal::prelude::*;
 
-impl Binance {
+impl BaseClient {
     // Account Information
     pub async fn get_account(&self) -> Result<AccountInformation> {
         let account_info = self
@@ -82,10 +82,7 @@ impl Binance {
     }
 
     // Place a LIMIT order - BUY
-    pub async fn limit_buy(&self, symbol: &str, qty: Decimal, price: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(symbol)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn limit_buy(&self, symbol: &str, pair: MarketPair, qty: Decimal, price: Decimal) -> Result<Order> {
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -108,10 +105,7 @@ impl Binance {
 
     // Place a LIMIT order - SELL
 
-    pub async fn limit_sell(&self, symbol: &str, qty: Decimal, price: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(symbol)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn limit_sell(&self, symbol: &str, pair: MarketPair, qty: Decimal, price: Decimal) -> Result<Order> {
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -133,10 +127,7 @@ impl Binance {
     }
 
     // Place a MARKET order - BUY
-    pub async fn market_buy(&self, symbol: &str, qty: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(symbol)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn market_buy(&self, symbol: &str, pair: MarketPair, qty: Decimal) -> Result<Order> {
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -155,10 +146,7 @@ impl Binance {
     }
 
     // Place a MARKET order - SELL
-    pub async fn market_sell(&self, symbol: &str, qty: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(symbol)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn market_sell(&self, symbol: &str, pair: MarketPair, qty: Decimal) -> Result<Order> {
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),

@@ -7,16 +7,15 @@ use crate::{
             BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
             SymbolPrice, Ticker,
         },
-        Binance,
     },
     errors::OpenLimitError,
     shared::Result,
 };
-
+use super::BaseClient;
 use rust_decimal::prelude::Decimal;
 
 // Market Data endpoints
-impl Binance {
+impl BaseClient {
     // Order book (Default 100; max 100)
     pub async fn get_depth<I>(&self, symbol: &str, limit: I) -> Result<OrderBook>
     where

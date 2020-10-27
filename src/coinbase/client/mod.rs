@@ -3,6 +3,6 @@ mod market;
 pub mod websocket;
 
 #[derive(Clone)]
-pub struct Client {
+pub struct BaseClient {
     pub transport: super::transport::Transport
 }

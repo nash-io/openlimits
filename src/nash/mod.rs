@@ -814,4 +814,8 @@ impl ExchangeInfoRetrieval for Nash {
             .refresh(self as &dyn ExchangeInfoRetrieval)
             .await
     }
+
+    async fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
+        self.exchange_info.get_pair(name)
+    }
 }

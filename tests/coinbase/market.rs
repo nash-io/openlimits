@@ -4,6 +4,7 @@ use openlimits::{
     exchange::Exchange,
     exchange::{ExchangeMarketData, OpenLimits},
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
+    exchange_info::ExchangeInfoRetrieval
 };
 
 #[tokio::test]
@@ -48,6 +49,13 @@ async fn get_historic_rates_invalid_interval() {
     };
     let resp = exchange.get_historic_rates(&req).await;
     assert!(resp.is_err());
+}
+
+#[tokio::test]
+async fn pair() {
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
+    let res = exchange.get_pair("BTC-USD").await.unwrap();
+    println!("{:?}", res);
 }
 
 async fn init() -> Coinbase {

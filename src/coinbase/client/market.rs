@@ -1,18 +1,15 @@
-use async_trait::async_trait;
 use serde::Deserialize;
 use std::fmt::Debug;
 
 use crate::{
     coinbase::{
         model::{Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade},
-        Coinbase
     },
-    exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     shared::Result,
 };
-use super::Client;
+use super::BaseClient;
 
-impl Client {
+impl BaseClient {
     pub async fn products(&self) -> Result<Vec<Product>> {
         self.transport.get::<_, ()>("/products", None).await
     }
@@ -52,25 +49,3 @@ impl Client {
 
 }
 
-#[async_trait]
-impl ExchangeInfoRetrieval for Coinbase {
-    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
-        self.transport.products().await.map(|v| {
-            v.into_iter()
-                .map(|product| MarketPair {
-                    symbol: product.id,
-                    base: product.base_currency,
-                    quote: product.quote_currency,
-                    base_increment: product.base_increment,
-                    quote_increment: product.quote_increment,
-                })
-                .collect()
-        })
-    }
-
-    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
-        self.exchange_info
-            .refresh(self as &dyn ExchangeInfoRetrieval)
-            .await
-    }
-}

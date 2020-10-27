@@ -13,6 +13,7 @@ pub fn get_pair<'a>(name: &str, exchange_info: &'a ExchangeInfo) -> Result<Marke
 
 #[async_trait]
 pub trait ExchangeInfoRetrieval: Sync {
+    async fn get_pair(&self, name: &str) -> Result<MarketPairHandle>;
     async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>>;
     async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>>;
 }

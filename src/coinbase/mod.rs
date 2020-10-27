@@ -8,7 +8,7 @@ use crate::{
     exchange::ExchangeMarketData,
     exchange::Exchange,
     exchange_info::ExchangeInfo,
-    exchange_info::ExchangeInfoRetrieval,
+    exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
@@ -21,13 +21,13 @@ use crate::{
 use async_trait::async_trait;
 
 use std::convert::TryFrom;
-use client::Client;
+use client::BaseClient;
 use transport::Transport;
 
 #[derive(Clone)]
 pub struct Coinbase {
     exchange_info: ExchangeInfo,
-    transport: Client,
+    pub client: BaseClient,
 }
 
 #[derive(Clone)]
@@ -67,7 +67,7 @@ impl Exchange for Coinbase {
         let coinbase = match parameters.credentials {
             Some(credentials) => Coinbase {
                 exchange_info: ExchangeInfo::new(),
-                transport: Client {
+                client: BaseClient {
                     transport: Transport::with_credential(
                         &credentials.api_key,
                         &credentials.api_secret,
@@ -79,7 +79,7 @@ impl Exchange for Coinbase {
             },
             None => Coinbase {
                 exchange_info: ExchangeInfo::new(),
-                transport: Client {
+                client: BaseClient {
                     transport: Transport::new(parameters.sandbox).unwrap()
                 },
             },
@@ -91,23 +91,50 @@ impl Exchange for Coinbase {
 }
 
 #[async_trait]
+impl ExchangeInfoRetrieval for Coinbase {
+    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
+        self.client.products().await.map(|v| {
+            v.into_iter()
+                .map(|product| MarketPair {
+                    symbol: product.id,
+                    base: product.base_currency,
+                    quote: product.quote_currency,
+                    base_increment: product.base_increment,
+                    quote_increment: product.quote_increment,
+                })
+                .collect()
+        })
+    }
+
+    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
+        self.exchange_info
+            .refresh(self as &dyn ExchangeInfoRetrieval)
+            .await
+    }
+
+    async fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
+        self.exchange_info.get_pair(name)
+    }
+}
+
+#[async_trait]
 impl ExchangeMarketData for Coinbase {
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
-        self.transport
+        self.client
             .book::<model::BookRecordL2>(&req.market_pair)
             .await
             .map(Into::into)
     }
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
-        self.transport.ticker(&req.market_pair)
+        self.client.ticker(&req.market_pair)
             .await
             .map(Into::into)
     }
 
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
         let params = model::CandleRequestParams::try_from(req)?;
-        self.transport.candles(&req.market_pair, Some(&params))
+        self.client.candles(&req.market_pair, Some(&params))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -168,34 +195,34 @@ impl From<model::Order> for Order {
 impl ExchangeAccount for Coinbase {
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
-        self.transport.limit_buy(&req.market_pair, pair, req.size, req.price)
+        self.client.limit_buy(&req.market_pair, pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
-        self.transport.limit_sell(&req.market_pair, pair, req.size, req.price)
+        self.client.limit_sell(&req.market_pair, pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
     async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
-        self.transport.market_buy(&req.market_pair, pair, req.size)
+        self.client.market_buy(&req.market_pair, pair, req.size)
             .await
             .map(Into::into)
     }
 
     async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
-        self.transport.market_sell(&req.market_pair, pair, req.size)
+        self.client.market_sell(&req.market_pair, pair, req.size)
             .await
             .map(Into::into)
     }
 
     async fn cancel_order(&self, req: &CancelOrderRequest) -> Result<OrderCanceled> {
-        self.transport.cancel_order(req.id.clone(), req.market_pair.as_deref())
+        self.client.cancel_order(req.id.clone(), req.market_pair.as_deref())
             .await
             .map(Into::into)
     }
@@ -204,7 +231,7 @@ impl ExchangeAccount for Coinbase {
         &self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled>> {
-        self.transport.cancel_all_orders(req.market_pair.as_deref())
+        self.client.cancel_all_orders(req.market_pair.as_deref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -216,7 +243,7 @@ impl ExchangeAccount for Coinbase {
             product_id: None,
         };
 
-        self.transport.get_orders(Some(&params))
+        self.client.get_orders(Some(&params))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -227,7 +254,7 @@ impl ExchangeAccount for Coinbase {
     ) -> Result<Vec<Order>> {
         let req: model::GetOrderRequest = req.into();
 
-        self.transport.get_orders(Some(&req))
+        self.client.get_orders(Some(&req))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -235,7 +262,7 @@ impl ExchangeAccount for Coinbase {
     async fn get_trade_history(&self, req: &TradeHistoryRequest) -> Result<Vec<Trade>> {
         let req = req.into();
 
-        self.transport.get_fills(Some(&req))
+        self.client.get_fills(Some(&req))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -246,7 +273,7 @@ impl ExchangeAccount for Coinbase {
     ) -> Result<Vec<Balance>> {
         let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
 
-        self.transport.get_account(paginator.as_ref())
+        self.client.get_account(paginator.as_ref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -254,7 +281,7 @@ impl ExchangeAccount for Coinbase {
     async fn get_order(&self, req: &GetOrderRequest) -> Result<Order> {
         let id = req.id.clone();
 
-        self.transport.get_order(id).await.map(Into::into)
+        self.client.get_order(id).await.map(Into::into)
     }
 }
 

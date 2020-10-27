@@ -1,6 +1,6 @@
 use nash_native_client::ws_client::client::Environment;
 use openlimits::{
-    exchange::Exchange,
+    exchange_info::ExchangeInfoRetrieval,
     exchange::{ExchangeMarketData, OpenLimits},
     model::GetHistoricTradesRequest,
     model::Paginator,

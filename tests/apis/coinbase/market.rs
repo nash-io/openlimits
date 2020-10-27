@@ -4,32 +4,32 @@ use openlimits::{
         model::{BookRecordL1, CandleRequestParams, DateRange, Paginator},
         Coinbase, CoinbaseParameters,
     },
-    exchange::ExchangeEssentials,
+    exchange::Exchange,
 };
 
 #[tokio::test]
 async fn products() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.products().await.unwrap();
+    let res = exchange.client.products().await.unwrap();
     println!("{:?}", res);
 }
 
 #[tokio::test]
 async fn product() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.product("BTC-USD").await.unwrap();
+    let res = exchange.client.product("BTC-USD").await.unwrap();
     println!("{:?}", res);
 }
 
 #[tokio::test]
 async fn trades() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.trades("BTC-USD", None).await.unwrap();
+    let res = exchange.client.trades("BTC-USD", None).await.unwrap();
     println!("{:?}", res);
 
     let trade = res.last().unwrap();
 
-    let res = exchange
+    let res = exchange.client
         .trades(
             "BTC-USD",
             Some(&Paginator {
@@ -46,24 +46,25 @@ async fn trades() {
 #[tokio::test]
 async fn book() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.book::<BookRecordL1>("BTC-USD").await.unwrap();
+    let res = exchange.client.book::<BookRecordL1>("BTC-USD").await.unwrap();
     println!("{:?}", res);
 }
 
 #[tokio::test]
 async fn ticker() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.ticker("BTC-USD").await.unwrap();
+    let res = exchange.client.ticker("BTC-USD").await.unwrap();
     println!("{:?}", res);
 }
 
 #[tokio::test]
 async fn candles() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.candles("BTC-USD", None).await.unwrap();
+    let res = exchange.client.candles("BTC-USD", None).await.unwrap();
     println!("{:?}", res);
 
     let res = exchange
+        .client
         .candles(
             "BTC-USD",
             Some(&CandleRequestParams {
@@ -78,7 +79,7 @@ async fn candles() {
         NaiveDateTime::parse_from_str("2020-08-20T00:00:00.642366Z", "%Y-%m-%dT%H:%M:%S.%fZ")
             .unwrap();
 
-    let res = exchange
+    let res = exchange.client
         .candles(
             "BTC-USD",
             Some(&CandleRequestParams {
@@ -91,12 +92,5 @@ async fn candles() {
         )
         .await
         .unwrap();
-    println!("{:?}", res);
-}
-
-#[tokio::test]
-async fn pair() {
-    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.pair("BTC-USD").unwrap();
     println!("{:?}", res);
 }
