@@ -3,7 +3,6 @@
 use async_trait::async_trait;
 
 use crate::{
-    // exchange_info::{ExchangeInfoRetrieval, MarketPairHandle},
     model::{
         Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
         GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,

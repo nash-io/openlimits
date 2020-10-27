@@ -28,9 +28,9 @@ impl BaseClient {
     }
 
     // TODO: refactor buy and sell in order creation in commun function
-    pub async fn market_buy(&self, product: &str, pair: MarketPair, size: Decimal) -> Result<Order> {
+    pub async fn market_buy(&self, pair: MarketPair, size: Decimal) -> Result<Order> {
         let data = OrderRequest {
-            product_id: product.into(),
+            product_id: pair.symbol,
             client_oid: None,
             side: OrderSide::Buy,
             _type: OrderRequestType::Market {
@@ -49,9 +49,9 @@ impl BaseClient {
         Ok(transaction)
     }
 
-    pub async fn market_sell(&self, product: &str, pair: MarketPair, size: Decimal) -> Result<Order> {
+    pub async fn market_sell(&self, pair: MarketPair, size: Decimal) -> Result<Order> {
         let data = OrderRequest {
-            product_id: product.into(),
+            product_id: pair.symbol,
             client_oid: None,
             side: OrderSide::Sell,
             _type: OrderRequestType::Market {
@@ -70,9 +70,9 @@ impl BaseClient {
         Ok(transaction)
     }
 
-    pub async fn limit_buy(&self, product: &str, pair: MarketPair, size: Decimal, price: Decimal) -> Result<Order> {
+    pub async fn limit_buy(&self, pair: MarketPair, size: Decimal, price: Decimal) -> Result<Order> {
         let data = OrderRequest {
-            product_id: product.into(),
+            product_id: pair.symbol,
             client_oid: None,
             side: OrderSide::Buy,
             _type: OrderRequestType::Limit {
@@ -95,9 +95,9 @@ impl BaseClient {
         Ok(transaction)
     }
 
-    pub async fn limit_sell(&self, product: &str, pair: MarketPair, size: Decimal, price: Decimal) -> Result<Order> {
+    pub async fn limit_sell(&self, pair: MarketPair, size: Decimal, price: Decimal) -> Result<Order> {
         let data = OrderRequest {
-            product_id: product.into(),
+            product_id: pair.symbol,
             client_oid: None,
             side: OrderSide::Sell,
             _type: OrderRequestType::Limit {

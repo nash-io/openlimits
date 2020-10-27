@@ -3,6 +3,7 @@ use openlimits::{
     binance::BinanceParameters,
     exchange::Exchange,
     exchange::{ExchangeMarketData, OpenLimits},
+    exchange_info::ExchangeInfoRetrieval,
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
 };
 
@@ -36,6 +37,13 @@ async fn get_historic_rates() {
     };
     let resp = exchange.get_historic_rates(&req).await.unwrap();
     println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn pair() {
+    let exchange = Binance::new(BinanceParameters::sandbox()).await;
+    let res = exchange.get_pair("BTCUSDT").await.unwrap();
+    println!("{:?}", res);
 }
 
 async fn init() -> Binance {

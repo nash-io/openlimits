@@ -192,28 +192,28 @@ impl From<model::Order> for Order {
 impl ExchangeAccount for Coinbase {
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
-        self.client.limit_buy(&req.market_pair, pair, req.size, req.price)
+        self.client.limit_buy(pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
-        self.client.limit_sell(&req.market_pair, pair, req.size, req.price)
+        self.client.limit_sell(pair, req.size, req.price)
             .await
             .map(Into::into)
     }
 
     async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
-        self.client.market_buy(&req.market_pair, pair, req.size)
+        self.client.market_buy(pair, req.size)
             .await
             .map(Into::into)
     }
 
     async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
-        self.client.market_sell(&req.market_pair, pair, req.size)
+        self.client.market_sell(pair, req.size)
             .await
             .map(Into::into)
     }
