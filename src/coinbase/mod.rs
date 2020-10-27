@@ -27,7 +27,7 @@ use transport::Transport;
 #[derive(Clone)]
 pub struct Coinbase {
     exchange_info: ExchangeInfo,
-    pub client: BaseClient,
+    client: BaseClient,
 }
 
 #[derive(Clone)]
@@ -62,6 +62,7 @@ impl CoinbaseParameters {
 #[async_trait]
 impl Exchange for Coinbase {
     type InitParams = CoinbaseParameters;
+    type InnerClient = BaseClient;
 
     async fn new(parameters: Self::InitParams) -> Self {
         let coinbase = match parameters.credentials {
@@ -87,6 +88,10 @@ impl Exchange for Coinbase {
 
         coinbase.refresh_market_info().await.unwrap();
         coinbase
+    }
+
+    fn inner_client(&self) -> &Self::InnerClient {
+        &self.client
     }
 }
 

@@ -30,7 +30,7 @@ use client::BaseClient;
 #[derive(Clone)]
 pub struct Binance {
     exchange_info: ExchangeInfo,
-    pub client: BaseClient,
+    client: BaseClient,
 }
 
 #[derive(Clone)]
@@ -64,6 +64,7 @@ impl BinanceParameters {
 #[async_trait]
 impl Exchange for Binance {
     type InitParams = BinanceParameters;
+    type InnerClient = BaseClient;
 
     async fn new(parameters: Self::InitParams) -> Self {
         let binance = match parameters.credentials {
@@ -88,6 +89,10 @@ impl Exchange for Binance {
 
         binance.refresh_market_info().await.unwrap();
         binance
+    }
+
+    fn inner_client(&self) -> &Self::InnerClient {
+        &self.client
     }
 }
 

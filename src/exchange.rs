@@ -23,7 +23,9 @@ impl OpenLimits {
 #[async_trait]
 pub trait Exchange {
     type InitParams;
+    type InnerClient;
     async fn new(params: Self::InitParams) -> Self;
+    fn inner_client(&self) -> &Self::InnerClient;
 }
 
 #[async_trait]

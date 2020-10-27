@@ -61,6 +61,7 @@ impl Clone for NashParameters {
 #[async_trait]
 impl Exchange for Nash {
     type InitParams = NashParameters;
+    type InnerClient = Client;
 
     async fn new(parameters: Self::InitParams) -> Self {
         let credentials = parameters.credentials.unwrap();
@@ -77,6 +78,10 @@ impl Exchange for Nash {
             .unwrap(),
             exchange_info: ExchangeInfo::new(),
         }
+    }
+
+    fn inner_client(&self) -> &Self::InnerClient {
+        &self.transport
     }
 }
 

@@ -14,28 +14,28 @@ use openlimits::{
 #[tokio::test]
 async fn get_account() {
     let exchange = init().await;
-    let resp = exchange.client.get_account().await.unwrap();
+    let resp = exchange.inner_client().get_account().await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_balance() {
     let exchange = init().await;
-    let resp = exchange.client.get_balance("BTC").await.unwrap();
+    let resp = exchange.inner_client().get_balance("BTC").await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_open_orders() {
     let exchange = init().await;
-    let resp = exchange.client.get_open_orders("BNBBTC").await.unwrap();
+    let resp = exchange.inner_client().get_open_orders("BNBBTC").await.unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_all_open_orders() {
     let exchange = init().await;
-    let resp = exchange.client.get_all_open_orders().await.unwrap();
+    let resp = exchange.inner_client().get_all_open_orders().await.unwrap();
     println!("{:?}", resp);
 }
 
@@ -46,7 +46,7 @@ async fn get_all_orders() {
         paginator: None,
         symbol: String::from("BNBBTC"),
     };
-    let resp = exchange.client.get_all_orders(&params).await.unwrap();
+    let resp = exchange.inner_client().get_all_orders(&params).await.unwrap();
     println!("{:?}", resp);
 }
 
@@ -55,12 +55,12 @@ async fn get_order() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let transaction = exchange
-        .client
+        .inner_client()
         .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
         .await
         .unwrap();
     let resp = exchange
-        .client
+        .inner_client()
         .get_order("BNBBTC", transaction.order_id)
         .await
         .unwrap();
@@ -72,7 +72,7 @@ async fn limit_buy() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let resp = exchange
-        .client
+        .inner_client()
         .limit_buy(pair, Decimal::new(1, 1), Decimal::new(1, 3))
         .await
         .unwrap();
@@ -84,7 +84,7 @@ async fn rounded_limit_buy() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let resp = exchange
-        .client
+        .inner_client()
         .limit_buy(pair, Decimal::new(12345678, 8), Decimal::new(1, 3))
         .await
         .unwrap();
@@ -96,7 +96,7 @@ async fn limit_sell() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let resp = exchange
-        .client
+        .inner_client()
         .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
         .await
         .unwrap();
@@ -108,7 +108,7 @@ async fn market_buy() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let resp = exchange
-        .client
+        .inner_client()
         .market_buy(pair, Decimal::new(1, 0))
         .await
         .unwrap();
@@ -120,7 +120,7 @@ async fn market_sell() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let resp = exchange
-        .client
+        .inner_client()
         .market_sell(pair, Decimal::new(1, 0))
         .await
         .unwrap();
@@ -133,12 +133,12 @@ async fn cancel_order() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let transaction = exchange
-        .client
+        .inner_client()
         .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
         .await
         .unwrap();
     let resp = exchange
-        .client
+        .inner_client()
         .cancel_order("BNBBTC", transaction.order_id)
         .await
         .unwrap();
@@ -153,7 +153,7 @@ async fn trade_history() {
         symbol: String::from("BNBBTC"),
     };
 
-    let resp = exchange.client.trade_history(&params).await.unwrap();
+    let resp = exchange.inner_client().trade_history(&params).await.unwrap();
     println!("{:?}", resp);
 }
 
