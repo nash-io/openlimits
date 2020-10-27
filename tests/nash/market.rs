@@ -1,11 +1,13 @@
+use nash_native_client::ws_client::client::Environment;
 use openlimits::{
-    exchange::OpenLimits,
+    exchange::{ExchangeMarketData, OpenLimits},
     exchange_info::ExchangeInfoRetrieval,
-    model::{
-        GetHistoricRatesRequest, GetHistoricTradesRequest, GetPriceTickerRequest, Interval,
-        OrderBookRequest, Paginator,
-    },
+    model::GetHistoricTradesRequest,
+    model::Paginator,
+    model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
     nash::Nash,
+    nash::NashCredentials,
+    nash::NashParameters,
 };
 
 use dotenv::dotenv;
@@ -76,17 +78,18 @@ async fn retrieve_pairs() {
 //     assert!(resp.is_err());
 // }
 
-async fn init() -> OpenLimits<Nash> {
+async fn init() -> Nash {
     dotenv().ok();
 
-    let exchange = Nash::with_credential(
-        &env::var("NASH_API_SECRET").unwrap(),
-        &env::var("NASH_API_KEY").unwrap(),
-        1234,
-        false,
-        100000,
-    )
-    .await;
+    let parameters = NashParameters {
+        credentials: Some(NashCredentials {
+            secret: env::var("NASH_API_SECRET").unwrap(),
+            session: env::var("NASH_API_KEY").unwrap(),
+        }),
+        environment: Environment::Sandbox,
+        client_id: 1234,
+        timeout: 100000,
+    };
 
-    OpenLimits { exchange }
+    OpenLimits::instantiate(parameters).await
 }

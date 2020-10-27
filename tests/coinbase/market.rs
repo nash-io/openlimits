@@ -1,6 +1,9 @@
 use openlimits::{
     coinbase::Coinbase,
-    exchange::OpenLimits,
+    coinbase::CoinbaseParameters,
+    exchange::Exchange,
+    exchange::{ExchangeMarketData, OpenLimits},
+    exchange_info::ExchangeInfoRetrieval,
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
 };
 
@@ -48,8 +51,18 @@ async fn get_historic_rates_invalid_interval() {
     assert!(resp.is_err());
 }
 
-async fn init() -> OpenLimits<Coinbase> {
-    OpenLimits {
-        exchange: Coinbase::new(true).await,
-    }
+#[tokio::test]
+async fn pair() {
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
+    let res = exchange.get_pair("BTC-USD").await.unwrap();
+    println!("{:?}", res);
+}
+
+async fn init() -> Coinbase {
+    let parameters = CoinbaseParameters {
+        credentials: None,
+        sandbox: true,
+    };
+
+    OpenLimits::instantiate(parameters).await
 }

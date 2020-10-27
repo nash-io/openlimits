@@ -1,17 +1,16 @@
+use super::BaseClient;
 use crate::{
-    coinbase::{
-        model::{
-            Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
-            OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, Paginator,
-        },
-        Coinbase,
+    coinbase::model::{
+        Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
+        OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, Paginator,
     },
+    exchange_info::MarketPair,
     shared::Result,
 };
 
 use rust_decimal::prelude::*;
 
-impl Coinbase {
+impl BaseClient {
     pub async fn get_account(&self, paginator: Option<&Paginator>) -> Result<Vec<Account>> {
         self.transport.signed_get("/accounts", paginator).await
     }
@@ -27,12 +26,9 @@ impl Coinbase {
     }
 
     // TODO: refactor buy and sell in order creation in commun function
-    pub async fn market_buy(&self, product: &str, size: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(product)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn market_buy(&self, pair: MarketPair, size: Decimal) -> Result<Order> {
         let data = OrderRequest {
-            product_id: product.into(),
+            product_id: pair.symbol,
             client_oid: None,
             side: OrderSide::Buy,
             _type: OrderRequestType::Market {
@@ -51,12 +47,9 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn market_sell(&self, product: &str, size: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(product)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn market_sell(&self, pair: MarketPair, size: Decimal) -> Result<Order> {
         let data = OrderRequest {
-            product_id: product.into(),
+            product_id: pair.symbol,
             client_oid: None,
             side: OrderSide::Sell,
             _type: OrderRequestType::Market {
@@ -75,12 +68,14 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn limit_buy(&self, product: &str, size: Decimal, price: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(product)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn limit_buy(
+        &self,
+        pair: MarketPair,
+        size: Decimal,
+        price: Decimal,
+    ) -> Result<Order> {
         let data = OrderRequest {
-            product_id: product.into(),
+            product_id: pair.symbol,
             client_oid: None,
             side: OrderSide::Buy,
             _type: OrderRequestType::Limit {
@@ -103,12 +98,14 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn limit_sell(&self, product: &str, size: Decimal, price: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(product)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn limit_sell(
+        &self,
+        pair: MarketPair,
+        size: Decimal,
+        price: Decimal,
+    ) -> Result<Order> {
         let data = OrderRequest {
-            product_id: product.into(),
+            product_id: pair.symbol,
             client_oid: None,
             side: OrderSide::Sell,
             _type: OrderRequestType::Limit {

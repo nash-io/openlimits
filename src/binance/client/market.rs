@@ -1,22 +1,19 @@
 use serde_json::json;
 use serde_json::Value;
 
+use super::BaseClient;
 use crate::{
-    binance::{
-        model::{
-            BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
-            SymbolPrice, Ticker,
-        },
-        Binance,
+    binance::model::{
+        BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
+        SymbolPrice, Ticker,
     },
     errors::OpenLimitError,
     shared::Result,
 };
-
 use rust_decimal::prelude::Decimal;
 
 // Market Data endpoints
-impl Binance {
+impl BaseClient {
     // Order book (Default 100; max 100)
     pub async fn get_depth<I>(&self, symbol: &str, limit: I) -> Result<OrderBook>
     where

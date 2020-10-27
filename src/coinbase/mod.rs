@@ -5,7 +5,10 @@ mod transport;
 use crate::{
     errors::OpenLimitError,
     exchange::Exchange,
-    exchange_info::{ExchangeInfo, MarketPairHandle},
+    exchange::ExchangeAccount,
+    exchange::ExchangeMarketData,
+    exchange_info::ExchangeInfo,
+    exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
@@ -17,175 +20,131 @@ use crate::{
 };
 use async_trait::async_trait;
 
+use client::BaseClient;
 use std::convert::TryFrom;
 use transport::Transport;
 
 #[derive(Clone)]
 pub struct Coinbase {
     exchange_info: ExchangeInfo,
-    transport: Transport,
+    client: BaseClient,
 }
 
-impl Coinbase {
-    pub async fn new(sandbox: bool) -> Self {
-        let state = Coinbase {
-            exchange_info: ExchangeInfo::new(),
-            transport: Transport::new(sandbox).unwrap(),
-        };
+#[derive(Clone)]
+pub struct CoinbaseCredentials {
+    pub api_key: String,
+    pub api_secret: String,
+    pub passphrase: String,
+}
 
-        state.refresh_market_info().await.unwrap();
-        state
+#[derive(Default, Clone)]
+pub struct CoinbaseParameters {
+    pub sandbox: bool,
+    pub credentials: Option<CoinbaseCredentials>,
+}
+
+impl CoinbaseParameters {
+    pub fn sandbox() -> Self {
+        Self {
+            sandbox: true,
+            ..Default::default()
+        }
     }
 
-    pub async fn with_credential(
-        api_key: &str,
-        api_secret: &str,
-        passphrase: &str,
-        sandbox: bool,
-    ) -> Self {
-        let state = Coinbase {
-            exchange_info: ExchangeInfo::new(),
-            transport: Transport::with_credential(api_key, api_secret, passphrase, sandbox)
-                .unwrap(),
-        };
-
-        state.refresh_market_info().await.unwrap();
-        state
+    pub fn prod() -> Self {
+        Self {
+            sandbox: false,
+            ..Default::default()
+        }
     }
 }
 
 #[async_trait]
 impl Exchange for Coinbase {
-    type OrderIdType = String;
-    type TradeIdType = u64;
-    type PaginationType = u64;
-    async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
-        self.book::<model::BookRecordL2>(&req.market_pair)
-            .await
-            .map(Into::into)
+    type InitParams = CoinbaseParameters;
+    type InnerClient = BaseClient;
+
+    async fn new(parameters: Self::InitParams) -> Self {
+        let coinbase = match parameters.credentials {
+            Some(credentials) => Coinbase {
+                exchange_info: ExchangeInfo::new(),
+                client: BaseClient {
+                    transport: Transport::with_credential(
+                        &credentials.api_key,
+                        &credentials.api_secret,
+                        &credentials.passphrase,
+                        parameters.sandbox,
+                    )
+                    .unwrap(),
+                },
+            },
+            None => Coinbase {
+                exchange_info: ExchangeInfo::new(),
+                client: BaseClient {
+                    transport: Transport::new(parameters.sandbox).unwrap(),
+                },
+            },
+        };
+
+        coinbase.refresh_market_info().await.unwrap();
+        coinbase
+    }
+
+    fn inner_client(&self) -> &Self::InnerClient {
+        &self.client
+    }
+}
+
+#[async_trait]
+impl ExchangeInfoRetrieval for Coinbase {
+    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
+        self.client.products().await.map(|v| {
+            v.into_iter()
+                .map(|product| MarketPair {
+                    symbol: product.id,
+                    base: product.base_currency,
+                    quote: product.quote_currency,
+                    base_increment: product.base_increment,
+                    quote_increment: product.quote_increment,
+                })
+                .collect()
+        })
     }
 
     async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
-        self.exchange_info.refresh(self).await
+        self.exchange_info
+            .refresh(self as &dyn ExchangeInfoRetrieval)
+            .await
     }
 
-    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
-        Coinbase::limit_buy(self, &req.market_pair, req.size, req.price)
+    async fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
+        self.exchange_info.get_pair(name)
+    }
+}
+
+#[async_trait]
+impl ExchangeMarketData for Coinbase {
+    async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
+        self.client
+            .book::<model::BookRecordL2>(&req.market_pair)
             .await
             .map(Into::into)
-    }
-
-    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order<Self::OrderIdType>> {
-        Coinbase::limit_sell(self, &req.market_pair, req.size, req.price)
-            .await
-            .map(Into::into)
-    }
-
-    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
-        Coinbase::market_buy(self, &req.market_pair, req.size)
-            .await
-            .map(Into::into)
-    }
-
-    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order<Self::OrderIdType>> {
-        Coinbase::market_sell(self, &req.market_pair, req.size)
-            .await
-            .map(Into::into)
-    }
-
-    async fn cancel_order(
-        &self,
-        req: &CancelOrderRequest<Self::OrderIdType>,
-    ) -> Result<OrderCanceled<Self::OrderIdType>> {
-        Coinbase::cancel_order(self, req.id.clone(), req.market_pair.as_deref())
-            .await
-            .map(Into::into)
-    }
-
-    async fn cancel_all_orders(
-        &self,
-        req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled<Self::OrderIdType>>> {
-        Coinbase::cancel_all_orders(self, req.market_pair.as_deref())
-            .await
-            .map(|v| v.into_iter().map(Into::into).collect())
-    }
-
-    async fn get_all_open_orders(&self) -> Result<Vec<Order<Self::OrderIdType>>> {
-        let params = model::GetOrderRequest {
-            status: Some(String::from("open")),
-            paginator: None,
-            product_id: None,
-        };
-
-        Coinbase::get_orders(self, Some(&params))
-            .await
-            .map(|v| v.into_iter().map(Into::into).collect())
-    }
-
-    async fn get_order_history(
-        &self,
-        req: &GetOrderHistoryRequest<Self::PaginationType>,
-    ) -> Result<Vec<Order<Self::OrderIdType>>> {
-        let req: model::GetOrderRequest = req.into();
-
-        Coinbase::get_orders(self, Some(&req))
-            .await
-            .map(|v| v.into_iter().map(Into::into).collect())
-    }
-
-    async fn get_account_balances(
-        &self,
-        paginator: Option<Paginator<Self::PaginationType>>,
-    ) -> Result<Vec<Balance>> {
-        let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
-
-        Coinbase::get_account(self, paginator.as_ref())
-            .await
-            .map(|v| v.into_iter().map(Into::into).collect())
-    }
-
-    async fn get_trade_history(
-        &self,
-        req: &TradeHistoryRequest<Self::OrderIdType, Self::PaginationType>,
-    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
-        let req = req.into();
-
-        Coinbase::get_fills(self, Some(&req))
-            .await
-            .map(|v| v.into_iter().map(Into::into).collect())
     }
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
-        Coinbase::ticker(self, &req.market_pair)
-            .await
-            .map(Into::into)
+        self.client.ticker(&req.market_pair).await.map(Into::into)
     }
 
-    async fn get_historic_rates(
-        &self,
-        req: &GetHistoricRatesRequest<Self::PaginationType>,
-    ) -> Result<Vec<Candle>> {
+    async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
         let params = model::CandleRequestParams::try_from(req)?;
-        Coinbase::candles(self, &req.market_pair, Some(&params))
+        self.client
+            .candles(&req.market_pair, Some(&params))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_historic_trades(
-        &self,
-        _req: &GetHistoricTradesRequest<Self::PaginationType>,
-    ) -> Result<Vec<Trade<Self::TradeIdType, Self::OrderIdType>>> {
+    async fn get_historic_trades(&self, _req: &GetHistoricTradesRequest) -> Result<Vec<Trade>> {
         unimplemented!("Only implemented for Nash right now");
-    }
-
-    async fn get_order(
-        &self,
-        req: &GetOrderRequest<Self::OrderIdType>,
-    ) -> Result<Order<Self::OrderIdType>> {
-        let id = req.id.clone();
-
-        Coinbase::get_order(self, id).await.map(Into::into)
     }
 }
 
@@ -208,7 +167,7 @@ impl From<model::BookRecordL2> for AskBid {
     }
 }
 
-impl From<model::Order> for Order<String> {
+impl From<model::Order> for Order {
     fn from(order: model::Order) -> Self {
         let (price, size, order_type) = match order._type {
             model::OrderType::Limit {
@@ -233,7 +192,99 @@ impl From<model::Order> for Order<String> {
     }
 }
 
-impl From<String> for OrderCanceled<String> {
+#[async_trait]
+impl ExchangeAccount for Coinbase {
+    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
+        let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
+        self.client
+            .limit_buy(pair, req.size, req.price)
+            .await
+            .map(Into::into)
+    }
+
+    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
+        let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
+        self.client
+            .limit_sell(pair, req.size, req.price)
+            .await
+            .map(Into::into)
+    }
+
+    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
+        let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
+        self.client.market_buy(pair, req.size).await.map(Into::into)
+    }
+
+    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
+        let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
+        self.client
+            .market_sell(pair, req.size)
+            .await
+            .map(Into::into)
+    }
+
+    async fn cancel_order(&self, req: &CancelOrderRequest) -> Result<OrderCanceled> {
+        self.client
+            .cancel_order(req.id.clone(), req.market_pair.as_deref())
+            .await
+            .map(Into::into)
+    }
+
+    async fn cancel_all_orders(&self, req: &CancelAllOrdersRequest) -> Result<Vec<OrderCanceled>> {
+        self.client
+            .cancel_all_orders(req.market_pair.as_deref())
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_all_open_orders(&self) -> Result<Vec<Order>> {
+        let params = model::GetOrderRequest {
+            status: Some(String::from("open")),
+            paginator: None,
+            product_id: None,
+        };
+
+        self.client
+            .get_orders(Some(&params))
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_order_history(&self, req: &GetOrderHistoryRequest) -> Result<Vec<Order>> {
+        let req: model::GetOrderRequest = req.into();
+
+        self.client
+            .get_orders(Some(&req))
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_trade_history(&self, req: &TradeHistoryRequest) -> Result<Vec<Trade>> {
+        let req = req.into();
+
+        self.client
+            .get_fills(Some(&req))
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_account_balances(&self, paginator: Option<Paginator>) -> Result<Vec<Balance>> {
+        let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
+
+        self.client
+            .get_account(paginator.as_ref())
+            .await
+            .map(|v| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_order(&self, req: &GetOrderRequest) -> Result<Order> {
+        let id = req.id.clone();
+
+        self.client.get_order(id).await.map(Into::into)
+    }
+}
+
+impl From<String> for OrderCanceled {
     fn from(id: String) -> Self {
         Self { id }
     }
@@ -249,10 +300,10 @@ impl From<model::Account> for Balance {
     }
 }
 
-impl From<model::Fill> for Trade<u64, String> {
+impl From<model::Fill> for Trade {
     fn from(fill: model::Fill) -> Self {
         Self {
-            id: fill.trade_id,
+            id: fill.trade_id.to_string(),
             order_id: fill.order_id,
             market_pair: fill.product_id,
             price: fill.price,
@@ -311,9 +362,9 @@ impl TryFrom<Interval> for u32 {
     }
 }
 
-impl TryFrom<&GetHistoricRatesRequest<u64>> for model::CandleRequestParams {
+impl TryFrom<&GetHistoricRatesRequest> for model::CandleRequestParams {
     type Error = OpenLimitError;
-    fn try_from(params: &GetHistoricRatesRequest<u64>) -> Result<Self> {
+    fn try_from(params: &GetHistoricRatesRequest) -> Result<Self> {
         let granularity = u32::try_from(params.interval)?;
         Ok(Self {
             daterange: params.paginator.clone().map(|p| p.into()),
@@ -322,8 +373,8 @@ impl TryFrom<&GetHistoricRatesRequest<u64>> for model::CandleRequestParams {
     }
 }
 
-impl From<&GetOrderHistoryRequest<u64>> for model::GetOrderRequest {
-    fn from(req: &GetOrderHistoryRequest<u64>) -> Self {
+impl From<&GetOrderHistoryRequest> for model::GetOrderRequest {
+    fn from(req: &GetOrderHistoryRequest) -> Self {
         Self {
             product_id: req.market_pair.clone(),
             paginator: req.paginator.clone().map(|p| p.into()),
@@ -332,28 +383,34 @@ impl From<&GetOrderHistoryRequest<u64>> for model::GetOrderRequest {
     }
 }
 
-impl From<Paginator<u64>> for model::Paginator {
-    fn from(paginator: Paginator<u64>) -> Self {
+impl From<Paginator> for model::Paginator {
+    fn from(paginator: Paginator) -> Self {
         Self {
-            after: paginator.after,
-            before: paginator.before,
+            after: paginator.after.map(|s| s.parse::<u64>().unwrap()),
+            before: paginator.before.map(|s| s.parse::<u64>().unwrap()),
             limit: paginator.limit,
         }
     }
 }
 
-impl From<&Paginator<u64>> for model::Paginator {
-    fn from(paginator: &Paginator<u64>) -> Self {
+impl From<&Paginator> for model::Paginator {
+    fn from(paginator: &Paginator) -> Self {
         Self {
-            after: paginator.after,
-            before: paginator.before,
+            after: paginator
+                .after
+                .as_ref()
+                .map(|s| s.parse().expect("coinbase page id did not parse as u64")),
+            before: paginator
+                .before
+                .as_ref()
+                .map(|s| s.parse().expect("coinbase page id did not parse as u64")),
             limit: paginator.limit,
         }
     }
 }
 
-impl From<Paginator<u64>> for model::DateRange {
-    fn from(paginator: Paginator<u64>) -> Self {
+impl From<Paginator> for model::DateRange {
+    fn from(paginator: Paginator) -> Self {
         Self {
             start: paginator.start_time.map(timestamp_to_naive_datetime),
             end: paginator.end_time.map(timestamp_to_naive_datetime),
@@ -361,8 +418,8 @@ impl From<Paginator<u64>> for model::DateRange {
     }
 }
 
-impl From<&Paginator<u64>> for model::DateRange {
-    fn from(paginator: &Paginator<u64>) -> Self {
+impl From<&Paginator> for model::DateRange {
+    fn from(paginator: &Paginator) -> Self {
         Self {
             start: paginator.start_time.map(timestamp_to_naive_datetime),
             end: paginator.end_time.map(timestamp_to_naive_datetime),
@@ -370,8 +427,8 @@ impl From<&Paginator<u64>> for model::DateRange {
     }
 }
 
-impl From<&TradeHistoryRequest<String, u64>> for model::GetFillsReq {
-    fn from(req: &TradeHistoryRequest<String, u64>) -> Self {
+impl From<&TradeHistoryRequest> for model::GetFillsReq {
+    fn from(req: &TradeHistoryRequest) -> Self {
         Self {
             order_id: req.order_id.clone(),
             paginator: req.paginator.clone().map(|p| p.into()),

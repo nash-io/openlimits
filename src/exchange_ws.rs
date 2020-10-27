@@ -12,6 +12,10 @@ pub struct OpenLimitsWs<E: ExchangeWs> {
 }
 
 impl<E: ExchangeWs> OpenLimitsWs<E> {
+    pub async fn instantiate(params: E::InitParams) -> Self {
+        let websocket = E::new(params).await;
+        Self { websocket }
+    }
     pub async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
         self.websocket.subscribe(subscription).await
     }
@@ -19,6 +23,8 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
 
 #[async_trait]
 pub trait ExchangeWs: Stream + Unpin {
+    type InitParams;
+    async fn new(params: Self::InitParams) -> Self;
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()>;
     fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage>;
 }

@@ -1,17 +1,15 @@
-use async_trait::async_trait;
 use serde::Deserialize;
 use std::fmt::Debug;
 
+use super::BaseClient;
 use crate::{
-    coinbase::{
-        model::{Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade},
-        Coinbase,
+    coinbase::model::{
+        Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade,
     },
-    exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     shared::Result,
 };
 
-impl Coinbase {
+impl BaseClient {
     pub async fn products(&self) -> Result<Vec<Product>> {
         self.transport.get::<_, ()>("/products", None).await
     }
@@ -47,26 +45,5 @@ impl Coinbase {
     ) -> Result<Vec<Candle>> {
         let endpoint = format!("/products/{}/candles", pair);
         self.transport.get(&endpoint, params).await
-    }
-
-    pub fn pair(&self, name: &str) -> Result<MarketPairHandle> {
-        self.exchange_info.get_pair(name)
-    }
-}
-
-#[async_trait]
-impl ExchangeInfoRetrieval for Coinbase {
-    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
-        self.products().await.map(|v| {
-            v.into_iter()
-                .map(|product| MarketPair {
-                    symbol: product.id,
-                    base: product.base_currency,
-                    quote: product.quote_currency,
-                    base_increment: product.base_increment,
-                    quote_increment: product.quote_increment,
-                })
-                .collect()
-        })
     }
 }

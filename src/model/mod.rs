@@ -40,8 +40,8 @@ pub struct OpenMarketOrderRequest {
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct Order<T> {
-    pub id: T,
+pub struct Order {
+    pub id: String,
     pub market_pair: String,
     pub client_order_id: Option<String>,
     pub created_at: Option<u64>,
@@ -53,8 +53,8 @@ pub struct Order<T> {
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct GetOrderRequest<T> {
-    pub id: T,
+pub struct GetOrderRequest {
+    pub id: String,
     pub market_pair: Option<String>,
 }
 
@@ -67,8 +67,8 @@ pub struct Transaction<T> {
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct CancelOrderRequest<T> {
-    pub id: T,
+pub struct CancelOrderRequest {
+    pub id: String,
     pub market_pair: Option<String>,
 }
 
@@ -78,20 +78,20 @@ pub struct CancelAllOrdersRequest {
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct GetOrderHistoryRequest<T> {
+pub struct GetOrderHistoryRequest {
     pub market_pair: Option<String>,
-    pub paginator: Option<Paginator<T>>,
+    pub paginator: Option<Paginator>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct OrderCanceled<T> {
-    pub id: T,
+pub struct OrderCanceled {
+    pub id: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct Trade<T, O> {
-    pub id: T,
-    pub order_id: O,
+pub struct Trade {
+    pub id: String,
+    pub order_id: String,
     pub market_pair: String,
     pub price: Decimal,
     pub qty: Decimal,
@@ -109,10 +109,10 @@ pub enum Liquidity {
 }
 
 #[derive(Serialize, Deserialize, Default)]
-pub struct TradeHistoryRequest<T, U> {
+pub struct TradeHistoryRequest {
     pub market_pair: Option<String>,
-    pub order_id: Option<T>,
-    pub paginator: Option<Paginator<U>>,
+    pub order_id: Option<String>,
+    pub paginator: Option<Paginator>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq)]
@@ -143,16 +143,16 @@ pub struct GetPriceTickerRequest {
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct GetHistoricRatesRequest<T> {
+pub struct GetHistoricRatesRequest {
     pub market_pair: String,
-    pub paginator: Option<Paginator<T>>,
+    pub paginator: Option<Paginator>,
     pub interval: Interval,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
-pub struct GetHistoricTradesRequest<T> {
+pub struct GetHistoricTradesRequest {
     pub market_pair: String,
-    pub paginator: Option<Paginator<T>>,
+    pub paginator: Option<Paginator>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -237,6 +237,16 @@ pub enum OrderStatus {
     Active,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub struct Paginator {
+    pub start_time: Option<u64>,
+    pub end_time: Option<u64>,
+    pub limit: Option<u64>,
+    pub before: Option<String>,
+    pub after: Option<String>,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OrderType {
@@ -245,13 +255,4 @@ pub enum OrderType {
     StopLimit,
     StopMarket,
     Unknown,
-}
-
-#[derive(Clone, Serialize, Deserialize, Debug, Default)]
-pub struct Paginator<T> {
-    pub start_time: Option<u64>,
-    pub end_time: Option<u64>,
-    pub limit: Option<u64>,
-    pub after: Option<T>,
-    pub before: Option<T>,
 }

@@ -3,7 +3,10 @@ use std::env;
 
 use openlimits::{
     binance::Binance,
-    exchange::OpenLimits,
+    binance::BinanceCredentials,
+    binance::BinanceParameters,
+    exchange::Exchange,
+    exchange::{ExchangeAccount, OpenLimits},
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         OpenMarketOrderRequest, TradeHistoryRequest,
@@ -142,14 +145,16 @@ async fn get_trade_history() {
     println!("{:?}", resp);
 }
 
-async fn init() -> OpenLimits<Binance> {
+async fn init() -> Binance {
     dotenv().ok();
-    OpenLimits {
-        exchange: Binance::with_credential(
-            &env::var("BINANCE_API_KEY").unwrap(),
-            &env::var("BINANCE_API_SECRET").unwrap(),
-            true,
-        )
-        .await,
-    }
+
+    let parameters = BinanceParameters {
+        credentials: Some(BinanceCredentials {
+            api_key: env::var("BINANCE_API_KEY").unwrap(),
+            api_secret: env::var("BINANCE_API_SECRET").unwrap(),
+        }),
+        sandbox: true,
+    };
+
+    OpenLimits::instantiate(parameters).await
 }

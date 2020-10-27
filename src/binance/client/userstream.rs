@@ -1,14 +1,11 @@
+use super::BaseClient;
 use crate::{
-    binance::{
-        model::{Success, UserDataStream},
-        Binance,
-    },
+    binance::model::{Success, UserDataStream},
     shared::Result,
 };
-
 static USER_DATA_STREAM: &str = "/api/v3/userDataStream";
 
-impl Binance {
+impl BaseClient {
     // User Stream
     pub async fn user_stream_start(&self) -> Result<UserDataStream> {
         let user_data_stream = self.transport.post::<_, ()>(USER_DATA_STREAM, None).await?;

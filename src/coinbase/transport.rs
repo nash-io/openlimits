@@ -16,7 +16,7 @@ type HmacSha256 = Hmac<Sha256>;
 
 #[derive(Clone)]
 pub struct Transport {
-    secret_key: Option<String>,
+    api_secret: Option<String>,
     client: reqwest::Client,
     base_url: String,
 }
@@ -31,14 +31,14 @@ impl Transport {
 
         Ok(Transport {
             client,
-            secret_key: None,
+            api_secret: None,
             base_url: Transport::get_base_url(sandbox),
         })
     }
 
     pub fn with_credential(
         api_key: &str,
-        secret_key: &str,
+        api_secret: &str,
         passphrase: &str,
         sandbox: bool,
     ) -> Result<Self> {
@@ -48,7 +48,7 @@ impl Transport {
             .build()?;
 
         Ok(Transport {
-            secret_key: Some(String::from(secret_key)),
+            api_secret: Some(String::from(api_secret)),
             client,
             base_url: Transport::get_base_url(sandbox),
         })
@@ -213,11 +213,11 @@ impl Transport {
     where
         D: Serialize,
     {
-        let secret_key = match self.secret_key.as_ref() {
+        let api_secret = match self.api_secret.as_ref() {
             None => Err(OpenLimitError::NoApiKeySet()),
             Some(v) => Ok(v),
         }?;
-        let key = base64::decode(secret_key).expect("Failed to base64 decode Coinbase API secret");
+        let key = base64::decode(api_secret).expect("Failed to base64 decode Coinbase API secret");
         let mut mac = HmacSha256::new_varkey(&key).unwrap();
 
         let prefix: String = timestamp.to_string() + method.as_str();

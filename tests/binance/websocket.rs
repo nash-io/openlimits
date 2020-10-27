@@ -1,6 +1,10 @@
+use std::marker::PhantomData;
+
 use futures::StreamExt;
 use openlimits::{
-    binance::client::websocket::BinanceWebsocket, exchange_ws::OpenLimitsWs,
+    binance::{client::websocket::BinanceWebsocket, Binance},
+    exchange::Exchange,
+    exchange_ws::OpenLimitsWs,
     model::websocket::Subscription,
 };
 

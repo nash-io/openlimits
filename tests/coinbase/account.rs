@@ -3,7 +3,10 @@ use std::env;
 
 use openlimits::{
     coinbase::Coinbase,
-    exchange::OpenLimits,
+    coinbase::CoinbaseCredentials,
+    coinbase::CoinbaseParameters,
+    exchange::Exchange,
+    exchange::{ExchangeAccount, OpenLimits},
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         OpenMarketOrderRequest, TradeHistoryRequest,
@@ -19,7 +22,7 @@ async fn limit_buy() {
         size: Decimal::new(1, 1),
         market_pair: String::from("ETH-BTC"),
     };
-    let resp = exchange.limit_buy(&req).await.unwrap();
+    let resp = ExchangeAccount::limit_buy(&exchange, &req).await.unwrap();
     println!("{:?}", resp);
 }
 
@@ -140,15 +143,17 @@ async fn get_trade_history() {
     println!("{:?}", resp);
 }
 
-async fn init() -> OpenLimits<Coinbase> {
+async fn init() -> Coinbase {
     dotenv().ok();
-    let exchange = Coinbase::with_credential(
-        &env::var("COINBASE_API_KEY").unwrap(),
-        &env::var("COINBASE_API_SECRET").unwrap(),
-        &env::var("COINBASE_PASSPHRASE").unwrap(),
-        true,
-    )
-    .await;
 
-    OpenLimits { exchange }
+    let parameters = CoinbaseParameters {
+        credentials: Some(CoinbaseCredentials {
+            api_key: env::var("COINBASE_API_KEY").unwrap(),
+            api_secret: env::var("COINBASE_API_SECRET").unwrap(),
+            passphrase: env::var("COINBASE_PASSPHRASE").unwrap(),
+        }),
+        sandbox: true,
+    };
+
+    OpenLimits::instantiate(parameters).await
 }

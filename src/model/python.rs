@@ -31,7 +31,7 @@ impl<'a> FromPyObject<'a> for Interval {
     }
 }
 
-impl<'a> FromPyObject<'a> for Paginator<String> {
+impl<'a> FromPyObject<'a> for Paginator {
     fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
         let page_values = ob.get_item("paginator")?.downcast::<PyDict>()?;
         let start_time: Option<u64> = match page_values.get_item("start_time") {
@@ -50,6 +50,7 @@ impl<'a> FromPyObject<'a> for Paginator<String> {
             Some(value) => value.extract()?,
             None => None,
         };
+
         let before: Option<String> = match page_values.get_item("before") {
             Some(value) => value.extract()?,
             None => None,
@@ -216,35 +217,25 @@ impl IntoPy<PyObject> for Balance {
     }
 }
 
-impl<T> ToPyObject for OrderCanceled<T>
-where
-    T: ToString,
-{
+impl ToPyObject for OrderCanceled {
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
-        dict.set_item("order_canceled", self.id.to_string())
-            .unwrap();
+        dict.set_item("order_canceled", self.id.clone()).unwrap();
         dict.into()
     }
 }
 
-impl<T> IntoPy<PyObject> for OrderCanceled<T>
-where
-    T: ToString,
-{
+impl IntoPy<PyObject> for OrderCanceled {
     fn into_py(self, py: Python) -> PyObject {
         self.to_object(py)
     }
 }
 
-impl<T> ToPyObject for Order<T>
-where
-    T: ToString,
-{
+impl ToPyObject for Order {
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
         let inner_dict = PyDict::new(py);
-        inner_dict.set_item("id", self.id.to_string()).unwrap();
+        inner_dict.set_item("id", self.id.clone()).unwrap();
         inner_dict
             .set_item("market_pair", self.market_pair.clone())
             .unwrap();
@@ -271,10 +262,7 @@ where
     }
 }
 
-impl<T> IntoPy<PyObject> for Order<T>
-where
-    T: ToString,
-{
+impl IntoPy<PyObject> for Order {
     fn into_py(self, py: Python) -> PyObject {
         self.to_object(py)
     }
@@ -310,7 +298,7 @@ impl ToPyObject for AskBid {
     }
 }
 
-impl ToPyObject for Trade<String, String> {
+impl ToPyObject for Trade {
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
         let inner_dict = PyDict::new(py);
@@ -325,20 +313,20 @@ impl ToPyObject for Trade<String, String> {
             .unwrap();
         inner_dict.set_item("qty", self.qty.to_string()).unwrap();
         inner_dict
-            .set_item("order_id", self.order_id.clone())
+            .set_item("order_id", self.order_id.to_string())
             .unwrap();
         inner_dict.set_item("side", self.side.clone()).unwrap();
         inner_dict.set_item("created_at", self.created_at).unwrap();
         inner_dict
             .set_item("fees", self.fees.map(|fee| fee.to_string()))
             .unwrap();
-        inner_dict.set_item("id", self.id.clone()).unwrap();
+        inner_dict.set_item("id", self.id.to_string()).unwrap();
         dict.set_item("trade", inner_dict).unwrap();
         dict.into()
     }
 }
 
-impl IntoPy<PyObject> for Trade<String, String> {
+impl IntoPy<PyObject> for Trade {
     fn into_py(self, py: Python) -> PyObject {
         self.to_object(py)
     }

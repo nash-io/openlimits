@@ -1,22 +1,20 @@
 use serde_json::json;
 use std::collections::HashMap;
 
+use super::BaseClient;
 use crate::{
-    binance::{
-        model::{
-            AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest,
-            TradeHistory, TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
-            ORDER_TYPE_MARKET, TIME_IN_FORCE_GTC,
-        },
-        Binance,
+    binance::model::{
+        AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest, TradeHistory,
+        TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET,
+        TIME_IN_FORCE_GTC,
     },
     errors::OpenLimitError,
+    exchange_info::MarketPair,
     shared::Result,
 };
-
 use rust_decimal::prelude::*;
 
-impl Binance {
+impl BaseClient {
     // Account Information
     pub async fn get_account(&self) -> Result<AccountInformation> {
         let account_info = self
@@ -82,12 +80,9 @@ impl Binance {
     }
 
     // Place a LIMIT order - BUY
-    pub async fn limit_buy(&self, symbol: &str, qty: Decimal, price: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(symbol)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn limit_buy(&self, pair: MarketPair, qty: Decimal, price: Decimal) -> Result<Order> {
         let buy: OrderRequest = OrderRequest {
-            symbol: symbol.into(),
+            symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
             price: Some(price.round_dp_with_strategy(
                 pair.quote_increment.normalize().scale(),
@@ -108,12 +103,14 @@ impl Binance {
 
     // Place a LIMIT order - SELL
 
-    pub async fn limit_sell(&self, symbol: &str, qty: Decimal, price: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(symbol)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn limit_sell(
+        &self,
+        pair: MarketPair,
+        qty: Decimal,
+        price: Decimal,
+    ) -> Result<Order> {
         let sell: OrderRequest = OrderRequest {
-            symbol: symbol.into(),
+            symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
             price: Some(price.round_dp_with_strategy(
                 pair.quote_increment.normalize().scale(),
@@ -133,12 +130,9 @@ impl Binance {
     }
 
     // Place a MARKET order - BUY
-    pub async fn market_buy(&self, symbol: &str, qty: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(symbol)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn market_buy(&self, pair: MarketPair, qty: Decimal) -> Result<Order> {
         let buy: OrderRequest = OrderRequest {
-            symbol: symbol.into(),
+            symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
             price: None,
             order_side: ORDER_SIDE_BUY.to_string(),
@@ -155,12 +149,9 @@ impl Binance {
     }
 
     // Place a MARKET order - SELL
-    pub async fn market_sell(&self, symbol: &str, qty: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(symbol)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn market_sell(&self, pair: MarketPair, qty: Decimal) -> Result<Order> {
         let sell: OrderRequest = OrderRequest {
-            symbol: symbol.into(),
+            symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
             price: None,
             order_side: ORDER_SIDE_SELL.to_string(),
