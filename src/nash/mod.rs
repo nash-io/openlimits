@@ -96,10 +96,7 @@ impl ExchangeMarketData for Nash {
         Ok(resp.candles.into_iter().map(Into::into).collect())
     }
 
-    async fn get_historic_trades(
-        &self,
-        req: &GetHistoricTradesRequest,
-    ) -> Result<Vec<Trade>> {
+    async fn get_historic_trades(&self, req: &GetHistoricTradesRequest) -> Result<Vec<Trade>> {
         let req: nash_protocol::protocol::list_trades::ListTradesRequest = req.try_into()?;
         let resp = self.transport.run(req).await;
 
@@ -151,10 +148,7 @@ impl ExchangeAccount for Nash {
         )
     }
 
-    async fn get_account_balances(
-        &self,
-        _paginator: Option<Paginator>,
-    ) -> Result<Vec<Balance>> {
+    async fn get_account_balances(&self, _paginator: Option<Paginator>) -> Result<Vec<Balance>> {
         let req = nash_protocol::protocol::list_account_balances::ListAccountBalancesRequest {
             filter: None,
         };
@@ -195,10 +189,7 @@ impl ExchangeAccount for Nash {
         Err(OpenLimitError::MissingImplementation(err))
     }
 
-    async fn get_order_history(
-        &self,
-        req: &GetOrderHistoryRequest,
-    ) -> Result<Vec<Order>> {
+    async fn get_order_history(&self, req: &GetOrderHistoryRequest) -> Result<Vec<Order>> {
         let req: nash_protocol::protocol::list_account_orders::ListAccountOrdersRequest =
             req.try_into()?;
 
@@ -335,9 +326,7 @@ impl From<nash_protocol::types::OrderbookOrder> for AskBid {
     }
 }
 
-impl From<&CancelOrderRequest>
-    for nash_protocol::protocol::cancel_order::CancelOrderRequest
-{
+impl From<&CancelOrderRequest> for nash_protocol::protocol::cancel_order::CancelOrderRequest {
     fn from(req: &CancelOrderRequest) -> Self {
         let pair = req.market_pair.clone().unwrap();
         let market = nash_protocol::types::Market::from_str(&pair).unwrap();
@@ -349,9 +338,7 @@ impl From<&CancelOrderRequest>
     }
 }
 
-impl From<nash_protocol::protocol::cancel_order::CancelOrderResponse>
-    for OrderCanceled
-{
+impl From<nash_protocol::protocol::cancel_order::CancelOrderResponse> for OrderCanceled {
     fn from(resp: nash_protocol::protocol::cancel_order::CancelOrderResponse) -> Self {
         Self { id: resp.order_id }
     }
@@ -480,9 +467,7 @@ impl From<nash_protocol::types::AccountTradeSide> for Liquidity {
     }
 }
 
-impl From<&GetHistoricRatesRequest>
-    for nash_protocol::protocol::list_candles::ListCandlesRequest
-{
+impl From<&GetHistoricRatesRequest> for nash_protocol::protocol::list_candles::ListCandlesRequest {
     fn from(req: &GetHistoricRatesRequest) -> Self {
         let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
 
@@ -502,9 +487,7 @@ impl From<&GetHistoricRatesRequest>
     }
 }
 
-fn try_split_paginator(
-    paginator: Option<Paginator>,
-) -> (Option<String>, Option<i64>) {
+fn try_split_paginator(paginator: Option<Paginator>) -> (Option<String>, Option<i64>) {
     match paginator {
         Some(paginator) => (
             paginator.before,
@@ -650,9 +633,7 @@ impl From<nash_protocol::protocol::get_ticker::TickerResponse> for Ticker {
     }
 }
 
-impl From<&GetOrderRequest>
-    for nash_protocol::protocol::get_account_order::GetAccountOrderRequest
-{
+impl From<&GetOrderRequest> for nash_protocol::protocol::get_account_order::GetAccountOrderRequest {
     fn from(req: &GetOrderRequest) -> Self {
         Self {
             order_id: req.id.clone(),
@@ -721,10 +702,7 @@ impl ExchangeWs for NashStream {
         Ok(())
     }
 
-    fn parse_message(
-        &self,
-        message: Self::Item,
-    ) -> Result<OpenLimitsWebsocketMessage> {
+    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
         Ok(message.unwrap().consume_response().unwrap().into())
     }
 }

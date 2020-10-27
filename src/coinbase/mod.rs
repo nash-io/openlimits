@@ -139,10 +139,7 @@ impl ExchangeMarketData for Coinbase {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_historic_trades(
-        &self,
-        _req: &GetHistoricTradesRequest,
-    ) -> Result<Vec<Trade>> {
+    async fn get_historic_trades(&self, _req: &GetHistoricTradesRequest) -> Result<Vec<Trade>> {
         unimplemented!("Only implemented for Nash right now");
     }
 }
@@ -248,10 +245,7 @@ impl ExchangeAccount for Coinbase {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_order_history(
-        &self,
-        req: &GetOrderHistoryRequest,
-    ) -> Result<Vec<Order>> {
+    async fn get_order_history(&self, req: &GetOrderHistoryRequest) -> Result<Vec<Order>> {
         let req: model::GetOrderRequest = req.into();
 
         self.client.get_orders(Some(&req))
@@ -267,10 +261,7 @@ impl ExchangeAccount for Coinbase {
             .map(|v| v.into_iter().map(Into::into).collect())
     }
 
-    async fn get_account_balances(
-        &self,
-        paginator: Option<Paginator>,
-    ) -> Result<Vec<Balance>> {
+    async fn get_account_balances(&self, paginator: Option<Paginator>) -> Result<Vec<Balance>> {
         let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
 
         self.client.get_account(paginator.as_ref())
@@ -397,8 +388,14 @@ impl From<Paginator> for model::Paginator {
 impl From<&Paginator> for model::Paginator {
     fn from(paginator: &Paginator) -> Self {
         Self {
-            after: paginator.after.as_ref().map(|s| s.parse().expect("coinbase page id did not parse as u64")),
-            before: paginator.before.as_ref().map(|s| s.parse().expect("coinbase page id did not parse as u64")),
+            after: paginator
+                .after
+                .as_ref()
+                .map(|s| s.parse().expect("coinbase page id did not parse as u64")),
+            before: paginator
+                .before
+                .as_ref()
+                .map(|s| s.parse().expect("coinbase page id did not parse as u64")),
             limit: paginator.limit,
         }
     }

@@ -38,7 +38,5 @@ async fn init() -> OpenLimitsWs<NashStream> {
     )
     .await;
 
-    OpenLimitsWs {
-        websocket
-    }
+    OpenLimitsWs { websocket }
 }
