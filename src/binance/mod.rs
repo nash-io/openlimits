@@ -509,6 +509,10 @@ impl From<model::OrderStatus> for OrderStatus {
 
 #[async_trait]
 impl ExchangeWs for BinanceWebsocket {
+    type InitParams = ();
+    async fn new(_: ()) -> Self {
+        BinanceWebsocket::new()
+    }
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
         BinanceWebsocket::subscribe(self, subscription.into()).await
     }

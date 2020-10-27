@@ -691,6 +691,20 @@ impl Stream for NashStream {
 
 #[async_trait]
 impl ExchangeWs for NashStream {
+    type InitParams = NashParameters;
+    async fn new(params: Self::InitParams) -> Self {
+        let credentials = params.credentials.unwrap();
+        Self {
+            client: Client::from_key_data(
+                &credentials.secret, 
+                &credentials.session, 
+                None, 
+                params.client_id, 
+                params.environment, 
+                params.timeout
+            ).await.unwrap()
+        }
+    } 
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
         let sub: nash_protocol::protocol::subscriptions::SubscriptionRequest = subscription.into();
         let _stream = Client::subscribe_protocol(&self.client, sub).await.unwrap();
