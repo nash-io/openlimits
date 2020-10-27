@@ -54,7 +54,8 @@ async fn get_all_orders() {
 async fn get_order() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
-    let transaction = exchange.client
+    let transaction = exchange
+        .client
         .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
         .await
         .unwrap();
@@ -70,7 +71,8 @@ async fn get_order() {
 async fn limit_buy() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
-    let resp = exchange.client
+    let resp = exchange
+        .client
         .limit_buy(pair, Decimal::new(1, 1), Decimal::new(1, 3))
         .await
         .unwrap();
@@ -81,7 +83,8 @@ async fn limit_buy() {
 async fn rounded_limit_buy() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
-    let resp = exchange.client
+    let resp = exchange
+        .client
         .limit_buy(pair, Decimal::new(12345678, 8), Decimal::new(1, 3))
         .await
         .unwrap();
@@ -92,7 +95,8 @@ async fn rounded_limit_buy() {
 async fn limit_sell() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
-    let resp = exchange.client
+    let resp = exchange
+        .client
         .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
         .await
         .unwrap();
@@ -103,7 +107,8 @@ async fn limit_sell() {
 async fn market_buy() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
-    let resp = exchange.client
+    let resp = exchange
+        .client
         .market_buy(pair, Decimal::new(1, 0))
         .await
         .unwrap();
@@ -114,7 +119,8 @@ async fn market_buy() {
 async fn market_sell() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
-    let resp = exchange.client
+    let resp = exchange
+        .client
         .market_sell(pair, Decimal::new(1, 0))
         .await
         .unwrap();
@@ -126,7 +132,8 @@ async fn market_sell() {
 async fn cancel_order() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
-    let transaction = exchange.client
+    let transaction = exchange
+        .client
         .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
         .await
         .unwrap();

@@ -103,7 +103,12 @@ impl BaseClient {
 
     // Place a LIMIT order - SELL
 
-    pub async fn limit_sell(&self, pair: MarketPair, qty: Decimal, price: Decimal) -> Result<Order> {
+    pub async fn limit_sell(
+        &self,
+        pair: MarketPair,
+        qty: Decimal,
+        price: Decimal,
+    ) -> Result<Order> {
         let sell: OrderRequest = OrderRequest {
             symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),

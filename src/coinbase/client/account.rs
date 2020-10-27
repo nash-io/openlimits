@@ -68,7 +68,12 @@ impl BaseClient {
         Ok(transaction)
     }
 
-    pub async fn limit_buy(&self, pair: MarketPair, size: Decimal, price: Decimal) -> Result<Order> {
+    pub async fn limit_buy(
+        &self,
+        pair: MarketPair,
+        size: Decimal,
+        price: Decimal,
+    ) -> Result<Order> {
         let data = OrderRequest {
             product_id: pair.symbol,
             client_oid: None,
@@ -93,7 +98,12 @@ impl BaseClient {
         Ok(transaction)
     }
 
-    pub async fn limit_sell(&self, pair: MarketPair, size: Decimal, price: Decimal) -> Result<Order> {
+    pub async fn limit_sell(
+        &self,
+        pair: MarketPair,
+        size: Decimal,
+        price: Decimal,
+    ) -> Result<Order> {
         let data = OrderRequest {
             product_id: pair.symbol,
             client_oid: None,
