@@ -8,7 +8,7 @@ use openlimits::{
         Coinbase, CoinbaseCredentials, CoinbaseParameters,
     },
     exchange::Exchange,
-    exchange_info::ExchangeInfoRetrieval
+    exchange_info::ExchangeInfoRetrieval,
 };
 
 #[tokio::test]
@@ -132,7 +132,11 @@ async fn cancel_all_orders() {
         .await
         .unwrap();
 
-    let resp = exchange.client.cancel_all_orders(Some("BTC-USD")).await.unwrap();
+    let resp = exchange
+        .client
+        .cancel_all_orders(Some("BTC-USD"))
+        .await
+        .unwrap();
 
     println!("{:?}", resp);
 
@@ -149,7 +153,8 @@ async fn cancel_order() {
         .limit_sell(pair, Decimal::new(1, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
-    let resp = exchange.client
+    let resp = exchange
+        .client
         .cancel_order(order.id, Some("BTC-USD"))
         .await
         .unwrap();

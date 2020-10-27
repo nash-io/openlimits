@@ -8,7 +8,7 @@ use openlimits::{
         Binance, BinanceCredentials, BinanceParameters,
     },
     exchange::Exchange,
-    exchange_info::ExchangeInfoRetrieval
+    exchange_info::ExchangeInfoRetrieval,
 };
 
 #[tokio::test]
@@ -58,7 +58,8 @@ async fn get_order() {
         .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
         .await
         .unwrap();
-    let resp = exchange.client
+    let resp = exchange
+        .client
         .get_order("BNBBTC", transaction.order_id)
         .await
         .unwrap();
@@ -129,7 +130,8 @@ async fn cancel_order() {
         .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
         .await
         .unwrap();
-    let resp = exchange.client
+    let resp = exchange
+        .client
         .cancel_order("BNBBTC", transaction.order_id)
         .await
         .unwrap();

@@ -1,19 +1,17 @@
 use serde_json::json;
 use std::collections::HashMap;
 
+use super::BaseClient;
 use crate::{
-    binance::{
-        model::{
-            AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest,
-            TradeHistory, TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
-            ORDER_TYPE_MARKET, TIME_IN_FORCE_GTC,
-        },
+    binance::model::{
+        AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest, TradeHistory,
+        TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET,
+        TIME_IN_FORCE_GTC,
     },
-    exchange_info::MarketPair,
     errors::OpenLimitError,
+    exchange_info::MarketPair,
     shared::Result,
 };
-use super::BaseClient;
 use rust_decimal::prelude::*;
 
 impl BaseClient {

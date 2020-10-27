@@ -4,9 +4,9 @@ mod transport;
 
 use crate::{
     errors::OpenLimitError,
+    exchange::Exchange,
     exchange::ExchangeAccount,
     exchange::ExchangeMarketData,
-    exchange::Exchange,
     exchange_info::ExchangeInfo,
     exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     model::{
@@ -20,8 +20,8 @@ use crate::{
 };
 use async_trait::async_trait;
 
-use std::convert::TryFrom;
 use client::BaseClient;
+use std::convert::TryFrom;
 use transport::Transport;
 
 #[derive(Clone)]
@@ -74,13 +74,13 @@ impl Exchange for Coinbase {
                         &credentials.passphrase,
                         parameters.sandbox,
                     )
-                    .unwrap()
+                    .unwrap(),
                 },
             },
             None => Coinbase {
                 exchange_info: ExchangeInfo::new(),
                 client: BaseClient {
-                    transport: Transport::new(parameters.sandbox).unwrap()
+                    transport: Transport::new(parameters.sandbox).unwrap(),
                 },
             },
         };
@@ -127,14 +127,13 @@ impl ExchangeMarketData for Coinbase {
     }
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
-        self.client.ticker(&req.market_pair)
-            .await
-            .map(Into::into)
+        self.client.ticker(&req.market_pair).await.map(Into::into)
     }
 
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
         let params = model::CandleRequestParams::try_from(req)?;
-        self.client.candles(&req.market_pair, Some(&params))
+        self.client
+            .candles(&req.market_pair, Some(&params))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -219,16 +218,15 @@ impl ExchangeAccount for Coinbase {
     }
 
     async fn cancel_order(&self, req: &CancelOrderRequest) -> Result<OrderCanceled> {
-        self.client.cancel_order(req.id.clone(), req.market_pair.as_deref())
+        self.client
+            .cancel_order(req.id.clone(), req.market_pair.as_deref())
             .await
             .map(Into::into)
     }
 
-    async fn cancel_all_orders(
-        &self,
-        req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled>> {
-        self.client.cancel_all_orders(req.market_pair.as_deref())
+    async fn cancel_all_orders(&self, req: &CancelAllOrdersRequest) -> Result<Vec<OrderCanceled>> {
+        self.client
+            .cancel_all_orders(req.market_pair.as_deref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -240,7 +238,8 @@ impl ExchangeAccount for Coinbase {
             product_id: None,
         };
 
-        self.client.get_orders(Some(&params))
+        self.client
+            .get_orders(Some(&params))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -248,7 +247,8 @@ impl ExchangeAccount for Coinbase {
     async fn get_order_history(&self, req: &GetOrderHistoryRequest) -> Result<Vec<Order>> {
         let req: model::GetOrderRequest = req.into();
 
-        self.client.get_orders(Some(&req))
+        self.client
+            .get_orders(Some(&req))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -256,7 +256,8 @@ impl ExchangeAccount for Coinbase {
     async fn get_trade_history(&self, req: &TradeHistoryRequest) -> Result<Vec<Trade>> {
         let req = req.into();
 
-        self.client.get_fills(Some(&req))
+        self.client
+            .get_fills(Some(&req))
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -264,7 +265,8 @@ impl ExchangeAccount for Coinbase {
     async fn get_account_balances(&self, paginator: Option<Paginator>) -> Result<Vec<Balance>> {
         let paginator: Option<model::Paginator> = paginator.map(|p| p.into());
 
-        self.client.get_account(paginator.as_ref())
+        self.client
+            .get_account(paginator.as_ref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }

@@ -4,9 +4,9 @@ use std::convert::{TryFrom, TryInto};
 
 use crate::{
     errors::{MissingImplementationContent, OpenLimitError},
+    exchange::Exchange,
     exchange::ExchangeAccount,
     exchange::ExchangeMarketData,
-    exchange::Exchange,
     exchange_info::ExchangeInfo,
     exchange_info::MarketPairHandle,
     exchange_info::{ExchangeInfoRetrieval, MarketPair},
@@ -57,7 +57,6 @@ impl Clone for NashParameters {
         }
     }
 }
-
 
 #[async_trait]
 impl Exchange for Nash {
@@ -128,10 +127,7 @@ impl ExchangeMarketData for Nash {
 
 #[async_trait]
 impl ExchangeAccount for Nash {
-    async fn cancel_all_orders(
-        &self,
-        req: &CancelAllOrdersRequest,
-    ) -> Result<Vec<OrderCanceled>> {
+    async fn cancel_all_orders(&self, req: &CancelAllOrdersRequest) -> Result<Vec<OrderCanceled>> {
         let req: nash_protocol::protocol::cancel_all_orders::CancelAllOrders = req.into();
         self.transport.run(req).await?;
         Ok(vec![])

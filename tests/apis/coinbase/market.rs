@@ -29,7 +29,8 @@ async fn trades() {
 
     let trade = res.last().unwrap();
 
-    let res = exchange.client
+    let res = exchange
+        .client
         .trades(
             "BTC-USD",
             Some(&Paginator {
@@ -46,7 +47,11 @@ async fn trades() {
 #[tokio::test]
 async fn book() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.client.book::<BookRecordL1>("BTC-USD").await.unwrap();
+    let res = exchange
+        .client
+        .book::<BookRecordL1>("BTC-USD")
+        .await
+        .unwrap();
     println!("{:?}", res);
 }
 
@@ -79,7 +84,8 @@ async fn candles() {
         NaiveDateTime::parse_from_str("2020-08-20T00:00:00.642366Z", "%Y-%m-%dT%H:%M:%S.%fZ")
             .unwrap();
 
-    let res = exchange.client
+    let res = exchange
+        .client
         .candles(
             "BTC-USD",
             Some(&CandleRequestParams {

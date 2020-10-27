@@ -1,13 +1,13 @@
 use serde::Deserialize;
 use std::fmt::Debug;
 
+use super::BaseClient;
 use crate::{
-    coinbase::{
-        model::{Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade},
+    coinbase::model::{
+        Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade,
     },
     shared::Result,
 };
-use super::BaseClient;
 
 impl BaseClient {
     pub async fn products(&self) -> Result<Vec<Product>> {
@@ -46,6 +46,4 @@ impl BaseClient {
         let endpoint = format!("/products/{}/candles", pair);
         self.transport.get(&endpoint, params).await
     }
-
 }
-

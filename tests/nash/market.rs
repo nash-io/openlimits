@@ -1,7 +1,7 @@
 use nash_native_client::ws_client::client::Environment;
 use openlimits::{
-    exchange_info::ExchangeInfoRetrieval,
     exchange::{ExchangeMarketData, OpenLimits},
+    exchange_info::ExchangeInfoRetrieval,
     model::GetHistoricTradesRequest,
     model::Paginator,
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},

@@ -1,14 +1,12 @@
+use super::BaseClient;
 use crate::{
-    coinbase::{
-        model::{
-            Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
-            OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, Paginator,
-        },
+    coinbase::model::{
+        Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
+        OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, Paginator,
     },
     exchange_info::MarketPair,
     shared::Result,
 };
-use super::BaseClient;
 
 use rust_decimal::prelude::*;
 
