@@ -3,8 +3,8 @@ use openlimits::{
     coinbase::CoinbaseParameters,
     exchange::Exchange,
     exchange::{ExchangeMarketData, OpenLimits},
+    exchange_info::ExchangeInfoRetrieval,
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
-    exchange_info::ExchangeInfoRetrieval
 };
 
 #[tokio::test]

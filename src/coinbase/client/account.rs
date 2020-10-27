@@ -1,14 +1,12 @@
+use super::BaseClient;
 use crate::{
-    coinbase::{
-        model::{
-            Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
-            OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, Paginator,
-        },
+    coinbase::model::{
+        Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
+        OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, Paginator,
     },
     exchange_info::MarketPair,
     shared::Result,
 };
-use super::BaseClient;
 
 use rust_decimal::prelude::*;
 
@@ -28,7 +26,12 @@ impl BaseClient {
     }
 
     // TODO: refactor buy and sell in order creation in commun function
-    pub async fn market_buy(&self, product: &str, pair: MarketPair, size: Decimal) -> Result<Order> {
+    pub async fn market_buy(
+        &self,
+        product: &str,
+        pair: MarketPair,
+        size: Decimal,
+    ) -> Result<Order> {
         let data = OrderRequest {
             product_id: product.into(),
             client_oid: None,
@@ -49,7 +52,12 @@ impl BaseClient {
         Ok(transaction)
     }
 
-    pub async fn market_sell(&self, product: &str, pair: MarketPair, size: Decimal) -> Result<Order> {
+    pub async fn market_sell(
+        &self,
+        product: &str,
+        pair: MarketPair,
+        size: Decimal,
+    ) -> Result<Order> {
         let data = OrderRequest {
             product_id: product.into(),
             client_oid: None,
@@ -70,7 +78,13 @@ impl BaseClient {
         Ok(transaction)
     }
 
-    pub async fn limit_buy(&self, product: &str, pair: MarketPair, size: Decimal, price: Decimal) -> Result<Order> {
+    pub async fn limit_buy(
+        &self,
+        product: &str,
+        pair: MarketPair,
+        size: Decimal,
+        price: Decimal,
+    ) -> Result<Order> {
         let data = OrderRequest {
             product_id: product.into(),
             client_oid: None,
@@ -95,7 +109,13 @@ impl BaseClient {
         Ok(transaction)
     }
 
-    pub async fn limit_sell(&self, product: &str, pair: MarketPair, size: Decimal, price: Decimal) -> Result<Order> {
+    pub async fn limit_sell(
+        &self,
+        product: &str,
+        pair: MarketPair,
+        size: Decimal,
+        price: Decimal,
+    ) -> Result<Order> {
         let data = OrderRequest {
             product_id: product.into(),
             client_oid: None,

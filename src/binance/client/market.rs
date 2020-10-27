@@ -1,17 +1,15 @@
 use serde_json::json;
 use serde_json::Value;
 
+use super::BaseClient;
 use crate::{
-    binance::{
-        model::{
-            BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
-            SymbolPrice, Ticker,
-        },
+    binance::model::{
+        BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
+        SymbolPrice, Ticker,
     },
     errors::OpenLimitError,
     shared::Result,
 };
-use super::BaseClient;
 use rust_decimal::prelude::Decimal;
 
 // Market Data endpoints

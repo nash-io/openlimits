@@ -1,19 +1,17 @@
 use serde_json::json;
 use std::collections::HashMap;
 
+use super::BaseClient;
 use crate::{
-    binance::{
-        model::{
-            AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest,
-            TradeHistory, TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
-            ORDER_TYPE_MARKET, TIME_IN_FORCE_GTC,
-        },
+    binance::model::{
+        AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest, TradeHistory,
+        TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET,
+        TIME_IN_FORCE_GTC,
     },
-    exchange_info::MarketPair,
     errors::OpenLimitError,
+    exchange_info::MarketPair,
     shared::Result,
 };
-use super::BaseClient;
 use rust_decimal::prelude::*;
 
 impl BaseClient {
@@ -82,7 +80,13 @@ impl BaseClient {
     }
 
     // Place a LIMIT order - BUY
-    pub async fn limit_buy(&self, symbol: &str, pair: MarketPair, qty: Decimal, price: Decimal) -> Result<Order> {
+    pub async fn limit_buy(
+        &self,
+        symbol: &str,
+        pair: MarketPair,
+        qty: Decimal,
+        price: Decimal,
+    ) -> Result<Order> {
         let buy: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -105,7 +109,13 @@ impl BaseClient {
 
     // Place a LIMIT order - SELL
 
-    pub async fn limit_sell(&self, symbol: &str, pair: MarketPair, qty: Decimal, price: Decimal) -> Result<Order> {
+    pub async fn limit_sell(
+        &self,
+        symbol: &str,
+        pair: MarketPair,
+        qty: Decimal,
+        price: Decimal,
+    ) -> Result<Order> {
         let sell: OrderRequest = OrderRequest {
             symbol: symbol.into(),
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),

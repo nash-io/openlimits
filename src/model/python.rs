@@ -50,7 +50,7 @@ impl<'a> FromPyObject<'a> for Paginator {
             Some(value) => value.extract()?,
             None => None,
         };
-        
+
         let before: Option<String> = match page_values.get_item("before") {
             Some(value) => value.extract()?,
             None => None,

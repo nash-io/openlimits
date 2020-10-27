@@ -16,9 +16,7 @@ use crate::{
 pub struct OpenLimits {}
 
 impl OpenLimits {
-    pub async fn instantiate<E: Exchange>(
-        parameters: E::InitParams,
-    ) -> E {
+    pub async fn instantiate<E: Exchange>(parameters: E::InitParams) -> E {
         E::new(parameters).await
     }
 }
