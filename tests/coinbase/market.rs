@@ -50,7 +50,7 @@ async fn get_historic_rates_invalid_interval() {
     assert!(resp.is_err());
 }
 
-async fn init() -> Exchange<Coinbase> {
+async fn init() -> Coinbase {
     let parameters = CoinbaseParameters {
         credentials: None,
         sandbox: true,

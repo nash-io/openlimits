@@ -1,10 +1,9 @@
-use std::fmt::Debug;
+// use std::fmt::Debug;
 
 use async_trait::async_trait;
-// use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{
-    exchange_info::{ExchangeInfoRetrieval, MarketPairHandle},
+    // exchange_info::{ExchangeInfoRetrieval, MarketPairHandle},
     model::{
         Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
         GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
@@ -17,55 +16,17 @@ use crate::{
 pub struct OpenLimits {}
 
 impl OpenLimits {
-    pub async fn instantiate<Exc: ExchangeEssentials>(
-        parameters: Exc::Parameters,
-    ) -> Exchange<Exc> {
-        Exchange::new(parameters).await
-    }
-}
-
-pub enum ExchangeId {
-    Binance,
-    Coinbase,
-    Nash,
-}
-
-pub trait ExchangeParameters {
-    fn get_id(&self) -> ExchangeId;
-}
-
-#[derive(Clone, Debug)]
-pub struct Exchange<Exc: ExchangeEssentials + ?Sized> {
-    pub parameters: Exc::Parameters,
-    pub inner: Exc,
-}
-
-impl<Exc: ExchangeEssentials> Default for Exchange<Exc> {
-    fn default() -> Self {
-        todo!()
-    }
-}
-
-impl<Exc: ExchangeEssentials> Exchange<Exc> {
-    pub async fn new(parameters: Exc::Parameters) -> Self {
-        Self {
-            parameters: parameters.clone(),
-            inner: Exc::new(parameters).await,
-        }
-    }
-}
-
-impl<Exc: ExchangeEssentials + ExchangeInfoRetrieval> Exchange<Exc> {
-    pub async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
-        self.inner.refresh_market_info().await
+    pub async fn instantiate<E: Exchange>(
+        parameters: E::InitParams,
+    ) -> E {
+        E::new(parameters).await
     }
 }
 
 #[async_trait]
-pub trait ExchangeEssentials {
-    type Parameters: ExchangeParameters + Clone;
-
-    async fn new(parameters: Self::Parameters) -> Self;
+pub trait Exchange {
+    type InitParams;
+    async fn new(params: Self::InitParams) -> Self;
 }
 
 #[async_trait]

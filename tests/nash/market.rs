@@ -78,7 +78,7 @@ async fn retrieve_pairs() {
 //     assert!(resp.is_err());
 // }
 
-async fn init() -> Exchange<Nash> {
+async fn init() -> Nash {
     dotenv().ok();
 
     let parameters = NashParameters {

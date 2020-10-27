@@ -22,7 +22,7 @@ async fn limit_buy() {
         size: Decimal::new(1, 1),
         market_pair: String::from("ETH-BTC"),
     };
-    let resp = exchange.limit_buy(&req).await.unwrap();
+    let resp = ExchangeAccount::limit_buy(&exchange, &req).await.unwrap();
     println!("{:?}", resp);
 }
 
@@ -143,7 +143,7 @@ async fn get_trade_history() {
     println!("{:?}", resp);
 }
 
-async fn init() -> Exchange<Coinbase> {
+async fn init() -> Coinbase {
     dotenv().ok();
 
     let parameters = CoinbaseParameters {

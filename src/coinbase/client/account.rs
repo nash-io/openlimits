@@ -4,14 +4,15 @@ use crate::{
             Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
             OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, Paginator,
         },
-        Coinbase,
     },
+    exchange_info::MarketPair,
     shared::Result,
 };
+use super::Client;
 
 use rust_decimal::prelude::*;
 
-impl Coinbase {
+impl Client {
     pub async fn get_account(&self, paginator: Option<&Paginator>) -> Result<Vec<Account>> {
         self.transport.signed_get("/accounts", paginator).await
     }
@@ -27,10 +28,7 @@ impl Coinbase {
     }
 
     // TODO: refactor buy and sell in order creation in commun function
-    pub async fn market_buy(&self, product: &str, size: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(product)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn market_buy(&self, product: &str, pair: MarketPair, size: Decimal) -> Result<Order> {
         let data = OrderRequest {
             product_id: product.into(),
             client_oid: None,
@@ -51,10 +49,7 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn market_sell(&self, product: &str, size: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(product)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn market_sell(&self, product: &str, pair: MarketPair, size: Decimal) -> Result<Order> {
         let data = OrderRequest {
             product_id: product.into(),
             client_oid: None,
@@ -75,10 +70,7 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn limit_buy(&self, product: &str, size: Decimal, price: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(product)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn limit_buy(&self, product: &str, pair: MarketPair, size: Decimal, price: Decimal) -> Result<Order> {
         let data = OrderRequest {
             product_id: product.into(),
             client_oid: None,
@@ -103,10 +95,7 @@ impl Coinbase {
         Ok(transaction)
     }
 
-    pub async fn limit_sell(&self, product: &str, size: Decimal, price: Decimal) -> Result<Order> {
-        let pair_handle = self.exchange_info.get_pair(product)?;
-        let pair = pair_handle.read()?;
-
+    pub async fn limit_sell(&self, product: &str, pair: MarketPair, size: Decimal, price: Decimal) -> Result<Order> {
         let data = OrderRequest {
             product_id: product.into(),
             client_oid: None,

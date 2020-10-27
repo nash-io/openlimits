@@ -6,8 +6,7 @@ use crate::{
     errors::{MissingImplementationContent, OpenLimitError},
     exchange::ExchangeAccount,
     exchange::ExchangeMarketData,
-    exchange::ExchangeParameters,
-    exchange::{Exchange, ExchangeEssentials, ExchangeId},
+    exchange::Exchange,
     exchange_info::ExchangeInfo,
     exchange_info::MarketPairHandle,
     exchange_info::{ExchangeInfoRetrieval, MarketPair},
@@ -57,17 +56,12 @@ impl Clone for NashParameters {
     }
 }
 
-impl ExchangeParameters for NashParameters {
-    fn get_id(&self) -> ExchangeId {
-        ExchangeId::Nash
-    }
-}
 
 #[async_trait]
-impl ExchangeEssentials for Nash {
-    type Parameters = NashParameters;
+impl Exchange for Nash {
+    type InitParams = NashParameters;
 
-    async fn new(parameters: Self::Parameters) -> Self {
+    async fn new(parameters: Self::InitParams) -> Self {
         let credentials = parameters.credentials.unwrap();
         Nash {
             transport: Client::from_key_data(
@@ -86,11 +80,11 @@ impl ExchangeEssentials for Nash {
 }
 
 #[async_trait]
-impl ExchangeMarketData for Exchange<Nash> {
+impl ExchangeMarketData for Nash {
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
         let req: nash_protocol::protocol::list_candles::ListCandlesRequest = req.into();
 
-        let resp = self.inner.transport.run(req).await;
+        let resp = self.transport.run(req).await;
 
         let resp: nash_protocol::protocol::list_candles::ListCandlesResponse =
             Nash::unwrap_response::<nash_protocol::protocol::list_candles::ListCandlesResponse>(
@@ -105,7 +99,7 @@ impl ExchangeMarketData for Exchange<Nash> {
         req: &GetHistoricTradesRequest,
     ) -> Result<Vec<Trade>> {
         let req: nash_protocol::protocol::list_trades::ListTradesRequest = req.try_into()?;
-        let resp = self.inner.transport.run(req).await;
+        let resp = self.transport.run(req).await;
 
         let resp: nash_protocol::protocol::list_trades::ListTradesResponse = Nash::unwrap_response::<
             nash_protocol::protocol::list_trades::ListTradesResponse,
@@ -116,7 +110,7 @@ impl ExchangeMarketData for Exchange<Nash> {
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         let req: nash_protocol::protocol::get_ticker::TickerRequest = req.into();
-        let resp = self.inner.transport.run(req).await;
+        let resp = self.transport.run(req).await;
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::get_ticker::TickerResponse>(resp)?
                 .into(),
@@ -125,7 +119,7 @@ impl ExchangeMarketData for Exchange<Nash> {
 
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         let req: nash_protocol::protocol::orderbook::OrderbookRequest = req.into();
-        let resp = self.inner.transport.run(req).await;
+        let resp = self.transport.run(req).await;
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::orderbook::OrderbookResponse>(resp)?
                 .into(),
@@ -134,19 +128,19 @@ impl ExchangeMarketData for Exchange<Nash> {
 }
 
 #[async_trait]
-impl ExchangeAccount for Exchange<Nash> {
+impl ExchangeAccount for Nash {
     async fn cancel_all_orders(
         &self,
         req: &CancelAllOrdersRequest,
     ) -> Result<Vec<OrderCanceled>> {
         let req: nash_protocol::protocol::cancel_all_orders::CancelAllOrders = req.into();
-        self.inner.transport.run(req).await?;
+        self.transport.run(req).await?;
         Ok(vec![])
     }
 
     async fn cancel_order(&self, req: &CancelOrderRequest) -> Result<OrderCanceled> {
         let req: nash_protocol::protocol::cancel_order::CancelOrderRequest = req.into();
-        let resp = self.inner.transport.run(req).await;
+        let resp = self.transport.run(req).await;
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::cancel_order::CancelOrderResponse>(
                 resp,
@@ -162,7 +156,7 @@ impl ExchangeAccount for Exchange<Nash> {
         let req = nash_protocol::protocol::list_account_balances::ListAccountBalancesRequest {
             filter: None,
         };
-        let resp = self.inner.transport.run(req).await;
+        let resp = self.transport.run(req).await;
 
         let resp: nash_protocol::protocol::list_account_balances::ListAccountBalancesResponse =
             Nash::unwrap_response::<
@@ -206,7 +200,7 @@ impl ExchangeAccount for Exchange<Nash> {
         let req: nash_protocol::protocol::list_account_orders::ListAccountOrdersRequest =
             req.try_into()?;
 
-        let resp = self.inner.transport.run(req).await;
+        let resp = self.transport.run(req).await;
 
         let resp: nash_protocol::protocol::list_account_orders::ListAccountOrdersResponse =
             Nash::unwrap_response::<
@@ -220,7 +214,7 @@ impl ExchangeAccount for Exchange<Nash> {
         let req: nash_protocol::protocol::list_account_trades::ListAccountTradesRequest =
             req.try_into()?;
 
-        let resp = self.inner.transport.run(req).await;
+        let resp = self.transport.run(req).await;
 
         let resp: nash_protocol::protocol::list_account_trades::ListAccountTradesResponse =
             Nash::unwrap_response::<
@@ -234,7 +228,7 @@ impl ExchangeAccount for Exchange<Nash> {
         let req: nash_protocol::protocol::place_order::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Buy);
 
-        let resp = self.inner.transport.run(req).await;
+        let resp = self.transport.run(req).await;
 
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::place_order::LimitOrderResponse>(
@@ -248,7 +242,7 @@ impl ExchangeAccount for Exchange<Nash> {
         let req: nash_protocol::protocol::place_order::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Sell);
 
-        let resp = self.inner.transport.run(req).await;
+        let resp = self.transport.run(req).await;
 
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::place_order::LimitOrderResponse>(
@@ -274,7 +268,7 @@ impl ExchangeAccount for Exchange<Nash> {
 
     async fn get_order(&self, req: &GetOrderRequest) -> Result<Order> {
         let req: nash_protocol::protocol::get_account_order::GetAccountOrderRequest = req.into();
-        let resp = self.inner.transport.run(req).await;
+        let resp = self.transport.run(req).await;
         let resp = Nash::unwrap_response::<
             nash_protocol::protocol::get_account_order::GetAccountOrderResponse,
         >(resp)?;

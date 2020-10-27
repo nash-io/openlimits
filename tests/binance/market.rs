@@ -38,7 +38,7 @@ async fn get_historic_rates() {
     println!("{:?}", resp);
 }
 
-async fn init() -> Exchange<Binance> {
+async fn init() -> Binance {
     let parameters = BinanceParameters {
         credentials: None,
         sandbox: true,

@@ -5,13 +5,14 @@ use std::fmt::Debug;
 use crate::{
     coinbase::{
         model::{Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade},
-        Coinbase,
+        Coinbase
     },
     exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     shared::Result,
 };
+use super::Client;
 
-impl Coinbase {
+impl Client {
     pub async fn products(&self) -> Result<Vec<Product>> {
         self.transport.get::<_, ()>("/products", None).await
     }
@@ -49,15 +50,12 @@ impl Coinbase {
         self.transport.get(&endpoint, params).await
     }
 
-    pub fn pair(&self, name: &str) -> Result<MarketPairHandle> {
-        self.exchange_info.get_pair(name)
-    }
 }
 
 #[async_trait]
 impl ExchangeInfoRetrieval for Coinbase {
     async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
-        self.products().await.map(|v| {
+        self.transport.products().await.map(|v| {
             v.into_iter()
                 .map(|product| MarketPair {
                     symbol: product.id,

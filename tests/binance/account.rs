@@ -145,7 +145,7 @@ async fn get_trade_history() {
     println!("{:?}", resp);
 }
 
-async fn init() -> Exchange<Binance> {
+async fn init() -> Binance {
     dotenv().ok();
 
     let parameters = BinanceParameters {

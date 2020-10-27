@@ -122,7 +122,7 @@ async fn get_trade_history() {
     println!("{:?}", resp);
 }
 
-async fn init() -> Exchange<Nash> {
+async fn init() -> Nash {
     dotenv().ok();
 
     let parameters = NashParameters {
