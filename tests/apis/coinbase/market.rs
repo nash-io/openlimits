@@ -24,7 +24,11 @@ async fn product() {
 #[tokio::test]
 async fn trades() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.inner_client().trades("BTC-USD", None).await.unwrap();
+    let res = exchange
+        .inner_client()
+        .trades("BTC-USD", None)
+        .await
+        .unwrap();
     println!("{:?}", res);
 
     let trade = res.last().unwrap();
@@ -65,7 +69,11 @@ async fn ticker() {
 #[tokio::test]
 async fn candles() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.inner_client().candles("BTC-USD", None).await.unwrap();
+    let res = exchange
+        .inner_client()
+        .candles("BTC-USD", None)
+        .await
+        .unwrap();
     println!("{:?}", res);
 
     let res = exchange

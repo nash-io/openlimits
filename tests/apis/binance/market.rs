@@ -6,7 +6,11 @@ use openlimits::{
 #[tokio::test]
 async fn get_depth() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
-    let resp = exchange.inner_client().get_depth("BNBBTC", 50).await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .get_depth("BNBBTC", 50)
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -27,21 +31,33 @@ async fn get_price() {
 #[tokio::test]
 async fn get_all_book_tickers() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
-    let resp = exchange.inner_client().get_all_book_tickers().await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .get_all_book_tickers()
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_book_ticker() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
-    let resp = exchange.inner_client().get_book_ticker("BNBBTC").await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .get_book_ticker("BNBBTC")
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_24h_price_stats() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
-    let resp = exchange.inner_client().get_24h_price_stats("BNBBTC").await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .get_24h_price_stats("BNBBTC")
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -60,6 +76,10 @@ async fn get_klines() {
 #[tokio::test]
 async fn get_24h_price_stats_all() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
-    let resp = exchange.inner_client().get_24h_price_stats_all().await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .get_24h_price_stats_all()
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }

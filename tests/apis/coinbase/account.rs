@@ -26,7 +26,11 @@ async fn get_all_open_orders() {
         paginator: None,
         product_id: None,
     };
-    let resp = exchange.inner_client().get_orders(Some(&params)).await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .get_orders(Some(&params))
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -53,7 +57,11 @@ async fn get_all_orders_for_a_given_product() {
         product_id: Some(String::from("ETH-BTC")),
     };
 
-    let resp = exchange.inner_client().get_orders(Some(&params)).await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .get_orders(Some(&params))
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -148,7 +156,11 @@ async fn cancel_all_orders() {
 
     println!("{:?}", resp);
 
-    let resp = exchange.inner_client().cancel_all_orders(None).await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .cancel_all_orders(None)
+        .await
+        .unwrap();
 
     println!("{:?}", resp);
 }
@@ -187,7 +199,11 @@ async fn get_fills_for_order() {
         paginator: None,
     };
 
-    let resp = exchange.inner_client().get_fills(Some(&params)).await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .get_fills(Some(&params))
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -201,7 +217,11 @@ async fn get_fills_for_product() {
         paginator: None,
     };
 
-    let resp = exchange.inner_client().get_fills(Some(&params)).await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .get_fills(Some(&params))
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 

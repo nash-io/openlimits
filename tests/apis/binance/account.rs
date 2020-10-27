@@ -28,7 +28,11 @@ async fn get_balance() {
 #[tokio::test]
 async fn get_open_orders() {
     let exchange = init().await;
-    let resp = exchange.inner_client().get_open_orders("BNBBTC").await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .get_open_orders("BNBBTC")
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -46,7 +50,11 @@ async fn get_all_orders() {
         paginator: None,
         symbol: String::from("BNBBTC"),
     };
-    let resp = exchange.inner_client().get_all_orders(&params).await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .get_all_orders(&params)
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -153,7 +161,11 @@ async fn trade_history() {
         symbol: String::from("BNBBTC"),
     };
 
-    let resp = exchange.inner_client().trade_history(&params).await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .trade_history(&params)
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
