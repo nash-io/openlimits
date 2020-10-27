@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use nash_native_client::ws_client::client::{Client, Environment};
+use nash_native_client::ws_client::client::Client;
 use std::convert::{TryFrom, TryInto};
 
 use crate::{
@@ -22,6 +22,8 @@ use crate::{
     shared::{timestamp_to_utc_datetime, Result},
 };
 use rust_decimal::prelude::*;
+
+pub use nash_native_client::ws_client::client::Environment;
 
 pub struct Nash {
     transport: Client,
