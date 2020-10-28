@@ -1,8 +1,8 @@
-use super::super::model::{Interval, Paginator};
-use super::websocket::{OpenLimitsWebsocketMessage, Subscription};
-use super::super::nash::{NashParameters, NashCredentials, Environment};
-use super::super::binance::{BinanceParameters, BinanceCredentials};
 use super::super::any_exchange::InitAnyExchange;
+use super::super::binance::{BinanceCredentials, BinanceParameters};
+use super::super::model::{Interval, Paginator};
+use super::super::nash::{Environment, NashCredentials, NashParameters};
+use super::websocket::{OpenLimitsWebsocketMessage, Subscription};
 
 use pyo3::exceptions::PyException;
 use pyo3::prelude::{FromPyObject, IntoPy, PyObject, PyResult, Python, ToPyObject};
@@ -15,28 +15,36 @@ impl<'a> FromPyObject<'a> for InitAnyExchange {
         // unfortunately can't do the if let on the extract() since it needs type annotations
         let maybe_nash: PyResult<NashParameters> = ob.extract();
         if let Ok(nash) = maybe_nash {
-            return Ok(InitAnyExchange::Nash(nash))
-        } 
+            return Ok(InitAnyExchange::Nash(nash));
+        }
         let maybe_binance: PyResult<BinanceParameters> = ob.extract();
         if let Ok(binance) = maybe_binance {
-            return Ok(InitAnyExchange::Binance(binance))
+            return Ok(InitAnyExchange::Binance(binance));
         }
-        Err(PyException::new_err("invalid exchange initialization params"))
+        Err(PyException::new_err(
+            "invalid exchange initialization params",
+        ))
     }
 }
 
 impl<'a> FromPyObject<'a> for BinanceCredentials {
     fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
         let py_dict = ob.get_item("binance_credentials")?.downcast::<PyDict>()?;
-        let api_key: String = py_dict.get_item("api_key").ok_or(
-            PyException::new_err("secret not included in binance credentials")
-        )?.extract()?;
-        let api_secret: String = py_dict.get_item("api_secret").ok_or(
-            PyException::new_err("session not included in binance credentials")
-        )?.extract()?;
-        Ok(BinanceCredentials{
+        let api_key: String = py_dict
+            .get_item("api_key")
+            .ok_or(PyException::new_err(
+                "secret not included in binance credentials",
+            ))?
+            .extract()?;
+        let api_secret: String = py_dict
+            .get_item("api_secret")
+            .ok_or(PyException::new_err(
+                "session not included in binance credentials",
+            ))?
+            .extract()?;
+        Ok(BinanceCredentials {
             api_key,
-            api_secret
+            api_secret,
         })
     }
 }
@@ -44,15 +52,21 @@ impl<'a> FromPyObject<'a> for BinanceCredentials {
 impl<'a> FromPyObject<'a> for BinanceParameters {
     fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
         let py_dict = ob.get_item("binance")?.downcast::<PyDict>()?;
-        let credentials: Option<BinanceCredentials> = py_dict.get_item("credentials").ok_or(
-            PyException::new_err("credentials not included in binance params")
-        )?.extract()?;
-        let sandbox: bool = py_dict.get_item("sandbox").ok_or(
-            PyException::new_err("session not included in binance credentials")
-        )?.extract()?;
+        let credentials: Option<BinanceCredentials> = py_dict
+            .get_item("credentials")
+            .ok_or(PyException::new_err(
+                "credentials not included in binance params",
+            ))?
+            .extract()?;
+        let sandbox: bool = py_dict
+            .get_item("sandbox")
+            .ok_or(PyException::new_err(
+                "session not included in binance credentials",
+            ))?
+            .extract()?;
         Ok(BinanceParameters {
             sandbox,
-            credentials
+            credentials,
         })
     }
 }
@@ -60,44 +74,59 @@ impl<'a> FromPyObject<'a> for BinanceParameters {
 impl<'a> FromPyObject<'a> for NashCredentials {
     fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
         let py_dict = ob.get_item("nash_credentials")?.downcast::<PyDict>()?;
-        let secret: String = py_dict.get_item("secret").ok_or(
-            PyException::new_err("secret not included in nash credentials")
-        )?.extract()?;
-        let session: String = py_dict.get_item("session").ok_or(
-            PyException::new_err("session not included in nash credentials")
-        )?.extract()?;
-        Ok(NashCredentials{
-            secret,
-            session
-        })
+        let secret: String = py_dict
+            .get_item("secret")
+            .ok_or(PyException::new_err(
+                "secret not included in nash credentials",
+            ))?
+            .extract()?;
+        let session: String = py_dict
+            .get_item("session")
+            .ok_or(PyException::new_err(
+                "session not included in nash credentials",
+            ))?
+            .extract()?;
+        Ok(NashCredentials { secret, session })
     }
 }
 
 impl<'a> FromPyObject<'a> for NashParameters {
     fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
         let py_dict = ob.get_item("nash")?.downcast::<PyDict>()?;
-        let credentials: Option<NashCredentials> = py_dict.get_item("credentials").ok_or(
-            PyException::new_err("credentials not included in nash params")
-        )?.extract()?;
-        let client_id: u64 = py_dict.get_item("client_id").ok_or(
-            PyException::new_err("session not included in nash credentials")
-        )?.extract()?;
-        let env_str: String = py_dict.get_item("environment").ok_or(
-            PyException::new_err("session not included in nash credentials")
-        )?.extract()?;
+        let credentials: Option<NashCredentials> = py_dict
+            .get_item("credentials")
+            .ok_or(PyException::new_err(
+                "credentials not included in nash params",
+            ))?
+            .extract()?;
+        let client_id: u64 = py_dict
+            .get_item("client_id")
+            .ok_or(PyException::new_err(
+                "session not included in nash credentials",
+            ))?
+            .extract()?;
+        let env_str: String = py_dict
+            .get_item("environment")
+            .ok_or(PyException::new_err(
+                "session not included in nash credentials",
+            ))?
+            .extract()?;
         let environment = match &env_str[..] {
             "sandbox" => Ok(Environment::Sandbox),
             "production" => Ok(Environment::Production),
-            _ => Err(PyException::new_err("not a valid nash environment"))
+            _ => Err(PyException::new_err("not a valid nash environment")),
         }?;
-        let timeout: u64 = py_dict.get_item("timeout").ok_or(
-            PyException::new_err("timeout not included in nash credentials")
-        )?.extract()?;
-        Ok(NashParameters{
+        let timeout: u64 = py_dict
+            .get_item("timeout")
+            .ok_or(PyException::new_err(
+                "timeout not included in nash credentials",
+            ))?
+            .extract()?;
+        Ok(NashParameters {
             credentials,
             client_id,
             environment,
-            timeout
+            timeout,
         })
     }
 }

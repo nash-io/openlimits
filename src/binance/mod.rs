@@ -25,7 +25,7 @@ pub use client::websocket::BinanceWebsocket;
 use model::KlineSummaries;
 use transport::Transport;
 
-pub use client::BaseClient;
+use client::BaseClient;
 
 #[derive(Clone)]
 pub struct Binance {

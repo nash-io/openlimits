@@ -3,9 +3,10 @@
 //! use to operate over any openlimits-supported exchange without generics
 
 use crate::binance::{Binance, BinanceParameters, BinanceWebsocket};
-use crate::exchange::{Exchange, ExchangeAccount, ExchangeMarketData};
+use crate::exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
 use crate::exchange_ws::{ExchangeWs, OpenLimitsWs};
 use crate::nash::{Nash, NashParameters, NashStream};
+use crate::exchange::{ExchangeAccount, Exchange, ExchangeMarketData};
 use crate::{
     model::{
         websocket::{OpenLimitsWebsocketMessage, Subscription},
@@ -16,7 +17,6 @@ use crate::{
     },
     shared::Result,
 };
-use crate::exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
 use std::{pin::Pin, task::Context, task::Poll};
 use futures::stream::{Stream, StreamExt};
 use async_trait::async_trait;
@@ -39,7 +39,7 @@ impl Exchange for AnyExchange {
     async fn new(params: InitAnyExchange) -> Self {
         match params {
             InitAnyExchange::Nash(params) => Nash::new(params).await.into(),
-            InitAnyExchange::Binance(params) => Binance::new(params).await.into()
+            InitAnyExchange::Binance(params) => Binance::new(params).await.into(),
         }
     }
     // not particularly useful to access the inner client with this type. could wrap the inner
@@ -55,19 +55,19 @@ impl ExchangeInfoRetrieval for AnyExchange {
     async fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
         match self {
             Self::Nash(nash) => nash.get_pair(name).await,
-            Self::Binance(binance) => binance.get_pair(name).await
+            Self::Binance(binance) => binance.get_pair(name).await,
         }
     }
     async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
         match self {
             Self::Nash(nash) => nash.retrieve_pairs().await,
-            Self::Binance(binance) => binance.retrieve_pairs().await
+            Self::Binance(binance) => binance.retrieve_pairs().await,
         }
     }
     async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
         match self {
             Self::Nash(nash) => nash.refresh_market_info().await,
-            Self::Binance(binance) => binance.refresh_market_info().await
+            Self::Binance(binance) => binance.refresh_market_info().await,
         }
     }
 }
@@ -170,7 +170,6 @@ impl ExchangeMarketData for AnyExchange {
     }
 }
 
-
 pub enum AnyWsExchange {
     Nash(OpenLimitsWs<NashStream>),
     Binance(OpenLimitsWs<BinanceWebsocket>),
@@ -191,8 +190,12 @@ impl ExchangeWs for AnyWsExchange {
     type InitParams = InitAnyExchange;
     async fn new(params: Self::InitParams) -> Self {
         match params {
-            InitAnyExchange::Nash(params) => OpenLimitsWs::<NashStream>::instantiate(params).await.into(),
-            InitAnyExchange::Binance(_) => OpenLimitsWs::<BinanceWebsocket>::instantiate(()).await.into()
+            InitAnyExchange::Nash(params) => {
+                OpenLimitsWs::<NashStream>::instantiate(params).await.into()
+            }
+            InitAnyExchange::Binance(_) => OpenLimitsWs::<BinanceWebsocket>::instantiate(())
+                .await
+                .into(),
         }
     }
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
