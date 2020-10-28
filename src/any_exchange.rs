@@ -3,10 +3,10 @@
 //! use to operate over any openlimits-supported exchange without generics
 
 use crate::binance::{Binance, BinanceParameters, BinanceWebsocket};
+use crate::exchange::{Exchange, ExchangeAccount, ExchangeMarketData};
 use crate::exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
 use crate::exchange_ws::{ExchangeWs, OpenLimitsWs};
 use crate::nash::{Nash, NashParameters, NashStream};
-use crate::exchange::{ExchangeAccount, Exchange, ExchangeMarketData};
 use crate::{
     model::{
         websocket::{OpenLimitsWebsocketMessage, Subscription},
@@ -17,9 +17,9 @@ use crate::{
     },
     shared::Result,
 };
-use std::{pin::Pin, task::Context, task::Poll};
-use futures::stream::{Stream, StreamExt};
 use async_trait::async_trait;
+use futures::stream::{Stream, StreamExt};
+use std::{pin::Pin, task::Context, task::Poll};
 
 #[derive(Clone)]
 pub enum InitAnyExchange {
