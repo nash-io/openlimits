@@ -17,7 +17,12 @@ async fn products() {
 #[tokio::test]
 async fn product() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.inner_client().unwrap().product("BTC-USD").await.unwrap();
+    let res = exchange
+        .inner_client()
+        .unwrap()
+        .product("BTC-USD")
+        .await
+        .unwrap();
     println!("{:?}", res);
 }
 
@@ -25,7 +30,8 @@ async fn product() {
 async fn trades() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .trades("BTC-USD", None)
         .await
         .unwrap();
@@ -34,7 +40,8 @@ async fn trades() {
     let trade = res.last().unwrap();
 
     let res = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .trades(
             "BTC-USD",
             Some(&Paginator {
@@ -52,7 +59,8 @@ async fn trades() {
 async fn book() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .book::<BookRecordL1>("BTC-USD")
         .await
         .unwrap();
@@ -62,7 +70,12 @@ async fn book() {
 #[tokio::test]
 async fn ticker() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.inner_client().unwrap().ticker("BTC-USD").await.unwrap();
+    let res = exchange
+        .inner_client()
+        .unwrap()
+        .ticker("BTC-USD")
+        .await
+        .unwrap();
     println!("{:?}", res);
 }
 
@@ -70,14 +83,16 @@ async fn ticker() {
 async fn candles() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .candles("BTC-USD", None)
         .await
         .unwrap();
     println!("{:?}", res);
 
     let res = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .candles(
             "BTC-USD",
             Some(&CandleRequestParams {
@@ -93,7 +108,8 @@ async fn candles() {
             .unwrap();
 
     let res = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .candles(
             "BTC-USD",
             Some(&CandleRequestParams {

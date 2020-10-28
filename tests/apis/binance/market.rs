@@ -7,7 +7,8 @@ use openlimits::{
 async fn get_depth() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .get_depth("BNBBTC", 50)
         .await
         .unwrap();
@@ -17,14 +18,24 @@ async fn get_depth() {
 #[tokio::test]
 async fn get_all_prices() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
-    let resp = exchange.inner_client().unwrap().get_all_prices().await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .get_all_prices()
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_price() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
-    let resp = exchange.inner_client().unwrap().get_price("BNBBTC").await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .get_price("BNBBTC")
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -32,7 +43,8 @@ async fn get_price() {
 async fn get_all_book_tickers() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .get_all_book_tickers()
         .await
         .unwrap();
@@ -43,7 +55,8 @@ async fn get_all_book_tickers() {
 async fn get_book_ticker() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .get_book_ticker("BNBBTC")
         .await
         .unwrap();
@@ -54,7 +67,8 @@ async fn get_book_ticker() {
 async fn get_24h_price_stats() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .get_24h_price_stats("BNBBTC")
         .await
         .unwrap();
@@ -69,7 +83,12 @@ async fn get_klines() {
         interval: String::from("5m"),
         paginator: None,
     };
-    let resp = exchange.inner_client().unwrap().get_klines(&params).await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .get_klines(&params)
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -77,7 +96,8 @@ async fn get_klines() {
 async fn get_24h_price_stats_all() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .get_24h_price_stats_all()
         .await
         .unwrap();
