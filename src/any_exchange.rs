@@ -16,28 +16,30 @@ use crate::nash::{NashParameters, Nash, NashStream};
 use crate::binance::{BinanceParameters, Binance, BinanceWebsocket};
 use crate::exchange::{Exchange, ExchangeAccount, ExchangeMarketData};
 use crate::exchange_ws::{ExchangeWs, OpenLimitsWs};
+use crate::exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
 use std::{pin::Pin, task::Context, task::Poll};
 use futures::stream::{Stream, StreamExt};
 use async_trait::async_trait;
 
-pub enum AnyCredential {
+#[derive(Clone)]
+pub enum InitAnyExchange {
     Nash(NashParameters),
     Binance(BinanceParameters)
 }
 
-pub enum OpenlimitsAnyExchange {
+pub enum AnyExchange {
     Nash(Nash),
     Binance(Binance),
 }
 
 #[async_trait]
-impl Exchange for OpenlimitsAnyExchange {
-    type InitParams = AnyCredential;
+impl Exchange for AnyExchange {
+    type InitParams = InitAnyExchange;
     type InnerClient = ();
-    async fn new(params: AnyCredential) -> Self {
+    async fn new(params: InitAnyExchange) -> Self {
         match params {
-            AnyCredential::Nash(params) => Nash::new(params).await.into(),
-            AnyCredential::Binance(params) => Binance::new(params).await.into()
+            InitAnyExchange::Nash(params) => Nash::new(params).await.into(),
+            InitAnyExchange::Binance(params) => Binance::new(params).await.into()
         }
     }
     // not particularly useful to access the inner client with this type. could wrap the inner
@@ -47,7 +49,29 @@ impl Exchange for OpenlimitsAnyExchange {
 }
 
 #[async_trait]
-impl ExchangeAccount for OpenlimitsAnyExchange {
+impl ExchangeInfoRetrieval for AnyExchange {
+    async fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
+        match self {
+            Self::Nash(nash) => nash.get_pair(name).await,
+            Self::Binance(binance) => binance.get_pair(name).await
+        }
+    }
+    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
+        match self {
+            Self::Nash(nash) => nash.retrieve_pairs().await,
+            Self::Binance(binance) => binance.retrieve_pairs().await
+        }
+    }
+    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
+        match self {
+            Self::Nash(nash) => nash.refresh_market_info().await,
+            Self::Binance(binance) => binance.refresh_market_info().await
+        }
+    }
+}
+
+#[async_trait]
+impl ExchangeAccount for AnyExchange {
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         match self {
             Self::Nash(nash) => nash.limit_buy(req).await,
@@ -117,7 +141,7 @@ impl ExchangeAccount for OpenlimitsAnyExchange {
 }
 
 #[async_trait]
-impl ExchangeMarketData for OpenlimitsAnyExchange {
+impl ExchangeMarketData for AnyExchange {
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         match self {
             Self::Nash(nash) => nash.order_book(req).await,
@@ -145,12 +169,12 @@ impl ExchangeMarketData for OpenlimitsAnyExchange {
 }
 
 
-pub enum OpenLimitsAnyWs {
+pub enum AnyWsExchange {
     Nash(OpenLimitsWs<NashStream>),
     Binance(OpenLimitsWs<BinanceWebsocket>)
 }
 
-impl Stream for OpenLimitsAnyWs {
+impl Stream for AnyWsExchange {
     type Item = Result<OpenLimitsWebsocketMessage>;
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         match unsafe { self.get_unchecked_mut() } {
@@ -162,12 +186,12 @@ impl Stream for OpenLimitsAnyWs {
 
 
 #[async_trait]
-impl ExchangeWs for OpenLimitsAnyWs {
-    type InitParams = AnyCredential;
+impl ExchangeWs for AnyWsExchange {
+    type InitParams = InitAnyExchange;
     async fn new(params: Self::InitParams) -> Self {
         match params {
-            AnyCredential::Nash(params) => OpenLimitsWs::<NashStream>::instantiate(params).await.into(),
-            AnyCredential::Binance(_) => OpenLimitsWs::<BinanceWebsocket>::instantiate(()).await.into()
+            InitAnyExchange::Nash(params) => OpenLimitsWs::<NashStream>::instantiate(params).await.into(),
+            InitAnyExchange::Binance(_) => OpenLimitsWs::<BinanceWebsocket>::instantiate(()).await.into()
         }
     }
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
@@ -181,25 +205,25 @@ impl ExchangeWs for OpenLimitsAnyWs {
     }
 }
 
-impl From<Nash> for OpenlimitsAnyExchange {
+impl From<Nash> for AnyExchange {
     fn from(nash: Nash) -> Self {
         Self::Nash(nash)
     }
 }
 
-impl From<Binance> for OpenlimitsAnyExchange {
+impl From<Binance> for AnyExchange {
     fn from(binance: Binance) -> Self {
         Self::Binance(binance)
     }
 }
 
-impl From<OpenLimitsWs<NashStream>> for OpenLimitsAnyWs {
+impl From<OpenLimitsWs<NashStream>> for AnyWsExchange {
     fn from(nash: OpenLimitsWs<NashStream>) -> Self {
         Self::Nash(nash)
     }
 }
 
-impl From<OpenLimitsWs<BinanceWebsocket>> for OpenLimitsAnyWs {
+impl From<OpenLimitsWs<BinanceWebsocket>> for AnyWsExchange {
     fn from(binance: OpenLimitsWs<BinanceWebsocket>) -> Self {
         Self::Binance(binance)
     }
