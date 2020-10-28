@@ -14,7 +14,12 @@ use openlimits::{
 #[tokio::test]
 async fn get_account() {
     let exchange = init().await;
-    let resp = exchange.inner_client().unwrap().get_account(None).await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .get_account(None)
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -27,7 +32,8 @@ async fn get_all_open_orders() {
         product_id: None,
     };
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .get_orders(Some(&params))
         .await
         .unwrap();
@@ -37,7 +43,12 @@ async fn get_all_open_orders() {
 #[tokio::test]
 async fn get_all_orders() {
     let exchange = init().await;
-    let resp = exchange.inner_client().unwrap().get_orders(None).await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .get_orders(None)
+        .await
+        .unwrap();
     println!("{:?}", resp);
 
     // let params = GetOrderRequest{
@@ -58,7 +69,8 @@ async fn get_all_orders_for_a_given_product() {
     };
 
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .get_orders(Some(&params))
         .await
         .unwrap();
@@ -70,12 +82,18 @@ async fn get_order() {
     let exchange = init().await;
     let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
     let order = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .market_buy(pair, Decimal::new(1, 3))
         .await
         .unwrap();
 
-    let resp = exchange.inner_client().unwrap().get_order(order.id).await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .get_order(order.id)
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -84,7 +102,8 @@ async fn limit_buy() {
     let exchange = init().await;
     let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .limit_buy(pair, Decimal::new(1, 3), Decimal::new(5000, 0))
         .await
         .unwrap();
@@ -96,7 +115,8 @@ async fn limit_sell() {
     let exchange = init().await;
     let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .limit_sell(pair, Decimal::new(1, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
@@ -108,7 +128,8 @@ async fn market_buy() {
     let exchange = init().await;
     let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .market_buy(pair, Decimal::new(1, 3))
         .await
         .unwrap();
@@ -120,7 +141,8 @@ async fn market_sell() {
     let exchange = init().await;
     let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .market_sell(pair, Decimal::new(1, 3))
         .await
         .unwrap();
@@ -132,24 +154,28 @@ async fn cancel_all_orders() {
     let exchange = init().await;
     let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
     exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .limit_sell(pair.clone(), Decimal::new(1, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
     exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .limit_sell(pair.clone(), Decimal::new(1, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
 
     exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .limit_buy(pair, Decimal::new(2, 2), Decimal::new(2, 2))
         .await
         .unwrap();
 
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .cancel_all_orders(Some("BTC-USD"))
         .await
         .unwrap();
@@ -157,7 +183,8 @@ async fn cancel_all_orders() {
     println!("{:?}", resp);
 
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .cancel_all_orders(None)
         .await
         .unwrap();
@@ -170,12 +197,14 @@ async fn cancel_order() {
     let exchange = init().await;
     let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
     let order = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .limit_sell(pair, Decimal::new(1, 3), Decimal::new(20000, 0))
         .await
         .unwrap();
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .cancel_order(order.id, Some("BTC-USD"))
         .await
         .unwrap();
@@ -188,7 +217,8 @@ async fn get_fills_for_order() {
     let exchange = init().await;
     let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
     let order = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .market_sell(pair, Decimal::new(1, 3))
         .await
         .unwrap();
@@ -200,7 +230,8 @@ async fn get_fills_for_order() {
     };
 
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .get_fills(Some(&params))
         .await
         .unwrap();
@@ -218,7 +249,8 @@ async fn get_fills_for_product() {
     };
 
     let resp = exchange
-        .inner_client().unwrap()
+        .inner_client()
+        .unwrap()
         .get_fills(Some(&params))
         .await
         .unwrap();
