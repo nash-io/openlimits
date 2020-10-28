@@ -1,6 +1,6 @@
-//! In some contexts, such as bindings in other languages (e.g., Python via pyo3) it is not possible to use trait
+//! In some contexts, such as bindings in other languages (e.g., Python via pyo3), it is not possible to use trait
 //! constraints on generics. This module provides an enum wrapper type for all openlimits exchanges that code can 
-//! use to operate over any openlimits exchange without generics
+//! use to operate over any openlimits-supported exchange without generics
 
 use crate::{
     model::{
@@ -8,17 +8,17 @@ use crate::{
         GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
         OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
         OrderCanceled, Paginator, Ticker, Trade, TradeHistoryRequest,
+        websocket::{Subscription, OpenLimitsWebsocketMessage}
     },
     shared::Result,
 };
-use crate::nash::{NashParameters, Nash, NashStream, Client as NashBaseClient};
-use crate::binance::{BinanceParameters, Binance, BinanceWebsocket, BaseClient as BinanceBaseClient};
+use crate::nash::{NashParameters, Nash, NashStream};
+use crate::binance::{BinanceParameters, Binance, BinanceWebsocket};
 use crate::exchange::{Exchange, ExchangeAccount, ExchangeMarketData};
 use crate::exchange_ws::{ExchangeWs, OpenLimitsWs};
-use crate::exchange_info::{ExchangeInfo, ExchangeInfoRetrieval};
+use std::{pin::Pin, task::Context, task::Poll};
+use futures::stream::{Stream, StreamExt};
 use async_trait::async_trait;
-
-
 
 pub enum AnyCredential {
     Nash(NashParameters),
@@ -116,9 +116,69 @@ impl ExchangeAccount for OpenlimitsAnyExchange {
     }
 }
 
+#[async_trait]
+impl ExchangeMarketData for OpenlimitsAnyExchange {
+    async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
+        match self {
+            Self::Nash(nash) => nash.order_book(req).await,
+            Self::Binance(binance) => binance.order_book(req).await
+        }
+    }
+    async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
+        match self {
+            Self::Nash(nash) => nash.get_price_ticker(req).await,
+            Self::Binance(binance) => binance.get_price_ticker(req).await
+        }
+    }
+    async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
+        match self {
+            Self::Nash(nash) => nash.get_historic_rates(req).await,
+            Self::Binance(binance) => binance.get_historic_rates(req).await
+        }
+    }
+    async fn get_historic_trades(&self, req: &GetHistoricTradesRequest) -> Result<Vec<Trade>> {
+        match self {
+            Self::Nash(nash) => nash.get_historic_trades(req).await,
+            Self::Binance(binance) => binance.get_historic_trades(req).await
+        }
+    }
+}
+
+
 pub enum OpenLimitsAnyWs {
     Nash(OpenLimitsWs<NashStream>),
     Binance(OpenLimitsWs<BinanceWebsocket>)
+}
+
+impl Stream for OpenLimitsAnyWs {
+    type Item = Result<OpenLimitsWebsocketMessage>;
+    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
+        match unsafe { self.get_unchecked_mut() } {
+            Self::Nash(nash) => nash.poll_next_unpin(cx),
+            Self::Binance(binance) => binance.poll_next_unpin(cx),
+        }
+    }
+}
+
+
+#[async_trait]
+impl ExchangeWs for OpenLimitsAnyWs {
+    type InitParams = AnyCredential;
+    async fn new(params: Self::InitParams) -> Self {
+        match params {
+            AnyCredential::Nash(params) => OpenLimitsWs::<NashStream>::instantiate(params).await.into(),
+            AnyCredential::Binance(_) => OpenLimitsWs::<BinanceWebsocket>::instantiate(()).await.into()
+        }
+    }
+    async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
+        match self {
+            Self::Nash(nash) => nash.subscribe(subscription).await,
+            Self::Binance(binance) => binance.subscribe(subscription).await
+        }
+    }
+    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
+        message
+    }
 }
 
 impl From<Nash> for OpenlimitsAnyExchange {
@@ -129,6 +189,18 @@ impl From<Nash> for OpenlimitsAnyExchange {
 
 impl From<Binance> for OpenlimitsAnyExchange {
     fn from(binance: Binance) -> Self {
+        Self::Binance(binance)
+    }
+}
+
+impl From<OpenLimitsWs<NashStream>> for OpenLimitsAnyWs {
+    fn from(nash: OpenLimitsWs<NashStream>) -> Self {
+        Self::Nash(nash)
+    }
+}
+
+impl From<OpenLimitsWs<BinanceWebsocket>> for OpenLimitsAnyWs {
+    fn from(binance: OpenLimitsWs<BinanceWebsocket>) -> Self {
         Self::Binance(binance)
     }
 }
