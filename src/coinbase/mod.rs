@@ -90,8 +90,8 @@ impl Exchange for Coinbase {
         coinbase
     }
 
-    fn inner_client(&self) -> &Self::InnerClient {
-        &self.client
+    fn inner_client(&self) -> Option<&Self::InnerClient> {
+        Some(&self.client)
     }
 }
 

@@ -21,7 +21,7 @@ use crate::{
     shared::Result,
 };
 use async_trait::async_trait;
-use client::websocket::BinanceWebsocket;
+pub use client::websocket::BinanceWebsocket;
 use model::KlineSummaries;
 use transport::Transport;
 
@@ -91,8 +91,8 @@ impl Exchange for Binance {
         binance
     }
 
-    fn inner_client(&self) -> &Self::InnerClient {
-        &self.client
+    fn inner_client(&self) -> Option<&Self::InnerClient> {
+        Some(&self.client)
     }
 }
 

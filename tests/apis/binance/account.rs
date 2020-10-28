@@ -14,14 +14,24 @@ use openlimits::{
 #[tokio::test]
 async fn get_account() {
     let exchange = init().await;
-    let resp = exchange.inner_client().get_account().await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .get_account()
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_balance() {
     let exchange = init().await;
-    let resp = exchange.inner_client().get_balance("BTC").await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .get_balance("BTC")
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -30,6 +40,7 @@ async fn get_open_orders() {
     let exchange = init().await;
     let resp = exchange
         .inner_client()
+        .unwrap()
         .get_open_orders("BNBBTC")
         .await
         .unwrap();
@@ -39,7 +50,12 @@ async fn get_open_orders() {
 #[tokio::test]
 async fn get_all_open_orders() {
     let exchange = init().await;
-    let resp = exchange.inner_client().get_all_open_orders().await.unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .get_all_open_orders()
+        .await
+        .unwrap();
     println!("{:?}", resp);
 }
 
@@ -52,6 +68,7 @@ async fn get_all_orders() {
     };
     let resp = exchange
         .inner_client()
+        .unwrap()
         .get_all_orders(&params)
         .await
         .unwrap();
@@ -64,11 +81,13 @@ async fn get_order() {
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let transaction = exchange
         .inner_client()
+        .unwrap()
         .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
         .await
         .unwrap();
     let resp = exchange
         .inner_client()
+        .unwrap()
         .get_order("BNBBTC", transaction.order_id)
         .await
         .unwrap();
@@ -81,6 +100,7 @@ async fn limit_buy() {
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let resp = exchange
         .inner_client()
+        .unwrap()
         .limit_buy(pair, Decimal::new(1, 1), Decimal::new(1, 3))
         .await
         .unwrap();
@@ -93,6 +113,7 @@ async fn rounded_limit_buy() {
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let resp = exchange
         .inner_client()
+        .unwrap()
         .limit_buy(pair, Decimal::new(12345678, 8), Decimal::new(1, 3))
         .await
         .unwrap();
@@ -105,6 +126,7 @@ async fn limit_sell() {
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let resp = exchange
         .inner_client()
+        .unwrap()
         .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
         .await
         .unwrap();
@@ -117,6 +139,7 @@ async fn market_buy() {
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let resp = exchange
         .inner_client()
+        .unwrap()
         .market_buy(pair, Decimal::new(1, 0))
         .await
         .unwrap();
@@ -129,6 +152,7 @@ async fn market_sell() {
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let resp = exchange
         .inner_client()
+        .unwrap()
         .market_sell(pair, Decimal::new(1, 0))
         .await
         .unwrap();
@@ -142,11 +166,13 @@ async fn cancel_order() {
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
     let transaction = exchange
         .inner_client()
+        .unwrap()
         .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
         .await
         .unwrap();
     let resp = exchange
         .inner_client()
+        .unwrap()
         .cancel_order("BNBBTC", transaction.order_id)
         .await
         .unwrap();
@@ -163,6 +189,7 @@ async fn trade_history() {
 
     let resp = exchange
         .inner_client()
+        .unwrap()
         .trade_history(&params)
         .await
         .unwrap();
