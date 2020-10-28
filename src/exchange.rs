@@ -25,7 +25,7 @@ pub trait Exchange {
     type InitParams;
     type InnerClient;
     async fn new(params: Self::InitParams) -> Self;
-    fn inner_client(&self) -> &Self::InnerClient;
+    fn inner_client(&self) -> Option<&Self::InnerClient>;
 }
 
 #[async_trait]

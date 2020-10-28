@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use nash_native_client::ws_client::client::Client;
+pub use nash_native_client::ws_client::client::Client;
 use std::convert::{TryFrom, TryInto};
 
 use crate::{
@@ -80,8 +80,8 @@ impl Exchange for Nash {
         }
     }
 
-    fn inner_client(&self) -> &Self::InnerClient {
-        &self.transport
+    fn inner_client(&self) -> Option<&Self::InnerClient> {
+        Some(&self.transport)
     }
 }
 
