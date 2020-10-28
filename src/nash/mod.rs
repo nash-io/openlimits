@@ -727,7 +727,7 @@ impl ExchangeWs for NashStream {
 impl From<Subscription> for nash_protocol::protocol::subscriptions::SubscriptionRequest {
     fn from(sub: Subscription) -> Self {
         match sub {
-            Subscription::OrderBook(symbol, _depth) => {
+            Subscription::OrderBook(symbol) => {
                 let market = nash_protocol::types::Market::from_str(&symbol).unwrap();
                 Self::Orderbook(
                     nash_protocol::protocol::subscriptions::updated_orderbook::SubscribeOrderbook {
@@ -735,7 +735,7 @@ impl From<Subscription> for nash_protocol::protocol::subscriptions::Subscription
                     },
                 )
             }
-            Subscription::Trade(symbol) => {
+            Subscription::Trades(symbol) => {
                 let market = nash_protocol::types::Market::from_str(&symbol).unwrap();
                 Self::Trades(
                     nash_protocol::protocol::subscriptions::trades::SubscribeTrades { market },

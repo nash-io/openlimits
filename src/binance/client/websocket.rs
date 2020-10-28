@@ -1,98 +1,123 @@
+use std::fmt::Display;
+
 use crate::{
-    binance::model::websocket::{
-        AccountUpdate, BinanceWebsocketMessage, Subscription, UserOrderUpdate,
+    binance::{
+        model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
+        Binance,
     },
+    errors::OpenLimitError,
+    exchange_ws::ExchangeStreams,
+    exchange_ws::WebSocketStream,
+    model::websocket::OpenLimitsWebsocketMessage,
+    model::websocket::Subscription,
     shared::Result,
 };
+use async_trait::async_trait;
+use futures::StreamExt;
+use serde::{de, Deserialize};
+use serde_json::Value;
+use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 
-use std::{collections::HashMap, pin::Pin, task::Poll};
+const WS_URL: &str = "wss://stream.binance.com:9443/stream";
 
-use futures::{
-    stream::{SplitStream, Stream},
-    StreamExt,
-};
-use serde::{Deserialize, Serialize};
-use tokio::net::TcpStream;
-use tokio_tungstenite::{
-    connect_async, tungstenite::protocol::Message, MaybeTlsStream, WebSocketStream,
-};
+#[async_trait]
+impl<'a> ExchangeStreams<'a> for Binance {
+    async fn new_stream(
+        &'a self,
+        subscriptions: &[Subscription],
+    ) -> Result<WebSocketStream<'a, Self>> {
+        let streams = subscriptions
+            .iter()
+            .map(|s| BinanceSubscription::from(s.clone()))
+            .map(|bs| bs.to_string())
+            .collect::<Vec<String>>()
+            .join("/");
 
-const WS_URL: &str = "wss://stream.binance.com:9443/ws";
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-#[serde(untagged)]
-enum Either<L, R> {
-    Left(L),
-    Right(R),
-}
-
-type WSStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
-
-pub struct BinanceWebsocket {
-    pub subscriptions: HashMap<Subscription, SplitStream<WSStream>>,
-}
-
-impl BinanceWebsocket {
-    pub fn new() -> Self {
-        Self {
-            subscriptions: HashMap::new(),
-        }
-    }
-
-    pub async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
-        let sub = match &subscription {
-            Subscription::AggregateTrade(ref symbol) => format!("{}@aggTrade", symbol),
-            Subscription::Candlestick(ref symbol, ref interval) => {
-                format!("{}@kline_{}", symbol, interval)
-            }
-            Subscription::Depth(ref symbol, interval) => match interval {
-                None => format!("{}@depth", symbol),
-                Some(i) => format!("{}@depth@{}ms", symbol, i),
-            },
-            Subscription::MiniTicker(symbol) => format!("{}@miniTicker", symbol),
-            Subscription::MiniTickerAll => "!miniTicker@arr".to_string(),
-            Subscription::OrderBook(ref symbol, depth) => format!("{}@depth{}", symbol, depth),
-            Subscription::Ticker(ref symbol) => format!("{}@ticker", symbol),
-            Subscription::TickerAll => "!ticker@arr".to_string(),
-            Subscription::Trade(ref symbol) => format!("{}@trade", symbol),
-            Subscription::UserData(ref key) => key.clone(),
-        };
-
-        let endpoint = url::Url::parse(&format!("{}/{}", WS_URL, sub)).unwrap();
+        let endpoint = url::Url::parse(&format!("{}?streams={}", WS_URL, streams)).unwrap();
         let (ws_stream, _) = connect_async(endpoint).await?;
 
-        self.subscriptions.insert(subscription, ws_stream.split().1);
+        let s = ws_stream
+            .map(|message| parse_message(message.unwrap()))
+            .map(|message| OpenLimitsWebsocketMessage::from(message.unwrap()));
 
-        Ok(())
+        Ok(WebSocketStream::new(Box::new(s), self))
     }
 }
 
-impl Default for BinanceWebsocket {
-    fn default() -> Self {
-        Self::new()
-    }
+#[derive(Deserialize)]
+struct BinanceWebsocketStream {
+    #[serde(rename = "stream")]
+    pub name: String,
+    pub data: Value,
 }
 
-impl Stream for BinanceWebsocket {
-    type Item = Result<BinanceWebsocketMessage>;
+impl<'de> Deserialize<'de> for BinanceWebsocketMessage {
+    fn deserialize<D>(deserializer: D) -> core::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let stream: BinanceWebsocketStream = BinanceWebsocketStream::deserialize(deserializer)?;
 
-    fn poll_next(
-        mut self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-    ) -> Poll<Option<Self::Item>> {
-        for (sub, stream) in &mut self.subscriptions.iter_mut() {
-            if let Poll::Ready(Some(message)) = Pin::new(stream).poll_next(cx) {
-                let m = parse_message(sub.clone(), message?);
-
-                return Poll::Ready(Some(m));
-            }
+        if stream.name.contains("@depth10") {
+            Ok(BinanceWebsocketMessage::OrderBook(
+                serde_json::from_value(stream.data).map_err(de::Error::custom)?,
+            ))
+        } else if stream.name.contains("@depth") {
+            Ok(BinanceWebsocketMessage::Depth(
+                serde_json::from_value(stream.data).map_err(de::Error::custom)?,
+            ))
+        } else {
+            panic!("Not supported Subscription");
         }
-
-        std::task::Poll::Pending
     }
 }
 
-fn parse_message(sub: Subscription, ws_message: Message) -> Result<BinanceWebsocketMessage> {
+impl Display for BinanceSubscription {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BinanceSubscription::AggregateTrade(ref symbol) => write!(f, "{}@aggTrade", symbol),
+            BinanceSubscription::Candlestick(ref symbol, ref interval) => {
+                write!(f, "{}@kline_{}", symbol, interval)
+            }
+            BinanceSubscription::Depth(ref symbol, interval) => match interval {
+                None => write!(f, "{}@depth", symbol),
+                Some(i) => write!(f, "{}@depth@{}ms", symbol, i),
+            },
+            BinanceSubscription::MiniTicker(symbol) => write!(f, "{}@miniTicker", symbol),
+            BinanceSubscription::MiniTickerAll => write!(f, "!miniTicker@arr"),
+            BinanceSubscription::OrderBook(ref symbol, depth) => {
+                write!(f, "{}@depth{}", symbol, depth)
+            }
+            BinanceSubscription::Ticker(ref symbol) => write!(f, "{}@ticker", symbol),
+            BinanceSubscription::TickerAll => write!(f, "!ticker@arr"),
+            BinanceSubscription::Trade(ref symbol) => write!(f, "{}@trade", symbol),
+            BinanceSubscription::UserData(ref key) => write!(f, "{}", key),
+        }
+    }
+}
+
+impl From<Subscription> for BinanceSubscription {
+    fn from(sub: Subscription) -> Self {
+        match sub {
+            Subscription::OrderBook(symbol) => BinanceSubscription::OrderBook(symbol, 10),
+            _ => panic!("Not supported Subscription"),
+        }
+    }
+}
+
+impl From<BinanceWebsocketMessage> for OpenLimitsWebsocketMessage {
+    fn from(message: BinanceWebsocketMessage) -> Self {
+        match message {
+            BinanceWebsocketMessage::Ping => OpenLimitsWebsocketMessage::Ping,
+            BinanceWebsocketMessage::OrderBook(orderbook) => {
+                OpenLimitsWebsocketMessage::OrderBook(orderbook.into())
+            }
+            _ => panic!("Not supported Message"),
+        }
+    }
+}
+
+fn parse_message(ws_message: Message) -> Result<BinanceWebsocketMessage> {
     let msg = match ws_message {
         Message::Text(m) => m,
         Message::Binary(b) => return Ok(BinanceWebsocketMessage::Binary(b)),
@@ -101,34 +126,5 @@ fn parse_message(sub: Subscription, ws_message: Message) -> Result<BinanceWebsoc
         Message::Close(..) => return Ok(BinanceWebsocketMessage::Close),
     };
 
-    let message = match sub {
-        Subscription::AggregateTrade(..) => {
-            BinanceWebsocketMessage::AggregateTrade(serde_json::from_str(&msg)?)
-        }
-        Subscription::Candlestick(..) => {
-            BinanceWebsocketMessage::Candlestick(serde_json::from_str(&msg)?)
-        }
-        Subscription::Depth(..) => BinanceWebsocketMessage::Depth(serde_json::from_str(&msg)?),
-        Subscription::MiniTicker(..) => {
-            BinanceWebsocketMessage::MiniTicker(serde_json::from_str(&msg)?)
-        }
-        Subscription::MiniTickerAll => {
-            BinanceWebsocketMessage::MiniTickerAll(serde_json::from_str(&msg)?)
-        }
-        Subscription::OrderBook(..) => {
-            BinanceWebsocketMessage::OrderBook(serde_json::from_str(&msg)?)
-        }
-        Subscription::Ticker(..) => BinanceWebsocketMessage::Ticker(serde_json::from_str(&msg)?),
-        Subscription::TickerAll => BinanceWebsocketMessage::TickerAll(serde_json::from_str(&msg)?),
-        Subscription::Trade(..) => BinanceWebsocketMessage::Trade(serde_json::from_str(&msg)?),
-        Subscription::UserData(..) => {
-            let msg: Either<AccountUpdate, UserOrderUpdate> = serde_json::from_str(&msg)?;
-            match msg {
-                Either::Left(m) => BinanceWebsocketMessage::UserAccountUpdate(m),
-                Either::Right(m) => BinanceWebsocketMessage::UserOrderUpdate(m),
-            }
-        }
-    };
-
-    Ok(message)
+    serde_json::from_str(&msg).map_err(OpenLimitError::JsonError)
 }

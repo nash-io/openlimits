@@ -1,15 +1,12 @@
 use dotenv::dotenv;
 use futures::StreamExt;
-use openlimits::{
-    exchange::Exchange, exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::Nash,
-    nash::NashStream,
-};
+use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::NashStream};
 use std::env;
 
 #[tokio::test]
 async fn orderbook() {
     let mut client = init().await;
-    let sub = Subscription::OrderBook("btc_usdc".to_string(), 5);
+    let sub = Subscription::OrderBook("btc_usdc".to_string());
     client.subscribe(sub).await.unwrap();
 
     let item = client.next().await;
@@ -19,7 +16,7 @@ async fn orderbook() {
 #[tokio::test]
 async fn trades() {
     let mut client = init().await;
-    let sub = Subscription::Trade("btc_usdc".to_string());
+    let sub = Subscription::Trades("btc_usdc".to_string());
     client.subscribe(sub).await.unwrap();
 
     let item = client.next().await;

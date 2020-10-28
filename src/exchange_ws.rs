@@ -1,44 +1,64 @@
-use crate::model::websocket::{OpenLimitsWebsocketMessage, Subscription};
+use crate::{
+    exchange::Exchange,
+    model::websocket::{OpenLimitsWebsocketMessage, Subscription},
+};
 use async_trait::async_trait;
-use derive_more::Constructor;
 use futures::stream::Stream;
 
 use crate::shared::Result;
 use std::{pin::Pin, task::Context, task::Poll};
 
-#[derive(Constructor)]
-pub struct OpenLimitsWs<E: ExchangeWs> {
-    pub websocket: E,
-}
-
-impl<E: ExchangeWs> OpenLimitsWs<E> {
-    pub async fn instantiate(params: E::InitParams) -> Self {
-        let websocket = E::new(params).await;
-        Self { websocket }
-    }
-    pub async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
-        self.websocket.subscribe(subscription).await
-    }
+#[async_trait]
+pub trait ExchangeStreams<'a>: Exchange + Sized {
+    async fn new_stream(
+        &'a self,
+        subscriptions: &[Subscription],
+    ) -> Result<WebSocketStream<'a, Self>>;
 }
 
 #[async_trait]
-pub trait ExchangeWs: Stream + Unpin {
-    type InitParams;
-    async fn new(params: Self::InitParams) -> Self;
-    async fn subscribe(&mut self, subscription: Subscription) -> Result<()>;
-    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage>;
+pub trait ExchangeMutableStreams<'a>: ExchangeStreams<'a> {
+    async fn subscribe(
+        &self,
+        stream: &dyn Stream<Item = OpenLimitsWebsocketMessage>,
+        subscription: &Subscription,
+    ) -> Result<()>;
+    async fn unsubscribe(
+        &self,
+        stream: &dyn Stream<Item = OpenLimitsWebsocketMessage>,
+        subscription: &Subscription,
+    ) -> Result<()>;
 }
 
-impl<E: ExchangeWs> Stream for OpenLimitsWs<E> {
-    type Item = Result<OpenLimitsWebsocketMessage>;
+pub struct WebSocketStream<'a, E: ExchangeStreams<'a>> {
+    inner_stream: Box<dyn Stream<Item = OpenLimitsWebsocketMessage> + Unpin>,
+    exchange: &'a E,
+}
+
+impl<'a, E: ExchangeStreams<'a>> WebSocketStream<'a, E> {
+    pub fn new(
+        inner_stream: Box<dyn Stream<Item = OpenLimitsWebsocketMessage> + Unpin>,
+        exchange: &'a E,
+    ) -> Self {
+        Self {
+            inner_stream,
+            exchange,
+        }
+    }
+}
+
+impl<'a, E: ExchangeMutableStreams<'a>> WebSocketStream<'a, E> {
+    pub async fn subscribe(&self, subscription: &Subscription) -> Result<()> {
+        self.exchange
+            .subscribe(&self.inner_stream, subscription)
+            .await
+    }
+}
+
+impl<'a, E: ExchangeStreams<'a>> Stream for WebSocketStream<'a, E> {
+    type Item = OpenLimitsWebsocketMessage;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        if let Poll::Ready(Some(message)) = Pin::new(&mut self.websocket).poll_next(cx) {
-            let m = self.websocket.parse_message(message);
-
-            return Poll::Ready(Some(m));
-        }
-
-        Poll::Pending
+        Pin::new(self.inner_stream.as_mut()).poll_next(cx)
     }
 }
