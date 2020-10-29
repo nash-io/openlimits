@@ -52,7 +52,6 @@ pub mod string_to_opt_decimal {
         enum StringToOptDecimal {
             String(Option<String>),
         }
-
         let StringToOptDecimal::String(s) = StringToOptDecimal::deserialize(deserializer)?;
         if let Some(s) = s {
             return Decimal::from_str(&s).map(Some).or(Ok(None));
@@ -85,8 +84,11 @@ pub mod naive_datetime_from_string {
         }
 
         let DatetimeFromString::String(s) = DatetimeFromString::deserialize(deserializer)?;
-
-        NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S.%fZ").map_err(serde::de::Error::custom)
+        let a = NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S.%fZ");
+        match a {
+            Ok(t) => return Ok(t),
+            Err(e) => NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%SZ").map_err(serde::de::Error::custom),
+        }
     }
 }
 

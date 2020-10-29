@@ -422,7 +422,6 @@ pub enum OrderType {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TimeInForce {
     GTC,
     IOC,

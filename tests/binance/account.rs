@@ -118,8 +118,9 @@ async fn get_order_history() {
 #[tokio::test]
 async fn get_all_open_orders() {
     let exchange = init().await;
+
     let req = OpenLimitOrderRequest {
-        price: Decimal::new(1, 3),
+        price: Decimal::new(5, 3),
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
         time_in_force: TimeInForce::GoodTillCancelled,

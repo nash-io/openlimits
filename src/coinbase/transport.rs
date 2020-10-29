@@ -248,6 +248,7 @@ impl Transport {
             StatusCode::OK => {
                 let text = response.text().await?;
                 serde_json::from_str::<O>(&text).map_err(move |err| {
+                    println!("{}", &text);
                     OpenLimitError::NotParsableResponse(format!("Error:{} Payload: {}", err, text))
                 })
             }

@@ -74,6 +74,7 @@ impl BaseClient {
         size: Decimal,
         price: Decimal,
         time_in_force: OrderTimeInForce,
+        post_only: bool
     ) -> Result<Order> {
         let data = OrderRequest {
             product_id: pair.symbol,
@@ -85,7 +86,7 @@ impl BaseClient {
                     pair.quote_increment.normalize().scale(),
                     RoundingStrategy::RoundDown,
                 ),
-                post_only: true,
+                post_only,
                 time_in_force: Some(time_in_force),
             },
             stop: None,
@@ -105,6 +106,7 @@ impl BaseClient {
         size: Decimal,
         price: Decimal,
         time_in_force: OrderTimeInForce,
+        post_only: bool
     ) -> Result<Order> {
         let data = OrderRequest {
             product_id: pair.symbol,
@@ -116,7 +118,7 @@ impl BaseClient {
                     pair.quote_increment.normalize().scale(),
                     RoundingStrategy::RoundUp,
                 ),
-                post_only: true,
+                post_only,
                 time_in_force: Some(time_in_force),
             },
             stop: None,

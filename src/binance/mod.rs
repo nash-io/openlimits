@@ -239,7 +239,7 @@ impl ExchangeAccount for Binance {
         }
     }
     async fn get_all_open_orders(&self) -> Result<Vec<Order>> {
-        Binance::get_all_open_orders(&self)
+        self.client.get_all_open_orders()
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
