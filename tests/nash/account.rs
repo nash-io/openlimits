@@ -6,7 +6,7 @@ use openlimits::{
     exchange::Exchange,
     exchange::{ExchangeAccount, OpenLimits},
     model::{
-        CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
+        CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest, TimeInForce,
         TradeHistoryRequest,
     },
     nash::Nash,
@@ -19,7 +19,8 @@ use rust_decimal::prelude::{Decimal, FromStr};
 async fn limit_buy() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
-        price: Decimal::from_str("300.46").unwrap(),
+        time_in_force: TimeInForce::GoodTillCancelled,
+        price: Decimal::from_str("414.46").unwrap(),
         size: Decimal::from_str("0.0168").unwrap(),
         market_pair: String::from("eth_usdc"),
     };
@@ -31,6 +32,7 @@ async fn limit_buy() {
 async fn limit_sell() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
+        time_in_force: TimeInForce::GoodTillCancelled,
         price: Decimal::new(1, 1),
         size: Decimal::new(2, 2),
         market_pair: String::from("eth_btc"),
@@ -43,6 +45,7 @@ async fn limit_sell() {
 async fn cancel_order() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
+        time_in_force: TimeInForce::GoodTillCancelled,
         price: Decimal::new(1, 1),
         size: Decimal::new(2, 2),
         market_pair: String::from("eth_btc"),
@@ -61,6 +64,7 @@ async fn cancel_order() {
 async fn cancel_all_orders() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
+        time_in_force: TimeInForce::GoodTillCancelled,
         price: Decimal::new(1, 1),
         size: Decimal::new(2, 2),
         market_pair: String::from("eth_btc"),
@@ -93,6 +97,7 @@ async fn get_order_history() {
 // async fn get_all_open_orders() {
 //     let mut exchange = init().await;
 //     let req = OpenLimitOrderRequest {
+//         time_in_force: TimeInForce::GoodTillCancelled,
 //         price: Decimal::new(1, 1),
 //         size: Decimal::new(2, 2),
 //         market_pair: String::from("eth_btc"),

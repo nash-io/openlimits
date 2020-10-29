@@ -17,7 +17,7 @@ use crate::{
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
-        Paginator, Side, Ticker, Trade, TradeHistoryRequest,
+        Paginator, Side, Ticker, Trade, TradeHistoryRequest, TimeInForce
     },
     shared::{timestamp_to_utc_datetime, Result},
 };
@@ -292,7 +292,7 @@ impl Nash {
         let market = req.market_pair.clone();
 
         nash_protocol::protocol::place_order::LimitOrderRequest {
-            cancellation_policy: nash_protocol::types::OrderCancellationPolicy::GoodTilCancelled,
+            cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(req.time_in_force),
             allow_taker: true,
             market,
             buy_or_sell,
@@ -751,6 +751,19 @@ impl From<nash_protocol::protocol::subscriptions::SubscriptionResponse>
                 let trades = resp.trades.into_iter().map(|x| x.into()).collect();
                 OpenLimitsWebsocketMessage::Trades(trades)
             }
+        }
+    }
+}
+
+impl From<TimeInForce>
+    for nash_protocol::types::OrderCancellationPolicy
+{
+    fn from(tif: TimeInForce) -> Self {
+        match tif {
+            TimeInForce::GoodTillCancelled => nash_protocol::types::OrderCancellationPolicy::GoodTilCancelled,
+            TimeInForce::FillOrKill => nash_protocol::types::OrderCancellationPolicy::FillOrKill,
+            TimeInForce::ImmediateOrCancelled => nash_protocol::types::OrderCancellationPolicy::ImmediateOrCancel,
+            TimeInForce::GoodTillTime(expire_time) => nash_protocol::types::OrderCancellationPolicy::GoodTilTime(expire_time.clone()),
         }
     }
 }

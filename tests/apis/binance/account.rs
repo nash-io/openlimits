@@ -4,7 +4,7 @@ use std::env;
 
 use openlimits::{
     binance::{
-        model::{AllOrderReq, TradeHistoryReq},
+        model::{AllOrderReq, TradeHistoryReq, TimeInForce},
         Binance, BinanceCredentials, BinanceParameters,
     },
     exchange::Exchange,
@@ -82,7 +82,7 @@ async fn get_order() {
     let transaction = exchange
         .inner_client()
         .unwrap()
-        .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
+        .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3), TimeInForce::GTC)
         .await
         .unwrap();
     let resp = exchange
@@ -101,7 +101,7 @@ async fn limit_buy() {
     let resp = exchange
         .inner_client()
         .unwrap()
-        .limit_buy(pair, Decimal::new(1, 1), Decimal::new(1, 3))
+        .limit_buy(pair, Decimal::new(1, 1), Decimal::new(1, 3), TimeInForce::GTC)
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -114,7 +114,7 @@ async fn rounded_limit_buy() {
     let resp = exchange
         .inner_client()
         .unwrap()
-        .limit_buy(pair, Decimal::new(12345678, 8), Decimal::new(1, 3))
+        .limit_buy(pair, Decimal::new(12345678, 8), Decimal::new(1, 3), TimeInForce::GTC)
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -127,7 +127,7 @@ async fn limit_sell() {
     let resp = exchange
         .inner_client()
         .unwrap()
-        .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
+        .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3), TimeInForce::GTC)
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -167,7 +167,7 @@ async fn cancel_order() {
     let transaction = exchange
         .inner_client()
         .unwrap()
-        .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3))
+        .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3), TimeInForce::GTC)
         .await
         .unwrap();
     let resp = exchange

@@ -14,7 +14,7 @@ use crate::{
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
-        Paginator, Side, Ticker, Trade, TradeHistoryRequest,
+        Paginator, Side, Ticker, Trade, TradeHistoryRequest, TimeInForce
     },
     shared::{timestamp_to_naive_datetime, Result},
 };
@@ -197,7 +197,7 @@ impl ExchangeAccount for Coinbase {
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
         self.client
-            .limit_buy(pair, req.size, req.price)
+            .limit_buy(pair, req.size, req.price, model::OrderTimeInForce::from(req.time_in_force.clone()))
             .await
             .map(Into::into)
     }
@@ -205,7 +205,7 @@ impl ExchangeAccount for Coinbase {
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
         self.client
-            .limit_sell(pair, req.size, req.price)
+            .limit_sell(pair, req.size, req.price, model::OrderTimeInForce::from(req.time_in_force.clone()))
             .await
             .map(Into::into)
     }
@@ -423,6 +423,17 @@ impl From<&Paginator> for model::DateRange {
         Self {
             start: paginator.start_time.map(timestamp_to_naive_datetime),
             end: paginator.end_time.map(timestamp_to_naive_datetime),
+        }
+    }
+}
+
+impl From<TimeInForce> for model::OrderTimeInForce {
+    fn from(tif: TimeInForce) -> Self {
+        match tif {
+            TimeInForce::GoodTillCancelled => model::OrderTimeInForce::GTC,
+            TimeInForce::FillOrKill => model::OrderTimeInForce::FOK,
+            TimeInForce::ImmediateOrCancelled => model::OrderTimeInForce::IOC,
+            TimeInForce::GoodTillTime(expire_time) => model::OrderTimeInForce::GTT { expire_time: expire_time.to_rfc2822() },
         }
     }
 }

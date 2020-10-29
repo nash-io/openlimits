@@ -4,7 +4,7 @@ use std::env;
 
 use openlimits::{
     coinbase::{
-        model::{GetFillsReq, GetOrderRequest},
+        model::{GetFillsReq, GetOrderRequest, OrderTimeInForce},
         Coinbase, CoinbaseCredentials, CoinbaseParameters,
     },
     exchange::Exchange,
@@ -104,7 +104,7 @@ async fn limit_buy() {
     let resp = exchange
         .inner_client()
         .unwrap()
-        .limit_buy(pair, Decimal::new(1, 3), Decimal::new(5000, 0))
+        .limit_buy(pair, Decimal::new(1, 3), Decimal::new(5000, 0), OrderTimeInForce::GTC)
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -117,7 +117,7 @@ async fn limit_sell() {
     let resp = exchange
         .inner_client()
         .unwrap()
-        .limit_sell(pair, Decimal::new(1, 3), Decimal::new(20000, 0))
+        .limit_sell(pair, Decimal::new(1, 3), Decimal::new(20000, 0), OrderTimeInForce::GTC)
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -156,20 +156,20 @@ async fn cancel_all_orders() {
     exchange
         .inner_client()
         .unwrap()
-        .limit_sell(pair.clone(), Decimal::new(1, 3), Decimal::new(20000, 0))
+        .limit_sell(pair.clone(), Decimal::new(1, 3), Decimal::new(20000, 0), OrderTimeInForce::GTC)
         .await
         .unwrap();
     exchange
         .inner_client()
         .unwrap()
-        .limit_sell(pair.clone(), Decimal::new(1, 3), Decimal::new(20000, 0))
+        .limit_sell(pair.clone(), Decimal::new(1, 3), Decimal::new(20000, 0), OrderTimeInForce::GTC)
         .await
         .unwrap();
 
     exchange
         .inner_client()
         .unwrap()
-        .limit_buy(pair, Decimal::new(2, 2), Decimal::new(2, 2))
+        .limit_buy(pair, Decimal::new(2, 2), Decimal::new(2, 2), OrderTimeInForce::GTC)
         .await
         .unwrap();
 
@@ -199,7 +199,7 @@ async fn cancel_order() {
     let order = exchange
         .inner_client()
         .unwrap()
-        .limit_sell(pair, Decimal::new(1, 3), Decimal::new(20000, 0))
+        .limit_sell(pair, Decimal::new(1, 3), Decimal::new(20000, 0), OrderTimeInForce::GTC)
         .await
         .unwrap();
     let resp = exchange
