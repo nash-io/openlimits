@@ -19,7 +19,7 @@ use rust_decimal::prelude::{Decimal, FromStr};
 async fn limit_buy() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
-        price: Decimal::from_str("414.46").unwrap(),
+        price: Decimal::from_str("300.46").unwrap(),
         size: Decimal::from_str("0.0168").unwrap(),
         market_pair: String::from("eth_usdc"),
     };
