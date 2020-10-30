@@ -134,6 +134,32 @@ async fn limit_sell() {
 }
 
 #[tokio::test]
+async fn limit_sell_fok() {
+    let exchange = init().await;
+    let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3), TimeInForce::FOK)
+        .await
+        .unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn limit_sell_ioc() {
+    let exchange = init().await;
+    let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .limit_sell(pair, Decimal::new(1, 1), Decimal::new(2, 3), TimeInForce::IOC)
+        .await
+        .unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
 async fn market_buy() {
     let exchange = init().await;
     let pair = exchange.get_pair("BNBBTC").await.unwrap().read().unwrap();

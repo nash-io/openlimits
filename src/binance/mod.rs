@@ -476,7 +476,7 @@ impl From<TimeInForce> for model::TimeInForce {
             TimeInForce::GoodTillCancelled => model::TimeInForce::GTC,
             TimeInForce::FillOrKill => model::TimeInForce::FOK,
             TimeInForce::ImmediateOrCancelled => model::TimeInForce::IOC,
-            TimeInForce::GoodTillTime(_) => {
+            _ => {
                 panic!("Binance does not support GoodTillTime policy")
             }
         }

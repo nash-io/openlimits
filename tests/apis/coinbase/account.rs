@@ -4,7 +4,7 @@ use std::env;
 
 use openlimits::{
     coinbase::{
-        model::{GetFillsReq, GetOrderRequest, OrderTimeInForce},
+        model::{GetFillsReq, GetOrderRequest, OrderTimeInForce, CancelAfter},
         Coinbase, CoinbaseCredentials, CoinbaseParameters,
     },
     exchange::Exchange,
@@ -118,6 +118,47 @@ async fn limit_sell() {
         .inner_client()
         .unwrap()
         .limit_sell(pair, Decimal::new(1, 3), Decimal::new(1000, 0), OrderTimeInForce::GTC, false)
+        .await
+        .unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn limit_sell_fok() {
+    let exchange = init().await;
+    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .limit_sell(pair, Decimal::new(1, 3), Decimal::new(1000, 0), OrderTimeInForce::FOK, false)
+        .await
+        .unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn limit_sell_ioc() {
+    let exchange = init().await;
+    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .limit_sell(pair, Decimal::new(1, 3), Decimal::new(1000, 0), OrderTimeInForce::IOC, false)
+        .await
+        .unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn limit_sell_gtt() {
+    let exchange = init().await;
+    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .limit_sell(pair, Decimal::new(1, 3), Decimal::new(1000, 0), OrderTimeInForce::GTT {
+            cancel_after: CancelAfter::Day
+        }, false)
         .await
         .unwrap();
     println!("{:?}", resp);

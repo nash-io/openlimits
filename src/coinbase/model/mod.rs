@@ -3,8 +3,8 @@ use crate::shared::{
 };
 use serde::{Deserialize, Serialize};
 pub mod websocket;
-use chrono::naive::NaiveDateTime;
 use rust_decimal::prelude::Decimal;
+use chrono::naive::NaiveDateTime;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Product {
@@ -222,7 +222,7 @@ pub enum OrderType {
         #[serde(with = "string_to_decimal")]
         price: Decimal,
         #[serde(flatten)]
-        time_in_force: OrderTimeInForce,
+        time_in_force: OrderTimeInForceResponse,
     },
     Market {
         #[serde(default)]
@@ -283,9 +283,30 @@ pub struct GetFillsReq {
 #[serde(tag = "time_in_force")]
 pub enum OrderTimeInForce {
     GTC,
-    GTT { expire_time: String },
+    GTT { cancel_after: CancelAfter },
     IOC,
     FOK,
+}
+
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(tag = "time_in_force")]
+pub enum OrderTimeInForceResponse {
+    GTC,
+    GTT {
+        #[serde(with = "naive_datetime_from_string")]
+        expire_time: NaiveDateTime
+    },
+    IOC,
+    FOK,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "lowercase")]
+pub enum CancelAfter {
+    Min,
+    Hour,
+    Day,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

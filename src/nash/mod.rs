@@ -22,7 +22,7 @@ use crate::{
     shared::{timestamp_to_utc_datetime, Result},
 };
 use rust_decimal::prelude::*;
-
+use chrono::Utc;
 pub use nash_native_client::ws_client::client::Environment;
 
 pub struct Nash {
@@ -763,7 +763,10 @@ impl From<TimeInForce>
             TimeInForce::GoodTillCancelled => nash_protocol::types::OrderCancellationPolicy::GoodTilCancelled,
             TimeInForce::FillOrKill => nash_protocol::types::OrderCancellationPolicy::FillOrKill,
             TimeInForce::ImmediateOrCancelled => nash_protocol::types::OrderCancellationPolicy::ImmediateOrCancel,
-            TimeInForce::GoodTillTime(expire_time) => nash_protocol::types::OrderCancellationPolicy::GoodTilTime(expire_time.clone()),
+            TimeInForce::GoodTillTime(duration)  => {
+                let expire_time = Utc::now() + duration;
+                nash_protocol::types::OrderCancellationPolicy::GoodTilTime(expire_time.clone())
+            },
         }
     }
 }

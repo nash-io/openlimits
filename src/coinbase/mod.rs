@@ -19,7 +19,7 @@ use crate::{
     shared::{timestamp_to_naive_datetime, Result},
 };
 use async_trait::async_trait;
-
+use chrono::Duration;
 use client::BaseClient;
 use std::convert::TryFrom;
 use transport::Transport;
@@ -427,13 +427,34 @@ impl From<&Paginator> for model::DateRange {
     }
 }
 
+
 impl From<TimeInForce> for model::OrderTimeInForce {
     fn from(tif: TimeInForce) -> Self {
         match tif {
             TimeInForce::GoodTillCancelled => model::OrderTimeInForce::GTC,
             TimeInForce::FillOrKill => model::OrderTimeInForce::FOK,
             TimeInForce::ImmediateOrCancelled => model::OrderTimeInForce::IOC,
-            TimeInForce::GoodTillTime(expire_time) => model::OrderTimeInForce::GTT { expire_time: expire_time.to_rfc2822() },
+            TimeInForce::GoodTillTime(duration) => {
+                let day: Duration = Duration::days(1);
+                let hour: Duration = Duration::hours(1);
+                let minute: Duration = Duration::minutes(1);
+
+                if duration == day {
+                    model::OrderTimeInForce::GTT {
+                        cancel_after: model::CancelAfter::Day
+                    }
+                } else if duration == hour {
+                    model::OrderTimeInForce::GTT {
+                        cancel_after: model::CancelAfter::Hour
+                    }
+                } else if duration == minute {
+                    model::OrderTimeInForce::GTT {
+                        cancel_after: model::CancelAfter::Hour
+                    }
+                } else {
+                    panic!("Coinbase only supports durations of 1 day, 1 hour or 1 minute")
+                }
+            },
         }
     }
 }
