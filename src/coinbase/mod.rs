@@ -14,7 +14,7 @@ use crate::{
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
-        Paginator, Side, Ticker, Trade, TradeHistoryRequest, TimeInForce
+        Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
     shared::{timestamp_to_naive_datetime, Result},
 };
@@ -197,7 +197,13 @@ impl ExchangeAccount for Coinbase {
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
         self.client
-            .limit_buy(pair, req.size, req.price, model::OrderTimeInForce::from(req.time_in_force.clone()), false)
+            .limit_buy(
+                pair,
+                req.size,
+                req.price,
+                model::OrderTimeInForce::from(req.time_in_force.clone()),
+                false,
+            )
             .await
             .map(Into::into)
     }
@@ -205,7 +211,13 @@ impl ExchangeAccount for Coinbase {
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
         self.client
-            .limit_sell(pair, req.size, req.price, model::OrderTimeInForce::from(req.time_in_force.clone()), false)
+            .limit_sell(
+                pair,
+                req.size,
+                req.price,
+                model::OrderTimeInForce::from(req.time_in_force.clone()),
+                false,
+            )
             .await
             .map(Into::into)
     }
@@ -427,7 +439,6 @@ impl From<&Paginator> for model::DateRange {
     }
 }
 
-
 impl From<TimeInForce> for model::OrderTimeInForce {
     fn from(tif: TimeInForce) -> Self {
         match tif {
@@ -441,20 +452,20 @@ impl From<TimeInForce> for model::OrderTimeInForce {
 
                 if duration == day {
                     model::OrderTimeInForce::GTT {
-                        cancel_after: model::CancelAfter::Day
+                        cancel_after: model::CancelAfter::Day,
                     }
                 } else if duration == hour {
                     model::OrderTimeInForce::GTT {
-                        cancel_after: model::CancelAfter::Hour
+                        cancel_after: model::CancelAfter::Hour,
                     }
                 } else if duration == minute {
                     model::OrderTimeInForce::GTT {
-                        cancel_after: model::CancelAfter::Hour
+                        cancel_after: model::CancelAfter::Hour,
                     }
                 } else {
                     panic!("Coinbase only supports durations of 1 day, 1 hour or 1 minute")
                 }
-            },
+            }
         }
     }
 }

@@ -1,7 +1,10 @@
 use chrono::Duration;
 use derive_more::Constructor;
 use rust_decimal::prelude::Decimal;
-use serde::{de::{self, Visitor}, Deserialize, Deserializer, Serializer, Serialize};
+use serde::{
+    de::{self, Visitor},
+    Deserialize, Deserializer, Serialize, Serializer,
+};
 use std::fmt;
 
 #[cfg(feature = "python")]
@@ -36,7 +39,6 @@ pub enum TimeInForce {
     GoodTillTime(Duration),
 }
 
-
 // chrono::Duration does not have a serde serialize/deserialize option
 struct TimeInForceVisitor;
 
@@ -48,18 +50,19 @@ impl<'de> Visitor<'de> for TimeInForceVisitor {
     }
     fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
-            E: de::Error {
+        E: de::Error,
+    {
         if v.starts_with("GTT,") {
             match v[4..].parse::<u64>() {
                 Ok(v) => Ok(TimeInForce::GoodTillTime(Duration::milliseconds(v as i64))),
-                _ => Err(E::custom(format!("Invalid GTG: {}", v)))
+                _ => Err(E::custom(format!("Invalid GTG: {}", v))),
             }
         } else {
             match v {
                 "GTC" => Ok(TimeInForce::GoodTillCancelled),
                 "IOC" => Ok(TimeInForce::ImmediateOrCancelled),
                 "FOK" => Ok(TimeInForce::FillOrKill),
-                _ => Err(E::custom(format!("Invalid string: {}", v)))
+                _ => Err(E::custom(format!("Invalid string: {}", v))),
             }
         }
     }
@@ -83,14 +86,16 @@ impl Serialize for TimeInForce {
             TimeInForce::GoodTillCancelled => String::from("GTC"),
             TimeInForce::ImmediateOrCancelled => String::from("IOC"),
             TimeInForce::FillOrKill => String::from("FOK"),
-            TimeInForce::GoodTillTime(d) => format!("GTT,{}", d.num_milliseconds())
+            TimeInForce::GoodTillTime(d) => format!("GTT,{}", d.num_milliseconds()),
         };
         serializer.serialize_str(s.as_str())
     }
 }
 
 impl Default for TimeInForce {
-    fn default() -> Self { TimeInForce::GoodTillCancelled }
+    fn default() -> Self {
+        TimeInForce::GoodTillCancelled
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
@@ -325,7 +330,6 @@ pub enum OrderType {
     Unknown,
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::TimeInForce;
@@ -338,6 +342,5 @@ mod tests {
         println!("serialized = {}", serialized);
         let deserialized: TimeInForce = serde_json::from_str(&serialized).unwrap();
         println!("deserialized = {:?}", deserialized);
-        
     }
 }

@@ -1,19 +1,19 @@
+use chrono::Duration;
 use dotenv::dotenv;
 use nash_native_client::ws_client::client::Environment;
-use std::env;
-use chrono::Duration;
 use openlimits::{
     exchange::Exchange,
     exchange::{ExchangeAccount, OpenLimits},
     model::{
-        CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest, TimeInForce,
-        TradeHistoryRequest,
+        CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
+        TimeInForce, TradeHistoryRequest,
     },
     nash::Nash,
     nash::NashCredentials,
     nash::NashParameters,
 };
 use rust_decimal::prelude::{Decimal, FromStr};
+use std::env;
 
 #[tokio::test]
 async fn limit_buy() {

@@ -4,9 +4,9 @@ use std::collections::HashMap;
 use super::BaseClient;
 use crate::{
     binance::model::{
-        TimeInForce,
-        AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest, TradeHistory,
-        TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET,
+        AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest, TimeInForce,
+        TradeHistory, TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
+        ORDER_TYPE_MARKET,
     },
     errors::OpenLimitError,
     exchange_info::MarketPair,
@@ -80,7 +80,13 @@ impl BaseClient {
     }
 
     // Place a LIMIT order - BUY
-    pub async fn limit_buy(&self, pair: MarketPair, qty: Decimal, price: Decimal, tif: TimeInForce) -> Result<Order> {
+    pub async fn limit_buy(
+        &self,
+        pair: MarketPair,
+        qty: Decimal,
+        price: Decimal,
+        tif: TimeInForce,
+    ) -> Result<Order> {
         let buy: OrderRequest = OrderRequest {
             symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -108,7 +114,7 @@ impl BaseClient {
         pair: MarketPair,
         qty: Decimal,
         price: Decimal,
-        tif: TimeInForce
+        tif: TimeInForce,
     ) -> Result<Order> {
         let sell: OrderRequest = OrderRequest {
             symbol: pair.symbol,

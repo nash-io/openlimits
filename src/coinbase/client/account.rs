@@ -2,7 +2,8 @@ use super::BaseClient;
 use crate::{
     coinbase::model::{
         Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
-        OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, Paginator, OrderTimeInForce
+        OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, OrderTimeInForce,
+        Paginator,
     },
     exchange_info::MarketPair,
     shared::Result,
@@ -74,7 +75,7 @@ impl BaseClient {
         size: Decimal,
         price: Decimal,
         time_in_force: OrderTimeInForce,
-        post_only: bool
+        post_only: bool,
     ) -> Result<Order> {
         let data = OrderRequest {
             product_id: pair.symbol,
@@ -106,7 +107,7 @@ impl BaseClient {
         size: Decimal,
         price: Decimal,
         time_in_force: OrderTimeInForce,
-        post_only: bool
+        post_only: bool,
     ) -> Result<Order> {
         let data = OrderRequest {
             product_id: pair.symbol,

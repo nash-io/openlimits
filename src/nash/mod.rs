@@ -17,13 +17,13 @@ use crate::{
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
-        Paginator, Side, Ticker, Trade, TradeHistoryRequest, TimeInForce
+        Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
     shared::{timestamp_to_utc_datetime, Result},
 };
-use rust_decimal::prelude::*;
 use chrono::Utc;
 pub use nash_native_client::ws_client::client::Environment;
+use rust_decimal::prelude::*;
 
 pub struct Nash {
     transport: Client,
@@ -290,7 +290,9 @@ impl Nash {
     ) -> nash_protocol::protocol::place_order::LimitOrderRequest {
         let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
         nash_protocol::protocol::place_order::LimitOrderRequest {
-            cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(req.time_in_force),
+            cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(
+                req.time_in_force,
+            ),
             allow_taker: true,
             market,
             buy_or_sell,
@@ -753,18 +755,20 @@ impl From<nash_protocol::protocol::subscriptions::SubscriptionResponse>
     }
 }
 
-impl From<TimeInForce>
-    for nash_protocol::types::OrderCancellationPolicy
-{
+impl From<TimeInForce> for nash_protocol::types::OrderCancellationPolicy {
     fn from(tif: TimeInForce) -> Self {
         match tif {
-            TimeInForce::GoodTillCancelled => nash_protocol::types::OrderCancellationPolicy::GoodTilCancelled,
+            TimeInForce::GoodTillCancelled => {
+                nash_protocol::types::OrderCancellationPolicy::GoodTilCancelled
+            }
             TimeInForce::FillOrKill => nash_protocol::types::OrderCancellationPolicy::FillOrKill,
-            TimeInForce::ImmediateOrCancelled => nash_protocol::types::OrderCancellationPolicy::ImmediateOrCancel,
-            TimeInForce::GoodTillTime(duration)  => {
+            TimeInForce::ImmediateOrCancelled => {
+                nash_protocol::types::OrderCancellationPolicy::ImmediateOrCancel
+            }
+            TimeInForce::GoodTillTime(duration) => {
                 let expire_time = Utc::now() + duration;
                 nash_protocol::types::OrderCancellationPolicy::GoodTilTime(expire_time.clone())
-            },
+            }
         }
     }
 }

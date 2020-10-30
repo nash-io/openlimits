@@ -8,8 +8,8 @@ use openlimits::{
     exchange::Exchange,
     exchange::{ExchangeAccount, OpenLimits},
     model::{
-        CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest, TimeInForce,
-        OpenMarketOrderRequest, TradeHistoryRequest,
+        CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
+        OpenMarketOrderRequest, TimeInForce, TradeHistoryRequest,
     },
 };
 use rust_decimal::prelude::Decimal;

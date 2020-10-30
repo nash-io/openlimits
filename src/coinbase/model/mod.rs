@@ -3,8 +3,8 @@ use crate::shared::{
 };
 use serde::{Deserialize, Serialize};
 pub mod websocket;
-use rust_decimal::prelude::Decimal;
 use chrono::naive::NaiveDateTime;
+use rust_decimal::prelude::Decimal;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Product {
@@ -288,14 +288,13 @@ pub enum OrderTimeInForce {
     FOK,
 }
 
-
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "time_in_force")]
 pub enum OrderTimeInForceResponse {
     GTC,
     GTT {
         #[serde(with = "naive_datetime_from_string")]
-        expire_time: NaiveDateTime
+        expire_time: NaiveDateTime,
     },
     IOC,
     FOK,
