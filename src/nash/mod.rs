@@ -348,7 +348,10 @@ impl From<nash_protocol::protocol::cancel_order::CancelOrderResponse> for OrderC
 impl From<&CancelAllOrdersRequest> for nash_protocol::protocol::cancel_all_orders::CancelAllOrders {
     fn from(req: &CancelAllOrdersRequest) -> Self {
         // TODO: why is this required param for Nash?
-        let market = req.market_pair.clone().expect("Market pair is a required param for Nash");
+        let market = req
+            .market_pair
+            .clone()
+            .expect("Market pair is a required param for Nash");
         Self { market }
     }
 }
@@ -394,7 +397,10 @@ impl TryFrom<&TradeHistoryRequest>
         };
 
         // TODO: why is this required for Nash?
-        let market = req.market_pair.clone().expect("Market pair is required for Nash");
+        let market = req
+            .market_pair
+            .clone()
+            .expect("Market pair is required for Nash");
         let range: Option<nash_protocol::types::DateTimeRange> =
             req.paginator.clone().map(|paginator| paginator.into());
 
@@ -554,7 +560,10 @@ impl TryFrom<&GetOrderHistoryRequest>
     type Error = OpenLimitError;
     fn try_from(req: &GetOrderHistoryRequest) -> crate::shared::Result<Self> {
         // TODO: why is this required for Nash
-        let market = req.market_pair.clone().expect("Market pair required for Nash");
+        let market = req
+            .market_pair
+            .clone()
+            .expect("Market pair required for Nash");
         let (before, limit) = try_split_paginator(req.paginator.clone());
         let range: Option<nash_protocol::types::DateTimeRange> =
             req.paginator.clone().map(Into::into);
@@ -713,18 +722,14 @@ impl ExchangeWs for NashStream {
 impl From<Subscription> for nash_protocol::protocol::subscriptions::SubscriptionRequest {
     fn from(sub: Subscription) -> Self {
         match sub {
-            Subscription::OrderBook(market, _depth) => {
-                Self::Orderbook(
-                    nash_protocol::protocol::subscriptions::updated_orderbook::SubscribeOrderbook {
-                        market,
-                    },
-                )
-            }
-            Subscription::Trade(market) => {
-                Self::Trades(
-                    nash_protocol::protocol::subscriptions::trades::SubscribeTrades { market },
-                )
-            }
+            Subscription::OrderBook(market, _depth) => Self::Orderbook(
+                nash_protocol::protocol::subscriptions::updated_orderbook::SubscribeOrderbook {
+                    market,
+                },
+            ),
+            Subscription::Trade(market) => Self::Trades(
+                nash_protocol::protocol::subscriptions::trades::SubscribeTrades { market },
+            ),
             _ => panic!("Not supported Subscription"),
         }
     }
