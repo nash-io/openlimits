@@ -289,7 +289,7 @@ impl Nash {
         req: &OpenLimitOrderRequest,
         buy_or_sell: nash_protocol::types::BuyOrSell,
     ) -> nash_protocol::protocol::place_order::LimitOrderRequest {
-        let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
+        let market = req.market_pair.clone();
 
         nash_protocol::protocol::place_order::LimitOrderRequest {
             cancellation_policy: nash_protocol::types::OrderCancellationPolicy::GoodTilCancelled,
@@ -304,7 +304,7 @@ impl Nash {
 
 impl From<&OrderBookRequest> for nash_protocol::protocol::orderbook::OrderbookRequest {
     fn from(req: &OrderBookRequest) -> Self {
-        let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
+        let market = req.market_pair.clone();
         Self { market }
     }
 }
@@ -329,8 +329,8 @@ impl From<nash_protocol::types::OrderbookOrder> for AskBid {
 
 impl From<&CancelOrderRequest> for nash_protocol::protocol::cancel_order::CancelOrderRequest {
     fn from(req: &CancelOrderRequest) -> Self {
-        let pair = req.market_pair.clone().unwrap();
-        let market = nash_protocol::types::Market::from_str(&pair).unwrap();
+        // TODO: why this param?
+        let market = req.market_pair.clone().unwrap();
 
         Self {
             market,
@@ -347,8 +347,8 @@ impl From<nash_protocol::protocol::cancel_order::CancelOrderResponse> for OrderC
 
 impl From<&CancelAllOrdersRequest> for nash_protocol::protocol::cancel_all_orders::CancelAllOrders {
     fn from(req: &CancelAllOrdersRequest) -> Self {
-        let pair = req.market_pair.clone().unwrap();
-        let market = nash_protocol::types::Market::from_str(&pair).unwrap();
+        // TODO: why is this required param for Nash?
+        let market = req.market_pair.clone().expect("Market pair is a required param for Nash");
         Self { market }
     }
 }
@@ -393,18 +393,11 @@ impl TryFrom<&TradeHistoryRequest>
             None => (None, None),
         };
 
-        let market = match req.market_pair.clone() {
-            Some(pair) => {
-                let market = nash_protocol::types::Market::from_str(&pair)?;
-                Some(market)
-            }
-            None => None,
-        };
+        // TODO: why is this required for Nash?
+        let market = req.market_pair.clone().expect("Market pair is required for Nash");
         let range: Option<nash_protocol::types::DateTimeRange> =
             req.paginator.clone().map(|paginator| paginator.into());
 
-        //FIXME: Some issues with the graphql protocol for the market to be non nil
-        let market = market.unwrap();
         Ok(Self {
             market,
             before,
@@ -470,7 +463,7 @@ impl From<nash_protocol::types::AccountTradeSide> for Liquidity {
 
 impl From<&GetHistoricRatesRequest> for nash_protocol::protocol::list_candles::ListCandlesRequest {
     fn from(req: &GetHistoricRatesRequest) -> Self {
-        let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
+        let market = req.market_pair.clone();
 
         let (before, limit) = match req.paginator.clone() {
             Some(p) => (p.before, p.limit.map(|v| i64::try_from(v).unwrap())),
@@ -503,7 +496,7 @@ impl TryFrom<&GetHistoricTradesRequest>
 {
     type Error = OpenLimitError;
     fn try_from(req: &GetHistoricTradesRequest) -> crate::shared::Result<Self> {
-        let market = nash_protocol::types::Market::from_str(&req.market_pair)?;
+        let market = req.market_pair.clone();
         let (before, limit) = try_split_paginator(req.paginator.clone());
         //FIXME: Some issues with the graphql protocol for the market to be non nil
         Ok(Self {
@@ -560,19 +553,12 @@ impl TryFrom<&GetOrderHistoryRequest>
 {
     type Error = OpenLimitError;
     fn try_from(req: &GetOrderHistoryRequest) -> crate::shared::Result<Self> {
-        let market = match req.clone().market_pair {
-            Some(pair) => {
-                let market = nash_protocol::types::Market::from_str(&pair)?;
-                Some(market)
-            }
-            None => None,
-        };
+        // TODO: why is this required for Nash
+        let market = req.market_pair.clone().expect("Market pair required for Nash");
         let (before, limit) = try_split_paginator(req.paginator.clone());
         let range: Option<nash_protocol::types::DateTimeRange> =
             req.paginator.clone().map(Into::into);
 
-        //FIXME: Some issues with the graphql protocol for the market to be non nil
-        let market = market.unwrap();
         Ok(Self {
             market,
             before,
@@ -618,7 +604,7 @@ impl From<nash_protocol::types::OrderStatus> for OrderStatus {
 
 impl From<&GetPriceTickerRequest> for nash_protocol::protocol::get_ticker::TickerRequest {
     fn from(req: &GetPriceTickerRequest) -> Self {
-        let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
+        let market = req.market_pair.clone();
 
         Self { market }
     }
@@ -727,16 +713,14 @@ impl ExchangeWs for NashStream {
 impl From<Subscription> for nash_protocol::protocol::subscriptions::SubscriptionRequest {
     fn from(sub: Subscription) -> Self {
         match sub {
-            Subscription::OrderBook(symbol, _depth) => {
-                let market = nash_protocol::types::Market::from_str(&symbol).unwrap();
+            Subscription::OrderBook(market, _depth) => {
                 Self::Orderbook(
                     nash_protocol::protocol::subscriptions::updated_orderbook::SubscribeOrderbook {
                         market,
                     },
                 )
             }
-            Subscription::Trade(symbol) => {
-                let market = nash_protocol::types::Market::from_str(&symbol).unwrap();
+            Subscription::Trade(market) => {
                 Self::Trades(
                     nash_protocol::protocol::subscriptions::trades::SubscribeTrades { market },
                 )
