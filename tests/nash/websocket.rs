@@ -33,7 +33,7 @@ async fn init() -> OpenLimitsWs<NashStream> {
         &env::var("NASH_API_SECRET").unwrap(),
         &env::var("NASH_API_KEY").unwrap(),
         1234,
-        false,
+        true,
         10000,
     )
     .await;

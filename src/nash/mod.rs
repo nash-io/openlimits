@@ -235,7 +235,6 @@ impl ExchangeAccount for Nash {
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let req: nash_protocol::protocol::place_order::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Sell);
-
         let resp = self.transport.run(req).await;
 
         Ok(
@@ -289,8 +288,7 @@ impl Nash {
         req: &OpenLimitOrderRequest,
         buy_or_sell: nash_protocol::types::BuyOrSell,
     ) -> nash_protocol::protocol::place_order::LimitOrderRequest {
-        let market = req.market_pair.clone();
-
+        let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
         nash_protocol::protocol::place_order::LimitOrderRequest {
             cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(req.time_in_force),
             allow_taker: true,

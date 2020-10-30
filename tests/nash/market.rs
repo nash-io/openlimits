@@ -87,8 +87,8 @@ async fn init() -> Nash {
             session: env::var("NASH_API_KEY").unwrap(),
         }),
         environment: Environment::Sandbox,
-        client_id: 1234,
-        timeout: 100000,
+        client_id: 1,
+        timeout: 1000,
     };
 
     OpenLimits::instantiate(parameters).await
