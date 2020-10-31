@@ -288,13 +288,12 @@ impl Nash {
         req: &OpenLimitOrderRequest,
         buy_or_sell: nash_protocol::types::BuyOrSell,
     ) -> nash_protocol::protocol::place_order::LimitOrderRequest {
-        let market = nash_protocol::types::Market::from_str(&req.market_pair).unwrap();
         nash_protocol::protocol::place_order::LimitOrderRequest {
             cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(
                 req.time_in_force,
             ),
             allow_taker: true,
-            market,
+            market: req.market_pair.clone(),
             buy_or_sell,
             amount: format!("{}", req.size),
             price: format!("{}", req.price),
