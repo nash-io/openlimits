@@ -1,14 +1,30 @@
 use super::super::any_exchange::InitAnyExchange;
 use super::super::binance::{BinanceCredentials, BinanceParameters};
-use super::super::model::{Interval, Paginator};
+use super::super::model::{Interval, Paginator, TimeInForce};
 use super::super::nash::{Environment, NashCredentials, NashParameters};
 use super::websocket::{OpenLimitsWebsocketMessage, Subscription};
-
 use pyo3::exceptions::PyException;
 use pyo3::prelude::{FromPyObject, IntoPy, PyObject, PyResult, Python, ToPyObject};
 use pyo3::types::PyDict;
 
 // Python to Rust...
+
+impl<'a> FromPyObject<'a> for TimeInForce {
+    fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
+        let maybe_interval: PyResult<Interval> = ob.get_item("time_in_force")?.extract();
+        if let Ok(interval) = maybe_interval {
+            Ok(TimeInForce::GoodTillTime(interval.into()))
+        } else {
+            let value: String = ob.get_item("time_in_force")?.extract()?;
+            match &value[..] {
+                "good_til_cancelled" => Ok(TimeInForce::GoodTillCancelled),
+                "immediate_or_cancelled" => Ok(TimeInForce::ImmediateOrCancelled),
+                "fill_or_kill" => Ok(TimeInForce::FillOrKill),
+                _ => Err(PyException::new_err("Invalid time in force")),
+            }
+        }
+    }
+}
 
 impl<'a> FromPyObject<'a> for InitAnyExchange {
     fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
@@ -133,23 +149,23 @@ impl<'a> FromPyObject<'a> for NashParameters {
 
 impl<'a> FromPyObject<'a> for Interval {
     fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
-        let interval_str: String = ob.get_item("interval")?.extract()?;
+        let interval_str: String = ob.extract()?;
         match &interval_str[..] {
-            "one_minute" => Ok(Interval::OneMinute),
-            "three_minutes" => Ok(Interval::ThreeMinutes),
-            "five_minutes" => Ok(Interval::FiveMinutes),
-            "fifteen_minutes" => Ok(Interval::FifteenMinutes),
-            "thirty_minutes" => Ok(Interval::ThirtyMinutes),
-            "one_hour" => Ok(Interval::OneHour),
-            "two_hours" => Ok(Interval::TwoHours),
-            "four_hours" => Ok(Interval::FourHours),
-            "six_hours" => Ok(Interval::SixHours),
-            "eight_hours" => Ok(Interval::EightHours),
-            "twelve_hours" => Ok(Interval::TwelveHours),
-            "one_day" => Ok(Interval::OneDay),
-            "three_days" => Ok(Interval::ThreeDays),
-            "one_week" => Ok(Interval::OneWeek),
-            "one_month" => Ok(Interval::OneMonth),
+            "1m" => Ok(Interval::OneMinute),
+            "3m" => Ok(Interval::ThreeMinutes),
+            "5m" => Ok(Interval::FiveMinutes),
+            "15m" => Ok(Interval::FifteenMinutes),
+            "30m" => Ok(Interval::ThirtyMinutes),
+            "1h" => Ok(Interval::OneHour),
+            "2h" => Ok(Interval::TwoHours),
+            "4h" => Ok(Interval::FourHours),
+            "6h" => Ok(Interval::SixHours),
+            "8h" => Ok(Interval::EightHours),
+            "12h" => Ok(Interval::TwelveHours),
+            "1d" => Ok(Interval::OneDay),
+            "3d" => Ok(Interval::ThreeDays),
+            "1w" => Ok(Interval::OneWeek),
+            "1mo" => Ok(Interval::OneMonth),
             _ => Err(PyException::new_err("Interval value not supported")),
         }
     }

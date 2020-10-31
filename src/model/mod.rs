@@ -1,7 +1,11 @@
 use chrono::Duration;
 use derive_more::Constructor;
 use rust_decimal::prelude::Decimal;
-use serde::{Deserialize, Serialize};
+use serde::{
+    de::{self, Visitor},
+    Deserialize, Deserializer, Serialize, Serializer,
+};
+use std::fmt;
 
 #[cfg(feature = "python")]
 pub mod python;
@@ -26,11 +30,80 @@ pub struct AskBid {
     pub qty: Decimal,
 }
 
+#[derive(Clone, Debug, PartialEq, Copy)]
+pub enum TimeInForce {
+    GoodTillCancelled,
+    ImmediateOrCancelled,
+    FillOrKill,
+    // Representing 'good till time' as a duration works for both Nash and Coinbase
+    GoodTillTime(Duration),
+}
+
+// chrono::Duration does not have a serde serialize/deserialize option
+struct TimeInForceVisitor;
+
+impl<'de> Visitor<'de> for TimeInForceVisitor {
+    type Value = TimeInForce;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("an string, either GTC, IOC, FOK, GTT,duration")
+    }
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        if v.starts_with("GTT,") {
+            match v[4..].parse::<u64>() {
+                Ok(v) => Ok(TimeInForce::GoodTillTime(Duration::milliseconds(v as i64))),
+                _ => Err(E::custom(format!("Invalid GTG: {}", v))),
+            }
+        } else {
+            match v {
+                "GTC" => Ok(TimeInForce::GoodTillCancelled),
+                "IOC" => Ok(TimeInForce::ImmediateOrCancelled),
+                "FOK" => Ok(TimeInForce::FillOrKill),
+                _ => Err(E::custom(format!("Invalid string: {}", v))),
+            }
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for TimeInForce {
+    fn deserialize<D>(deserializer: D) -> Result<TimeInForce, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_str(TimeInForceVisitor)
+    }
+}
+
+impl Serialize for TimeInForce {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let s = match *self {
+            TimeInForce::GoodTillCancelled => String::from("GTC"),
+            TimeInForce::ImmediateOrCancelled => String::from("IOC"),
+            TimeInForce::FillOrKill => String::from("FOK"),
+            TimeInForce::GoodTillTime(d) => format!("GTT,{}", d.num_milliseconds()),
+        };
+        serializer.serialize_str(s.as_str())
+    }
+}
+
+impl Default for TimeInForce {
+    fn default() -> Self {
+        TimeInForce::GoodTillCancelled
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct OpenLimitOrderRequest {
     pub market_pair: String,
     pub size: Decimal,
     pub price: Decimal,
+    pub time_in_force: TimeInForce,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
@@ -255,4 +328,19 @@ pub enum OrderType {
     StopLimit,
     StopMarket,
     Unknown,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::TimeInForce;
+    use chrono::Duration;
+
+    #[test]
+    fn can_serialize_time_in_force() {
+        let t = TimeInForce::GoodTillTime(Duration::hours(1));
+        let serialized = serde_json::to_string(&t).unwrap();
+        println!("serialized = {}", serialized);
+        let deserialized: TimeInForce = serde_json::from_str(&serialized).unwrap();
+        println!("deserialized = {:?}", deserialized);
+    }
 }

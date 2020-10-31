@@ -4,9 +4,9 @@ use std::collections::HashMap;
 use super::BaseClient;
 use crate::{
     binance::model::{
-        AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest, TradeHistory,
-        TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET,
-        TIME_IN_FORCE_GTC,
+        AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest, TimeInForce,
+        TradeHistory, TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
+        ORDER_TYPE_MARKET,
     },
     errors::OpenLimitError,
     exchange_info::MarketPair,
@@ -80,7 +80,13 @@ impl BaseClient {
     }
 
     // Place a LIMIT order - BUY
-    pub async fn limit_buy(&self, pair: MarketPair, qty: Decimal, price: Decimal) -> Result<Order> {
+    pub async fn limit_buy(
+        &self,
+        pair: MarketPair,
+        qty: Decimal,
+        price: Decimal,
+        tif: TimeInForce,
+    ) -> Result<Order> {
         let buy: OrderRequest = OrderRequest {
             symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -90,7 +96,7 @@ impl BaseClient {
             )),
             order_side: ORDER_SIDE_BUY.to_string(),
             order_type: ORDER_TYPE_LIMIT.to_string(),
-            time_in_force: Some(TIME_IN_FORCE_GTC.to_string()),
+            time_in_force: Some(tif),
         };
 
         let transaction = self
@@ -108,6 +114,7 @@ impl BaseClient {
         pair: MarketPair,
         qty: Decimal,
         price: Decimal,
+        tif: TimeInForce,
     ) -> Result<Order> {
         let sell: OrderRequest = OrderRequest {
             symbol: pair.symbol,
@@ -118,7 +125,7 @@ impl BaseClient {
             )),
             order_side: ORDER_SIDE_SELL.to_string(),
             order_type: ORDER_TYPE_LIMIT.to_string(),
-            time_in_force: Some(TIME_IN_FORCE_GTC.to_string()),
+            time_in_force: Some(tif),
         };
 
         let transaction = self

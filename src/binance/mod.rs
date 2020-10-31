@@ -16,7 +16,7 @@ use crate::{
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
-        Paginator, Side, Ticker, Trade, TradeHistoryRequest, Transaction,
+        Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest, Transaction,
     },
     shared::Result,
 };
@@ -187,14 +187,24 @@ impl ExchangeAccount for Binance {
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
         self.client
-            .limit_buy(pair, req.size, req.price)
+            .limit_buy(
+                pair,
+                req.size,
+                req.price,
+                model::TimeInForce::from(req.time_in_force),
+            )
             .await
             .map(Into::into)
     }
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
         self.client
-            .limit_sell(pair, req.size, req.price)
+            .limit_sell(
+                pair,
+                req.size,
+                req.price,
+                model::TimeInForce::from(req.time_in_force),
+            )
             .await
             .map(Into::into)
     }
@@ -239,7 +249,8 @@ impl ExchangeAccount for Binance {
         }
     }
     async fn get_all_open_orders(&self) -> Result<Vec<Order>> {
-        Binance::get_all_open_orders(&self)
+        self.client
+            .get_all_open_orders()
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
     }
@@ -466,6 +477,17 @@ impl From<model::KlineSummary> for Candle {
             open: kline_summary.open,
             close: kline_summary.close,
             volume: kline_summary.volume,
+        }
+    }
+}
+
+impl From<TimeInForce> for model::TimeInForce {
+    fn from(tif: TimeInForce) -> Self {
+        match tif {
+            TimeInForce::GoodTillCancelled => model::TimeInForce::GTC,
+            TimeInForce::FillOrKill => model::TimeInForce::FOK,
+            TimeInForce::ImmediateOrCancelled => model::TimeInForce::IOC,
+            _ => panic!("Binance does not support GoodTillTime policy"),
         }
     }
 }

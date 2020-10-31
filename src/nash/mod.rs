@@ -17,13 +17,13 @@ use crate::{
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
-        Paginator, Side, Ticker, Trade, TradeHistoryRequest,
+        Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
     shared::{timestamp_to_utc_datetime, Result},
 };
-use rust_decimal::prelude::*;
-
+use chrono::Utc;
 pub use nash_native_client::ws_client::client::Environment;
+use rust_decimal::prelude::*;
 
 pub struct Nash {
     transport: Client,
@@ -235,7 +235,6 @@ impl ExchangeAccount for Nash {
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let req: nash_protocol::protocol::place_order::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Sell);
-
         let resp = self.transport.run(req).await;
 
         Ok(
@@ -289,12 +288,12 @@ impl Nash {
         req: &OpenLimitOrderRequest,
         buy_or_sell: nash_protocol::types::BuyOrSell,
     ) -> nash_protocol::protocol::place_order::LimitOrderRequest {
-        let market = req.market_pair.clone();
-
         nash_protocol::protocol::place_order::LimitOrderRequest {
-            cancellation_policy: nash_protocol::types::OrderCancellationPolicy::GoodTilCancelled,
+            cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(
+                req.time_in_force,
+            ),
             allow_taker: true,
-            market,
+            market: req.market_pair.clone(),
             buy_or_sell,
             amount: format!("{}", req.size),
             price: format!("{}", req.price),
@@ -750,6 +749,24 @@ impl From<nash_protocol::protocol::subscriptions::SubscriptionResponse>
             nash_protocol::protocol::subscriptions::SubscriptionResponse::Trades(resp) => {
                 let trades = resp.trades.into_iter().map(|x| x.into()).collect();
                 OpenLimitsWebsocketMessage::Trades(trades)
+            }
+        }
+    }
+}
+
+impl From<TimeInForce> for nash_protocol::types::OrderCancellationPolicy {
+    fn from(tif: TimeInForce) -> Self {
+        match tif {
+            TimeInForce::GoodTillCancelled => {
+                nash_protocol::types::OrderCancellationPolicy::GoodTilCancelled
+            }
+            TimeInForce::FillOrKill => nash_protocol::types::OrderCancellationPolicy::FillOrKill,
+            TimeInForce::ImmediateOrCancelled => {
+                nash_protocol::types::OrderCancellationPolicy::ImmediateOrCancel
+            }
+            TimeInForce::GoodTillTime(duration) => {
+                let expire_time = Utc::now() + duration;
+                nash_protocol::types::OrderCancellationPolicy::GoodTilTime(expire_time.clone())
             }
         }
     }

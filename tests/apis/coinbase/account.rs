@@ -4,7 +4,7 @@ use std::env;
 
 use openlimits::{
     coinbase::{
-        model::{GetFillsReq, GetOrderRequest},
+        model::{CancelAfter, GetFillsReq, GetOrderRequest, OrderTimeInForce},
         Coinbase, CoinbaseCredentials, CoinbaseParameters,
     },
     exchange::Exchange,
@@ -104,7 +104,13 @@ async fn limit_buy() {
     let resp = exchange
         .inner_client()
         .unwrap()
-        .limit_buy(pair, Decimal::new(1, 3), Decimal::new(5000, 0))
+        .limit_buy(
+            pair,
+            Decimal::new(1, 3),
+            Decimal::new(1000, 0),
+            OrderTimeInForce::GTC,
+            false,
+        )
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -117,7 +123,72 @@ async fn limit_sell() {
     let resp = exchange
         .inner_client()
         .unwrap()
-        .limit_sell(pair, Decimal::new(1, 3), Decimal::new(20000, 0))
+        .limit_sell(
+            pair,
+            Decimal::new(1, 3),
+            Decimal::new(1000, 0),
+            OrderTimeInForce::GTC,
+            false,
+        )
+        .await
+        .unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn limit_sell_fok() {
+    let exchange = init().await;
+    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .limit_sell(
+            pair,
+            Decimal::new(1, 3),
+            Decimal::new(1000, 0),
+            OrderTimeInForce::FOK,
+            false,
+        )
+        .await
+        .unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn limit_sell_ioc() {
+    let exchange = init().await;
+    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .limit_sell(
+            pair,
+            Decimal::new(1, 3),
+            Decimal::new(1000, 0),
+            OrderTimeInForce::IOC,
+            false,
+        )
+        .await
+        .unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn limit_sell_gtt() {
+    let exchange = init().await;
+    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let resp = exchange
+        .inner_client()
+        .unwrap()
+        .limit_sell(
+            pair,
+            Decimal::new(1, 3),
+            Decimal::new(1000, 0),
+            OrderTimeInForce::GTT {
+                cancel_after: CancelAfter::Day,
+            },
+            false,
+        )
         .await
         .unwrap();
     println!("{:?}", resp);
@@ -156,20 +227,38 @@ async fn cancel_all_orders() {
     exchange
         .inner_client()
         .unwrap()
-        .limit_sell(pair.clone(), Decimal::new(1, 3), Decimal::new(20000, 0))
+        .limit_sell(
+            pair.clone(),
+            Decimal::new(1, 3),
+            Decimal::new(1000, 0),
+            OrderTimeInForce::GTC,
+            false,
+        )
         .await
         .unwrap();
     exchange
         .inner_client()
         .unwrap()
-        .limit_sell(pair.clone(), Decimal::new(1, 3), Decimal::new(20000, 0))
+        .limit_sell(
+            pair.clone(),
+            Decimal::new(1, 3),
+            Decimal::new(1000, 0),
+            OrderTimeInForce::GTC,
+            false,
+        )
         .await
         .unwrap();
 
     exchange
         .inner_client()
         .unwrap()
-        .limit_buy(pair, Decimal::new(2, 2), Decimal::new(2, 2))
+        .limit_buy(
+            pair,
+            Decimal::new(2, 2),
+            Decimal::new(2, 2),
+            OrderTimeInForce::GTC,
+            false,
+        )
         .await
         .unwrap();
 
@@ -199,7 +288,13 @@ async fn cancel_order() {
     let order = exchange
         .inner_client()
         .unwrap()
-        .limit_sell(pair, Decimal::new(1, 3), Decimal::new(20000, 0))
+        .limit_sell(
+            pair,
+            Decimal::new(1, 3),
+            Decimal::new(100000, 0),
+            OrderTimeInForce::GTC,
+            false,
+        )
         .await
         .unwrap();
     let resp = exchange
