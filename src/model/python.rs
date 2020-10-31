@@ -20,9 +20,9 @@ impl<'a> FromPyObject<'a> for TimeInForce {
                 "good_til_cancelled" => Ok(TimeInForce::GoodTillCancelled),
                 "immediate_or_cancelled" => Ok(TimeInForce::ImmediateOrCancelled),
                 "fill_or_kill" => Ok(TimeInForce::FillOrKill),
-                _ => Err(PyException::new_err("Invalid time in force"))
+                _ => Err(PyException::new_err("Invalid time in force")),
             }
-        }        
+        }
     }
 }
 
