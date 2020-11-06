@@ -728,7 +728,7 @@ impl ExchangeWs for NashStream {
                     }
                 }
             },
-            Err(err) =>  Err(OpenLimitError::NashProtocolError(err))
+            Err(_) =>  Err(OpenLimitError::SocketError())
         }
     }
 }
