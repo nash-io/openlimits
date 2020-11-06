@@ -545,8 +545,8 @@ impl ExchangeWs for BinanceWebsocket {
     }
     fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
         match message? {
-             model::websocket::BinanceWebsocketMessage::Close => Err(OpenLimitError::SocketError()),
-             msg => Ok(msg.into())
+            model::websocket::BinanceWebsocketMessage::Close => Err(OpenLimitError::SocketError()),
+            msg => Ok(msg.into()),
         }
     }
 }

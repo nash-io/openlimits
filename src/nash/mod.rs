@@ -711,7 +711,7 @@ impl ExchangeWs for NashStream {
         let _stream = Client::subscribe_protocol(&self.client, sub).await;
         let _stream = _stream.map_err(|e| Err(OpenLimitError::NashProtocolError(e)));
         if _stream.is_err() {
-            return _stream.unwrap_err()
+            return _stream.unwrap_err();
         }
 
         Ok(())
@@ -719,16 +719,19 @@ impl ExchangeWs for NashStream {
 
     fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
         match message {
-            Ok(msg) => {
-                match msg {
-                    ResponseOrError::Response(resp) => Ok(resp.data.into()),
-                    ResponseOrError::Error(resp) => {
-                        let f = resp.errors.iter().map(|f|f.message.clone()).collect::<Vec<String>>().join("\n");
-                        Err(OpenLimitError::NotParsableResponse(String::from(f)))
-                    }
+            Ok(msg) => match msg {
+                ResponseOrError::Response(resp) => Ok(resp.data.into()),
+                ResponseOrError::Error(resp) => {
+                    let f = resp
+                        .errors
+                        .iter()
+                        .map(|f| f.message.clone())
+                        .collect::<Vec<String>>()
+                        .join("\n");
+                    Err(OpenLimitError::NotParsableResponse(String::from(f)))
                 }
             },
-            Err(_) =>  Err(OpenLimitError::SocketError())
+            Err(_) => Err(OpenLimitError::SocketError()),
         }
     }
 }
