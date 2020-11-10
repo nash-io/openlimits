@@ -9,9 +9,7 @@ use crate::{
     exchange::ExchangeAccount,
     exchange::{Exchange, ExchangeMarketData},
     exchange_info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
-    exchange_ws::ExchangeWs,
     model::{
-        websocket::{OpenLimitsWebsocketMessage, Subscription},
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
@@ -530,49 +528,6 @@ impl From<model::OrderStatus> for OrderStatus {
             model::OrderStatus::PartiallyFilled => OrderStatus::PartiallyFilled,
             model::OrderStatus::PendingCancel => OrderStatus::PendingCancel,
             model::OrderStatus::Rejected => OrderStatus::Rejected,
-        }
-    }
-}
-
-#[async_trait]
-impl ExchangeWs for BinanceWebsocket {
-    type InitParams = ();
-    async fn new(_: ()) -> Self {
-        BinanceWebsocket::new()
-    }
-    async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
-        BinanceWebsocket::subscribe(self, subscription.into()).await
-    }
-    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
-        match message? {
-            model::websocket::BinanceWebsocketMessage::Close => Err(OpenLimitError::SocketError()),
-            msg => Ok(msg.into()),
-        }
-    }
-}
-impl From<Subscription> for model::websocket::Subscription {
-    fn from(sub: Subscription) -> Self {
-        match sub {
-            Subscription::OrderBook(symbol, depth) => {
-                model::websocket::Subscription::OrderBook(symbol, depth)
-            }
-            Subscription::Trade(symbol) => model::websocket::Subscription::Trade(symbol),
-            _ => panic!("Not supported Subscription"),
-        }
-    }
-}
-
-impl From<model::websocket::BinanceWebsocketMessage> for OpenLimitsWebsocketMessage {
-    fn from(message: model::websocket::BinanceWebsocketMessage) -> Self {
-        match message {
-            model::websocket::BinanceWebsocketMessage::Ping => OpenLimitsWebsocketMessage::Ping,
-            model::websocket::BinanceWebsocketMessage::Trade(trade) => {
-                OpenLimitsWebsocketMessage::Trades(vec![trade.into()])
-            }
-            model::websocket::BinanceWebsocketMessage::OrderBook(orderbook) => {
-                OpenLimitsWebsocketMessage::OrderBook(orderbook.into())
-            }
-            _ => panic!("Not supported Message"),
         }
     }
 }

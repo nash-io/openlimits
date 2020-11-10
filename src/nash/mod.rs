@@ -10,7 +10,10 @@ use crate::{
     exchange_info::ExchangeInfo,
     exchange_info::MarketPairHandle,
     exchange_info::{ExchangeInfoRetrieval, MarketPair},
+    exchange_ws::spawn,
+    exchange_ws::CallbackHandle,
     exchange_ws::ExchangeWs,
+    exchange_ws::SubscriptionStream,
     model::{
         websocket::{OpenLimitsWebsocketMessage, Subscription},
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
@@ -636,8 +639,11 @@ impl From<&GetOrderRequest> for nash_protocol::protocol::get_account_order::GetA
     }
 }
 
-use futures::stream::{Stream, StreamExt};
-use nash_protocol::protocol::ResponseOrError;
+use futures::{
+    future,
+    stream::{Stream, StreamExt},
+};
+use nash_protocol::protocol::{subscriptions::SubscriptionRequest, ResponseOrError};
 use std::{pin::Pin, task::Context, task::Poll};
 
 pub struct NashStream {
@@ -691,6 +697,8 @@ impl Stream for NashStream {
 #[async_trait]
 impl ExchangeWs for NashStream {
     type InitParams = NashParameters;
+    type Subscription = SubscriptionRequest;
+
     async fn new(params: Self::InitParams) -> Self {
         let credentials = params.credentials.unwrap();
         Self {
@@ -706,45 +714,66 @@ impl ExchangeWs for NashStream {
             .unwrap(),
         }
     }
-    async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
-        let sub: nash_protocol::protocol::subscriptions::SubscriptionRequest = subscription.into();
-        let _stream = Client::subscribe_protocol(&self.client, sub).await;
-        let _stream = _stream.map_err(|e| Err(OpenLimitError::NashProtocolError(e)));
-        if _stream.is_err() {
-            return _stream.unwrap_err();
+
+    async fn subscribe<
+        S: Into<Self::Subscription> + Clone + Sync + Send,
+        F: Fn(&Result<OpenLimitsWebsocketMessage>) + Send + Sync + 'static,
+    >(
+        &self,
+        subscription: S,
+        callback: F,
+    ) -> Result<CallbackHandle<Result<OpenLimitsWebsocketMessage>>> {
+        let sub: SubscriptionRequest = subscription.into();
+        let stream = Client::subscribe_protocol(&self.client, sub).await;
+        let stream = stream.map_err(|e| Err(OpenLimitError::NashProtocolError(e)));
+        if stream.is_err() {
+            return stream.unwrap_err();
         }
 
-        Ok(())
+        let fut = stream
+            .unwrap()
+            .map(|message| match message {
+                Ok(msg) => match msg {
+                    ResponseOrError::Response(resp) => Ok(resp.data.into()),
+                    ResponseOrError::Error(resp) => {
+                        let f = resp
+                            .errors
+                            .iter()
+                            .map(|f| f.message.clone())
+                            .collect::<Vec<String>>()
+                            .join("\n");
+                        Err(OpenLimitError::NotParsableResponse(String::from(f)))
+                    }
+                },
+                Err(_) => Err(OpenLimitError::SocketError()),
+            })
+            .then(move |item| {
+                callback(&item);
+                future::ready(item)
+            });
+
+        let handle = spawn(fut);
+
+        Ok(handle)
     }
 
-    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
-        match message {
-            Ok(msg) => match msg {
-                ResponseOrError::Response(resp) => Ok(resp.data.into()),
-                ResponseOrError::Error(resp) => {
-                    let f = resp
-                        .errors
-                        .iter()
-                        .map(|f| f.message.clone())
-                        .collect::<Vec<String>>()
-                        .join("\n");
-                    Err(OpenLimitError::NotParsableResponse(String::from(f)))
-                }
-            },
-            Err(_) => Err(OpenLimitError::SocketError()),
-        }
+    async fn create_stream<'a, S: Into<Self::Subscription> + Clone + Sync + Send>(
+        &'a self,
+        subscriptions: &[S],
+    ) -> Result<SubscriptionStream<'a, Self>> {
+        todo!()
     }
 }
 
 impl From<Subscription> for nash_protocol::protocol::subscriptions::SubscriptionRequest {
     fn from(sub: Subscription) -> Self {
         match sub {
-            Subscription::OrderBook(market, _depth) => Self::Orderbook(
+            Subscription::OrderBook(market) => Self::Orderbook(
                 nash_protocol::protocol::subscriptions::updated_orderbook::SubscribeOrderbook {
                     market,
                 },
             ),
-            Subscription::Trade(market) => Self::Trades(
+            Subscription::Trades(market) => Self::Trades(
                 nash_protocol::protocol::subscriptions::trades::SubscribeTrades { market },
             ),
             _ => panic!("Not supported Subscription"),

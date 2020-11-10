@@ -2,11 +2,20 @@
 //! constraints on generics. This module provides an enum wrapper type for all openlimits exchanges that code can
 //! use to operate over any openlimits-supported exchange without generics
 
-use crate::binance::{Binance, BinanceParameters, BinanceWebsocket};
-use crate::exchange::{Exchange, ExchangeAccount, ExchangeMarketData};
-use crate::exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
 use crate::exchange_ws::{ExchangeWs, OpenLimitsWs};
 use crate::nash::{Nash, NashParameters, NashStream};
+use crate::{
+    binance::model::websocket::BinanceSubscription,
+    exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
+};
+use crate::{
+    binance::{Binance, BinanceParameters, BinanceWebsocket},
+    exchange_ws::CallbackHandle,
+};
+use crate::{
+    exchange::{Exchange, ExchangeAccount, ExchangeMarketData},
+    exchange_ws::SubscriptionStream,
+};
 use crate::{
     model::{
         websocket::{OpenLimitsWebsocketMessage, Subscription},
@@ -18,8 +27,7 @@ use crate::{
     shared::Result,
 };
 use async_trait::async_trait;
-use futures::stream::{Stream, StreamExt};
-use std::{pin::Pin, task::Context, task::Poll};
+use nash_protocol::protocol::subscriptions::SubscriptionRequest;
 
 #[derive(Clone)]
 pub enum InitAnyExchange {
@@ -175,19 +183,11 @@ pub enum AnyWsExchange {
     Binance(OpenLimitsWs<BinanceWebsocket>),
 }
 
-impl Stream for AnyWsExchange {
-    type Item = Result<OpenLimitsWebsocketMessage>;
-    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        match unsafe { self.get_unchecked_mut() } {
-            Self::Nash(nash) => nash.poll_next_unpin(cx),
-            Self::Binance(binance) => binance.poll_next_unpin(cx),
-        }
-    }
-}
-
 #[async_trait]
 impl ExchangeWs for AnyWsExchange {
     type InitParams = InitAnyExchange;
+    type Subscription = Subscription;
+
     async fn new(params: Self::InitParams) -> Self {
         match params {
             InitAnyExchange::Nash(params) => {
@@ -198,14 +198,52 @@ impl ExchangeWs for AnyWsExchange {
                 .into(),
         }
     }
-    async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
+    async fn subscribe<
+        S: Into<Self::Subscription> + Clone + Sync + Send,
+        F: Fn(&Result<OpenLimitsWebsocketMessage>) + Sync + Send + 'static,
+    >(
+        &self,
+        subscription: S,
+        callback: F,
+    ) -> Result<CallbackHandle<Result<OpenLimitsWebsocketMessage>>> {
         match self {
-            Self::Nash(nash) => nash.subscribe(subscription).await,
-            Self::Binance(binance) => binance.subscribe(subscription).await,
+            Self::Nash(nash) => nash.subscribe(subscription.into(), callback).await,
+            Self::Binance(binance) => binance.subscribe(subscription.into(), callback).await,
         }
     }
-    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
-        message
+
+    async fn create_stream<'a, S: Into<Self::Subscription> + Clone + Sync + Send>(
+        &'a self,
+        subscriptions: &[S],
+    ) -> Result<SubscriptionStream<'a, Self>> {
+        match self {
+            Self::Nash(nash) => {
+                let v = subscriptions
+                    .iter()
+                    .map(|s| s.clone().into())
+                    .map(SubscriptionRequest::from)
+                    .collect::<Vec<_>>();
+                let s = nash.create_stream(&v).await;
+
+                Ok(SubscriptionStream::new(
+                    Box::new(s.unwrap().inner_stream),
+                    self,
+                ))
+            }
+            Self::Binance(binance) => {
+                let v = subscriptions
+                    .iter()
+                    .map(|s| s.clone().into())
+                    .map(BinanceSubscription::from)
+                    .collect::<Vec<_>>();
+                let s = binance.create_stream(&v).await;
+
+                Ok(SubscriptionStream::new(
+                    Box::new(s.unwrap().inner_stream),
+                    self,
+                ))
+            }
+        }
     }
 }
 
