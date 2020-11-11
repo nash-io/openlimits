@@ -58,25 +58,39 @@ impl Clone for NashParameters {
     }
 }
 
+async fn client_from_params(params: NashParameters) -> Client {
+    match params.credentials {
+        Some(credentials) => Client::from_key_data(
+            &credentials.secret,
+            &credentials.session,
+            None,
+            params.client_id,
+            params.environment,
+            params.timeout,
+        )
+        .await
+        .unwrap(),
+        None => Client::new(
+            None,
+            params.client_id,
+            None,
+            params.environment,
+            params.timeout,
+        )
+        .await
+        .unwrap(),
+    }
+}
+
 #[async_trait]
 impl Exchange for Nash {
     type InitParams = NashParameters;
     type InnerClient = Client;
 
-    async fn new(parameters: Self::InitParams) -> Self {
-        let credentials = parameters.credentials.unwrap();
-        Nash {
-            transport: Client::from_key_data(
-                &credentials.secret,
-                &credentials.session,
-                None,
-                parameters.client_id,
-                parameters.environment,
-                parameters.timeout,
-            )
-            .await
-            .unwrap(),
+    async fn new(params: Self::InitParams) -> Self {
+        Self {
             exchange_info: ExchangeInfo::new(),
+            transport: client_from_params(params).await,
         }
     }
 
@@ -691,21 +705,13 @@ impl Stream for NashStream {
 #[async_trait]
 impl ExchangeWs for NashStream {
     type InitParams = NashParameters;
+
     async fn new(params: Self::InitParams) -> Self {
-        let credentials = params.credentials.unwrap();
         Self {
-            client: Client::from_key_data(
-                &credentials.secret,
-                &credentials.session,
-                None,
-                params.client_id,
-                params.environment,
-                params.timeout,
-            )
-            .await
-            .unwrap(),
+            client: client_from_params(params).await,
         }
     }
+
     async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
         let sub: nash_protocol::protocol::subscriptions::SubscriptionRequest = subscription.into();
         let _stream = Client::subscribe_protocol(&self.client, sub).await;
