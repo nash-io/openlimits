@@ -1,15 +1,14 @@
 use crate::{
     binance::model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
     errors::OpenLimitError,
-    exchange_ws::SubscriptionStream,
-    exchange_ws::{spawn, CallbackHandle, ExchangeWs},
-    model::websocket::OpenLimitsWebsocketMessage,
+    exchange_ws::ExchangeWs,
+    model::websocket::OpenLimitsWebSocketMessage,
     model::websocket::Subscription,
     shared::Result,
 };
 
 use async_trait::async_trait;
-use futures::{future, stream::SplitStream, StreamExt};
+use futures::{stream::BoxStream, stream::SplitStream, StreamExt};
 use serde::{de, Deserialize, Serialize};
 use serde_json::Value;
 use std::{collections::HashMap, convert::TryFrom, fmt::Display};
@@ -45,37 +44,18 @@ impl BinanceWebsocket {
 impl ExchangeWs for BinanceWebsocket {
     type InitParams = ();
     type Subscription = BinanceSubscription;
+    type Response = BinanceWebsocketMessage;
 
     async fn new(_: ()) -> Self {
         BinanceWebsocket::new()
     }
-    async fn subscribe<
-        S: Into<Self::Subscription> + Clone + Sync + Send,
-        F: Fn(&Result<OpenLimitsWebsocketMessage>) + Send + 'static,
-    >(
+
+    async fn create_stream_specific(
         &self,
-        subscription: S,
-        callback: F,
-    ) -> Result<CallbackHandle<Result<OpenLimitsWebsocketMessage>>> {
-        let s = self.create_stream(&[subscription]).await.unwrap();
-
-        let fut = s.inner_stream.then(move |m| {
-            callback(&m);
-            future::ready(m)
-        });
-
-        let handle = spawn(fut);
-
-        Ok(handle)
-    }
-
-    async fn create_stream<'a, S: Into<Self::Subscription> + Clone + Sync + Send>(
-        &'a self,
-        subscriptions: &[S],
-    ) -> Result<SubscriptionStream<'a, Self>> {
+        subscriptions: &[Self::Subscription],
+    ) -> Result<BoxStream<'static, Result<Self::Response>>> {
         let streams = subscriptions
             .iter()
-            .map(|s| s.clone().into())
             .map(|bs| bs.to_string())
             .collect::<Vec<String>>()
             .join("/");
@@ -83,14 +63,9 @@ impl ExchangeWs for BinanceWebsocket {
         let endpoint = url::Url::parse(&format!("{}?streams={}", WS_URL, streams)).unwrap();
         let (ws_stream, _) = connect_async(endpoint).await?;
 
-        let s = ws_stream
-            .map(|message| parse_message(message.unwrap()))
-            .map(|message| OpenLimitsWebsocketMessage::try_from(message.unwrap()));
+        let s = ws_stream.map(|message| parse_message(message.unwrap()));
 
-        Ok(SubscriptionStream {
-            inner_stream: Box::new(s),
-            exchange: self,
-        })
+        Ok(s.boxed())
     }
 }
 
@@ -114,7 +89,11 @@ impl<'de> Deserialize<'de> for BinanceWebsocketMessage {
     {
         let stream: BinanceWebsocketStream = BinanceWebsocketStream::deserialize(deserializer)?;
 
-        if stream.name.contains("@depth10") {
+        if stream.name.eq("!ticker@arr") {
+            Ok(BinanceWebsocketMessage::TickerAll(
+                serde_json::from_value(stream.data).map_err(de::Error::custom)?,
+            ))
+        } else if stream.name.contains("@depth10") {
             Ok(BinanceWebsocketMessage::OrderBook(
                 serde_json::from_value(stream.data).map_err(de::Error::custom)?,
             ))
@@ -162,17 +141,17 @@ impl From<Subscription> for BinanceSubscription {
     }
 }
 
-impl TryFrom<BinanceWebsocketMessage> for OpenLimitsWebsocketMessage {
+impl TryFrom<BinanceWebsocketMessage> for OpenLimitsWebSocketMessage {
     type Error = OpenLimitError;
 
     fn try_from(value: BinanceWebsocketMessage) -> Result<Self> {
         match value {
             BinanceWebsocketMessage::OrderBook(orderbook) => {
-                Ok(OpenLimitsWebsocketMessage::OrderBook(orderbook.into()))
+                Ok(OpenLimitsWebSocketMessage::OrderBook(orderbook.into()))
             }
-            BinanceWebsocketMessage::Ping => Ok(OpenLimitsWebsocketMessage::Ping),
+            BinanceWebsocketMessage::Ping => Ok(OpenLimitsWebSocketMessage::Ping),
             BinanceWebsocketMessage::Close => Err(OpenLimitError::SocketError()),
-            _ => panic!("Not supported Message"),
+            _ => Err(OpenLimitError::WebSocketMessageNotSupported()),
         }
     }
 }

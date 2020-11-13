@@ -1,17 +1,19 @@
 use std::{
-    ops::Deref,
+    any::Any,
+    convert::TryInto,
     pin::Pin,
     task::{Context, Poll},
 };
 
-use crate::model::websocket::OpenLimitsWebsocketMessage;
+use crate::{
+    any_exchange::AnyWsExchange,
+    errors::OpenLimitError,
+    model::websocket::{OpenLimitsWebSocketMessage, Subscription},
+    shared::Result,
+};
 use async_trait::async_trait;
 use derive_more::Constructor;
-use futures::{
-    channel::mpsc::channel, channel::mpsc::Receiver, future, Stream, StreamExt, TryStream,
-};
-
-use crate::shared::Result;
+use futures::{channel::mpsc::channel, future, stream::BoxStream, Stream, StreamExt, TryStream};
 
 #[derive(Constructor)]
 pub struct OpenLimitsWs<E: ExchangeWs> {
@@ -24,48 +26,81 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
         Self { websocket }
     }
 
-    pub async fn subscribe<
-        S: Into<E::Subscription> + Clone + Sync + Send,
-        F: Fn(&Result<OpenLimitsWebsocketMessage>) + Sync + Send + 'static,
-    >(
+    pub async fn create_stream_specific(
         &self,
-        subscription: S,
-        callback: F,
-    ) -> Result<CallbackHandle<Result<OpenLimitsWebsocketMessage>>> {
-        self.websocket.subscribe(subscription, callback).await
+        subscriptions: &[E::Subscription],
+    ) -> Result<BoxStream<'static, Result<E::Response>>> {
+        self.websocket.create_stream_specific(subscriptions).await
     }
 
-    pub async fn create_stream<S: Into<E::Subscription> + Clone + Sync + Send>(
+    pub async fn subscribe_specific<F: Fn(&Result<E::Response>) + Sync + Send + 'static>(
         &self,
-        subscriptions: &[S],
-    ) -> Result<SubscriptionStream<'_, E>> {
-        self.websocket.create_stream(subscriptions).await
+        subscription: E::Subscription,
+        callback: F,
+    ) -> Result<CallbackHandle> {
+        self.websocket
+            .subscribe_specific(subscription, callback)
+            .await
+    }
+    pub async fn subscribe<F: Fn(&Result<OpenLimitsWebSocketMessage>) + Sync + Send + 'static>(
+        &self,
+        subscription: Subscription,
+        callback: F,
+    ) -> Result<CallbackHandle> {
+        self.websocket.subscribe(subscription, callback).await
     }
 }
 
 #[async_trait]
-pub trait ExchangeWs: Sized {
+pub trait ExchangeWs: Send + Sync {
     type InitParams;
-    type Subscription;
+    type Subscription: From<Subscription> + Send + Sync + Sized;
+    type Response: TryInto<OpenLimitsWebSocketMessage> + Send + Sync + Clone + Sized + 'static;
 
-    async fn new(params: Self::InitParams) -> Self;
+    async fn new(params: Self::InitParams) -> Self
+    where
+        Self: Sized;
 
-    async fn subscribe<
-        S: Into<Self::Subscription> + Clone + Sync + Send,
-        F: Fn(&Result<OpenLimitsWebsocketMessage>) + Sync + Send + 'static,
-    >(
+    async fn create_stream_specific(
         &self,
-        subscription: S,
-        callback: F,
-    ) -> Result<CallbackHandle<Result<OpenLimitsWebsocketMessage>>>;
+        subscriptions: &[Self::Subscription],
+    ) -> Result<BoxStream<'static, Result<Self::Response>>>;
 
-    async fn create_stream<'a, S: Into<Self::Subscription> + Clone + Sync + Send>(
-        &'a self,
-        subscriptions: &[S],
-    ) -> Result<SubscriptionStream<'a, Self>>;
+    async fn subscribe_specific<F: Fn(&Result<Self::Response>) + Send + 'static>(
+        &self,
+        subscription: Self::Subscription,
+        callback: F,
+    ) -> Result<CallbackHandle> {
+        let pin = self.create_stream_specific(&[subscription]).await.unwrap();
+        let fut = pin.then(move |m| {
+            callback(&m);
+            future::ready(m)
+        });
+
+        let handle = spawn(fut);
+
+        Ok(handle)
+    }
+
+    async fn subscribe<F: Fn(&Result<OpenLimitsWebSocketMessage>) + Send + 'static>(
+        &self,
+        subscription: Subscription,
+        callback: F,
+    ) -> Result<CallbackHandle> {
+        self.subscribe_specific(subscription.into(), move |m| {
+            if let Ok(message) = m {
+                let r = message
+                    .clone()
+                    .try_into()
+                    .map_err(|_| OpenLimitError::SocketError());
+                callback(&r)
+            }
+        })
+        .await
+    }
 }
 
-pub fn spawn<S>(stream: S) -> CallbackHandle<S::Item>
+pub fn spawn<S>(stream: S) -> CallbackHandle
 where
     S: TryStream + Send + Unpin + 'static,
     S::Item: Send,
@@ -79,33 +114,22 @@ where
             .forward(tx),
     );
 
-    CallbackHandle { rx }
+    CallbackHandle { rx: Box::new(rx) }
 }
 
 #[derive(Debug)]
-pub struct CallbackHandle<I> {
-    rx: Receiver<I>,
-}
-
-impl<I> Deref for CallbackHandle<I> {
-    type Target = Receiver<I>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.rx
-    }
+pub struct CallbackHandle {
+    rx: Box<dyn Any + Send>,
 }
 
 pub struct SubscriptionStream<'a, E: ExchangeWs> {
-    pub inner_stream:
-        Box<dyn Stream<Item = Result<OpenLimitsWebsocketMessage>> + Unpin + Send + 'static>,
+    pub inner_stream: BoxStream<'static, Result<OpenLimitsWebSocketMessage>>,
     pub exchange: &'a E,
 }
 
 impl<'a, E: ExchangeWs> SubscriptionStream<'a, E> {
     pub fn new(
-        inner_stream: Box<
-            dyn Stream<Item = Result<OpenLimitsWebsocketMessage>> + Unpin + Send + 'static,
-        >,
+        inner_stream: BoxStream<'static, Result<OpenLimitsWebSocketMessage>>,
         exchange: &'a E,
     ) -> Self {
         Self {
@@ -115,10 +139,18 @@ impl<'a, E: ExchangeWs> SubscriptionStream<'a, E> {
     }
 }
 
+impl<'a, E: ExchangeWs> From<Result<SubscriptionStream<'a, E>>>
+    for SubscriptionStream<'a, AnyWsExchange>
+{
+    fn from(_: Result<SubscriptionStream<'a, E>>) -> Self {
+        todo!()
+    }
+}
+
 impl<'a, E: ExchangeWs> Stream for SubscriptionStream<'a, E> {
-    type Item = Result<OpenLimitsWebsocketMessage>;
+    type Item = Result<OpenLimitsWebSocketMessage>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        Pin::new(self.inner_stream.as_mut()).poll_next(cx)
+        self.inner_stream.as_mut().poll_next(cx)
     }
 }

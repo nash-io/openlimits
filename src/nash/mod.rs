@@ -10,17 +10,14 @@ use crate::{
     exchange_info::ExchangeInfo,
     exchange_info::MarketPairHandle,
     exchange_info::{ExchangeInfoRetrieval, MarketPair},
-    exchange_ws::spawn,
-    exchange_ws::CallbackHandle,
     exchange_ws::ExchangeWs,
-    exchange_ws::SubscriptionStream,
+    model::websocket::OpenLimitsWebSocketMessage,
     model::{
-        websocket::{OpenLimitsWebsocketMessage, Subscription},
-        AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
-        GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
-        GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
-        Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
-        Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
+        websocket::Subscription, AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest,
+        Candle, GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest,
+        GetOrderRequest, GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest,
+        OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
+        OrderStatus, OrderType, Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
     shared::{timestamp_to_utc_datetime, Result},
 };
@@ -639,11 +636,11 @@ impl From<&GetOrderRequest> for nash_protocol::protocol::get_account_order::GetA
     }
 }
 
-use futures::{
-    future,
-    stream::{Stream, StreamExt},
+use futures::stream::{BoxStream, SelectAll, Stream, StreamExt};
+use nash_protocol::protocol::{
+    subscriptions::{SubscriptionRequest, SubscriptionResponse},
+    ResponseOrError,
 };
-use nash_protocol::protocol::{subscriptions::SubscriptionRequest, ResponseOrError};
 use std::{pin::Pin, task::Context, task::Poll};
 
 pub struct NashStream {
@@ -698,6 +695,7 @@ impl Stream for NashStream {
 impl ExchangeWs for NashStream {
     type InitParams = NashParameters;
     type Subscription = SubscriptionRequest;
+    type Response = SubscriptionResponseWrapper;
 
     async fn new(params: Self::InitParams) -> Self {
         let credentials = params.credentials.unwrap();
@@ -715,53 +713,43 @@ impl ExchangeWs for NashStream {
         }
     }
 
-    async fn subscribe<
-        S: Into<Self::Subscription> + Clone + Sync + Send,
-        F: Fn(&Result<OpenLimitsWebsocketMessage>) + Send + Sync + 'static,
-    >(
+    async fn create_stream_specific(
         &self,
-        subscription: S,
-        callback: F,
-    ) -> Result<CallbackHandle<Result<OpenLimitsWebsocketMessage>>> {
-        let sub: SubscriptionRequest = subscription.into();
-        let stream = Client::subscribe_protocol(&self.client, sub).await;
-        let stream = stream.map_err(|e| Err(OpenLimitError::NashProtocolError(e)));
-        if stream.is_err() {
-            return stream.unwrap_err();
+        subscriptions: &[Self::Subscription],
+    ) -> Result<BoxStream<'static, Result<Self::Response>>> {
+        let mut streams = SelectAll::new();
+
+        for subscription in subscriptions.iter() {
+            let stream = Client::subscribe_protocol(&self.client, subscription.clone()).await;
+            let stream = stream.map_err(|e| Err(OpenLimitError::NashProtocolError(e)));
+
+            match stream {
+                Ok(s) => {
+                    streams.push(s);
+                }
+                Err(_) => {
+                    return stream.unwrap_err();
+                }
+            }
         }
 
-        let fut = stream
-            .unwrap()
-            .map(|message| match message {
-                Ok(msg) => match msg {
-                    ResponseOrError::Response(resp) => Ok(resp.data.into()),
-                    ResponseOrError::Error(resp) => {
-                        let f = resp
-                            .errors
-                            .iter()
-                            .map(|f| f.message.clone())
-                            .collect::<Vec<String>>()
-                            .join("\n");
-                        Err(OpenLimitError::NotParsableResponse(String::from(f)))
-                    }
-                },
-                Err(_) => Err(OpenLimitError::SocketError()),
-            })
-            .then(move |item| {
-                callback(&item);
-                future::ready(item)
-            });
+        let s = streams.map(|message| match message {
+            Ok(msg) => match msg {
+                ResponseOrError::Response(resp) => Ok(SubscriptionResponseWrapper(resp.data)),
+                ResponseOrError::Error(resp) => {
+                    let f = resp
+                        .errors
+                        .iter()
+                        .map(|f| f.message.clone())
+                        .collect::<Vec<String>>()
+                        .join("\n");
+                    Err(OpenLimitError::NotParsableResponse(f))
+                }
+            },
+            Err(_) => Err(OpenLimitError::SocketError()),
+        });
 
-        let handle = spawn(fut);
-
-        Ok(handle)
-    }
-
-    async fn create_stream<'a, S: Into<Self::Subscription> + Clone + Sync + Send>(
-        &'a self,
-        subscriptions: &[S],
-    ) -> Result<SubscriptionStream<'a, Self>> {
-        todo!()
+        Ok(s.boxed())
     }
 }
 
@@ -781,21 +769,37 @@ impl From<Subscription> for nash_protocol::protocol::subscriptions::Subscription
     }
 }
 
-impl From<nash_protocol::protocol::subscriptions::SubscriptionResponse>
-    for OpenLimitsWebsocketMessage
-{
-    fn from(message: nash_protocol::protocol::subscriptions::SubscriptionResponse) -> Self {
-        match message {
-            nash_protocol::protocol::subscriptions::SubscriptionResponse::Orderbook(resp) => {
-                OpenLimitsWebsocketMessage::OrderBook(OrderBookResponse {
+#[derive(Debug)]
+pub struct SubscriptionResponseWrapper(SubscriptionResponse);
+
+impl Clone for SubscriptionResponseWrapper {
+    fn clone(&self) -> Self {
+        match &self.0 {
+            SubscriptionResponse::Orderbook(o) => {
+                SubscriptionResponseWrapper(SubscriptionResponse::Orderbook(o.clone()))
+            }
+            SubscriptionResponse::Trades(t) => {
+                SubscriptionResponseWrapper(SubscriptionResponse::Trades(t.clone()))
+            }
+        }
+    }
+}
+
+impl TryFrom<SubscriptionResponseWrapper> for OpenLimitsWebSocketMessage {
+    type Error = OpenLimitError;
+
+    fn try_from(value: SubscriptionResponseWrapper) -> Result<Self> {
+        match value.0 {
+            SubscriptionResponse::Orderbook(resp) => {
+                Ok(OpenLimitsWebSocketMessage::OrderBook(OrderBookResponse {
                     asks: resp.asks.into_iter().map(Into::into).collect(),
                     bids: resp.bids.into_iter().map(Into::into).collect(),
                     last_update_id: None,
-                })
+                }))
             }
-            nash_protocol::protocol::subscriptions::SubscriptionResponse::Trades(resp) => {
+            SubscriptionResponse::Trades(resp) => {
                 let trades = resp.trades.into_iter().map(|x| x.into()).collect();
-                OpenLimitsWebsocketMessage::Trades(trades)
+                Ok(OpenLimitsWebSocketMessage::Trades(trades))
             }
         }
     }

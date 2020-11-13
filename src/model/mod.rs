@@ -24,7 +24,7 @@ pub struct OrderBookResponse {
     pub asks: Vec<AskBid>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Copy, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct AskBid {
     pub price: Decimal,
     pub qty: Decimal,

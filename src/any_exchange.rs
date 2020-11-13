@@ -2,6 +2,9 @@
 //! constraints on generics. This module provides an enum wrapper type for all openlimits exchanges that code can
 //! use to operate over any openlimits-supported exchange without generics
 
+use std::convert::TryFrom;
+
+use crate::exchange::{Exchange, ExchangeAccount, ExchangeMarketData};
 use crate::exchange_ws::{ExchangeWs, OpenLimitsWs};
 use crate::nash::{Nash, NashParameters, NashStream};
 use crate::{
@@ -10,23 +13,20 @@ use crate::{
 };
 use crate::{
     binance::{Binance, BinanceParameters, BinanceWebsocket},
-    exchange_ws::CallbackHandle,
-};
-use crate::{
-    exchange::{Exchange, ExchangeAccount, ExchangeMarketData},
-    exchange_ws::SubscriptionStream,
+    model::websocket::OpenLimitsWebSocketMessage,
 };
 use crate::{
     model::{
-        websocket::{OpenLimitsWebsocketMessage, Subscription},
-        Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
-        GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
-        OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
-        OrderCanceled, Paginator, Ticker, Trade, TradeHistoryRequest,
+        websocket::Subscription, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
+        GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
+        GetPriceTickerRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
+        OrderBookRequest, OrderBookResponse, OrderCanceled, Paginator, Ticker, Trade,
+        TradeHistoryRequest,
     },
     shared::Result,
 };
 use async_trait::async_trait;
+use futures::stream::{BoxStream, StreamExt};
 use nash_protocol::protocol::subscriptions::SubscriptionRequest;
 
 #[derive(Clone)]
@@ -187,6 +187,7 @@ pub enum AnyWsExchange {
 impl ExchangeWs for AnyWsExchange {
     type InitParams = InitAnyExchange;
     type Subscription = Subscription;
+    type Response = OpenLimitsWebSocketMessage;
 
     async fn new(params: Self::InitParams) -> Self {
         match params {
@@ -198,50 +199,41 @@ impl ExchangeWs for AnyWsExchange {
                 .into(),
         }
     }
-    async fn subscribe<
-        S: Into<Self::Subscription> + Clone + Sync + Send,
-        F: Fn(&Result<OpenLimitsWebsocketMessage>) + Sync + Send + 'static,
-    >(
-        &self,
-        subscription: S,
-        callback: F,
-    ) -> Result<CallbackHandle<Result<OpenLimitsWebsocketMessage>>> {
-        match self {
-            Self::Nash(nash) => nash.subscribe(subscription.into(), callback).await,
-            Self::Binance(binance) => binance.subscribe(subscription.into(), callback).await,
-        }
-    }
 
-    async fn create_stream<'a, S: Into<Self::Subscription> + Clone + Sync + Send>(
-        &'a self,
-        subscriptions: &[S],
-    ) -> Result<SubscriptionStream<'a, Self>> {
+    async fn create_stream_specific(
+        &self,
+        subscriptions: &[Self::Subscription],
+    ) -> Result<BoxStream<'static, Result<Self::Response>>> {
         match self {
             Self::Nash(nash) => {
                 let v = subscriptions
                     .iter()
-                    .map(|s| s.clone().into())
+                    .cloned()
                     .map(SubscriptionRequest::from)
                     .collect::<Vec<_>>();
-                let s = nash.create_stream(&v).await;
+                let s = nash
+                    .create_stream_specific(&v)
+                    .await
+                    .unwrap()
+                    .map(|r| OpenLimitsWebSocketMessage::try_from(r.unwrap()))
+                    .boxed();
 
-                Ok(SubscriptionStream::new(
-                    Box::new(s.unwrap().inner_stream),
-                    self,
-                ))
+                Ok(s)
             }
             Self::Binance(binance) => {
                 let v = subscriptions
                     .iter()
-                    .map(|s| s.clone().into())
+                    .cloned()
                     .map(BinanceSubscription::from)
                     .collect::<Vec<_>>();
-                let s = binance.create_stream(&v).await;
+                let s = binance
+                    .create_stream_specific(&v)
+                    .await
+                    .unwrap()
+                    .map(|r| OpenLimitsWebSocketMessage::try_from(r.unwrap()))
+                    .boxed();
 
-                Ok(SubscriptionStream::new(
-                    Box::new(s.unwrap().inner_stream),
-                    self,
-                ))
+                Ok(s)
             }
         }
     }
