@@ -1,19 +1,13 @@
-use std::{
-    any::Any,
-    convert::TryInto,
-    pin::Pin,
-    task::{Context, Poll},
-};
+use std::{any::Any, convert::TryInto};
 
 use crate::{
-    any_exchange::AnyWsExchange,
     errors::OpenLimitError,
     model::websocket::{OpenLimitsWebSocketMessage, Subscription},
     shared::Result,
 };
 use async_trait::async_trait;
 use derive_more::Constructor;
-use futures::{channel::mpsc::channel, future, stream::BoxStream, Stream, StreamExt, TryStream};
+use futures::{channel::mpsc::channel, future, stream::BoxStream, StreamExt};
 
 #[derive(Constructor)]
 pub struct OpenLimitsWs<E: ExchangeWs> {
@@ -57,9 +51,7 @@ pub trait ExchangeWs: Send + Sync {
     type Subscription: From<Subscription> + Send + Sync + Sized;
     type Response: TryInto<OpenLimitsWebSocketMessage> + Send + Sync + Clone + Sized + 'static;
 
-    async fn new(params: Self::InitParams) -> Self
-    where
-        Self: Sized;
+    async fn new(params: Self::InitParams) -> Self;
 
     async fn create_stream_specific(
         &self,
@@ -77,9 +69,11 @@ pub trait ExchangeWs: Send + Sync {
             future::ready(m)
         });
 
-        let handle = spawn(fut);
+        let (tx, rx) = channel(1);
 
-        Ok(handle)
+        tokio::spawn(fut.map(Ok).skip_while(|_| future::ready(true)).forward(tx));
+
+        Ok(CallbackHandle { rx: Box::new(rx) })
     }
 
     async fn subscribe<F: Fn(&Result<OpenLimitsWebSocketMessage>) + Send + 'static>(
@@ -100,57 +94,7 @@ pub trait ExchangeWs: Send + Sync {
     }
 }
 
-pub fn spawn<S>(stream: S) -> CallbackHandle
-where
-    S: TryStream + Send + Unpin + 'static,
-    S::Item: Send,
-{
-    let (tx, rx) = channel(1);
-
-    tokio::spawn(
-        stream
-            .map(Ok)
-            .skip_while(|_| future::ready(true))
-            .forward(tx),
-    );
-
-    CallbackHandle { rx: Box::new(rx) }
-}
-
 #[derive(Debug)]
 pub struct CallbackHandle {
     rx: Box<dyn Any + Send>,
-}
-
-pub struct SubscriptionStream<'a, E: ExchangeWs> {
-    pub inner_stream: BoxStream<'static, Result<OpenLimitsWebSocketMessage>>,
-    pub exchange: &'a E,
-}
-
-impl<'a, E: ExchangeWs> SubscriptionStream<'a, E> {
-    pub fn new(
-        inner_stream: BoxStream<'static, Result<OpenLimitsWebSocketMessage>>,
-        exchange: &'a E,
-    ) -> Self {
-        Self {
-            inner_stream,
-            exchange,
-        }
-    }
-}
-
-impl<'a, E: ExchangeWs> From<Result<SubscriptionStream<'a, E>>>
-    for SubscriptionStream<'a, AnyWsExchange>
-{
-    fn from(_: Result<SubscriptionStream<'a, E>>) -> Self {
-        todo!()
-    }
-}
-
-impl<'a, E: ExchangeWs> Stream for SubscriptionStream<'a, E> {
-    type Item = Result<OpenLimitsWebSocketMessage>;
-
-    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        self.inner_stream.as_mut().poll_next(cx)
-    }
 }
