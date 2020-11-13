@@ -135,6 +135,8 @@ impl ExchangeInfoRetrieval for Binance {
                         symbol: symbol.symbol,
                         base_increment: *lot_size,
                         quote_increment: *tick_size,
+                        min_base_trade_size: None,
+                        min_quote_trade_size: None,
                     }
                 })
                 .collect()
@@ -356,8 +358,9 @@ impl From<model::Order> for Order {
             order_type,
             side: order.side.into(),
             status: order.status.into(),
-            price: Some(order.price),
             size: order.orig_qty,
+            price: Some(order.price),
+            remaining: Some(order.orig_qty - order.executed_qty),
         }
     }
 }
@@ -405,7 +408,8 @@ impl From<model::TradeHistory> for Trade {
 impl From<model::SymbolPrice> for Ticker {
     fn from(ticker: model::SymbolPrice) -> Self {
         Self {
-            price: ticker.price,
+            price: Some(ticker.price),
+            price_24h: None,
         }
     }
 }

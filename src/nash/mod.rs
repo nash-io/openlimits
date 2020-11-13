@@ -384,14 +384,15 @@ impl From<nash_protocol::protocol::place_order::LimitOrderResponse> for Order {
     fn from(resp: nash_protocol::protocol::place_order::LimitOrderResponse) -> Self {
         Self {
             id: resp.order_id,
+            market_pair: resp.market_name,
             client_order_id: None,
             created_at: Some(resp.placed_at.timestamp_millis() as u64),
-            market_pair: resp.market_name,
             order_type: resp.order_type.into(),
-            size: Decimal::from(0),
-            price: None,
             side: resp.buy_or_sell.into(),
             status: resp.status.into(),
+            size: Decimal::from(0),
+            price: None,
+            remaining: None,
         }
     }
 }
@@ -596,19 +597,20 @@ impl TryFrom<&GetOrderHistoryRequest>
 impl From<nash_protocol::types::Order> for Order {
     fn from(order: nash_protocol::types::Order) -> Self {
         let size = Decimal::from_str(&format!("{}", &order.amount_placed.amount.value)).unwrap();
+        let price = order.limit_price.map(|p| Decimal::from_str(&format!("{}", &p.amount.value)).unwrap());
+        let remaining = Some(Decimal::from_str(&format!("{}", &order.amount_remaining.amount.value)).unwrap());
 
         Self {
             id: order.id,
+            market_pair: order.market.market_name(),
             client_order_id: None,
             created_at: Some(order.placed_at.timestamp_millis() as u64),
-            market_pair: order.market.market_name(),
             order_type: order.order_type.into(),
-            price: order
-                .limit_price
-                .map(|p| Decimal::from_str(&format!("{}", &p.amount.value)).unwrap()),
-            size,
             side: order.buy_or_sell.into(),
             status: order.status.into(),
+            size,
+            price,
+            remaining
         }
     }
 }
@@ -634,11 +636,19 @@ impl From<&GetPriceTickerRequest> for nash_protocol::protocol::get_ticker::Ticke
 
 impl From<nash_protocol::protocol::get_ticker::TickerResponse> for Ticker {
     fn from(resp: nash_protocol::protocol::get_ticker::TickerResponse) -> Self {
-        let ask = Decimal::from_str(&format!("{}", &resp.best_ask_price.amount.value)).unwrap();
-        let bid = Decimal::from_str(&format!("{}", &resp.best_bid_price.amount.value)).unwrap();
-        let price = (ask + bid) / Decimal::from(2);
-
-        Self { price }
+        let mut price = None;
+        if resp.best_ask_price.is_some() && resp.best_bid_price.is_some() {
+            let ask = Decimal::from_str(&format!("{}", &resp.best_ask_price.unwrap().amount.value)).unwrap();
+            let bid = Decimal::from_str(&format!("{}", &resp.best_bid_price.unwrap().amount.value)).unwrap();
+            price = Some((ask + bid) / Decimal::from(2));
+        }
+        let mut price_24h = None;
+        if resp.high_price_24h.is_some() && resp.low_price_24h.is_some() {
+            let day_high = Decimal::from_str(&format!("{}", &resp.high_price_24h.unwrap().amount.value)).unwrap();
+            let day_low = Decimal::from_str(&format!("{}", &resp.low_price_24h.unwrap().amount.value)).unwrap();
+            price_24h = Some((day_high + day_low) / Decimal::from(2));
+        }
+        Self { price, price_24h }
     }
 }
 
@@ -832,6 +842,8 @@ impl ExchangeInfoRetrieval for Nash {
                 quote: v.asset_b.asset.name().to_string(),
                 base_increment: Decimal::new(1, v.asset_a.precision),
                 quote_increment: Decimal::new(1, v.asset_b.precision),
+                min_base_trade_size: Some(Decimal::from_str(&format!("{}", &v.min_trade_size_a.amount.value)).unwrap()),
+                min_quote_trade_size: Some(Decimal::from_str(&format!("{}", &v.min_trade_size_b.amount.value)).unwrap()),
             })
             .collect())
     }
