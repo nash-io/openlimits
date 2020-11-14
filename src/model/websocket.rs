@@ -9,6 +9,12 @@ pub enum Subscription {
     UserTrades,
 }
 
+#[derive(Debug, Clone)]
+pub enum WebSocketResponse<T> {
+    Generic(OpenLimitsWebSocketMessage),
+    Raw(T),
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub enum OpenLimitsWebSocketMessage {
     Ping,

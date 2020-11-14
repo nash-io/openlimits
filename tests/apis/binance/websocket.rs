@@ -10,7 +10,7 @@ async fn aggregate_trade() {
     let sub = BinanceSubscription::AggregateTrade("bnbbtc".to_string());
 
     websocket
-        .subscribe_specific(sub, move |m| println!("{:?}", m))
+        .subscribe(sub, move |m| println!("{:?}", m))
         .await
         .unwrap();
 }
@@ -21,7 +21,7 @@ async fn candlestick() {
     let sub = BinanceSubscription::Candlestick("bnbbtc".to_string(), "1m".to_string());
 
     websocket
-        .subscribe_specific(sub, move |m| println!("{:?}", m))
+        .subscribe(sub, move |m| println!("{:?}", m))
         .await
         .unwrap();
 }
@@ -32,7 +32,7 @@ async fn depth() {
     let sub = BinanceSubscription::Depth("bnbbtc".to_string(), Some(1));
 
     websocket
-        .subscribe_specific(sub, |m| println!("{:?}", m))
+        .subscribe(sub, |m| println!("{:?}", m))
         .await
         .unwrap();
 }
@@ -43,7 +43,7 @@ async fn mini_ticker() {
     let sub = BinanceSubscription::MiniTicker("bnbbtc".to_string());
 
     websocket
-        .subscribe_specific(sub, |m| println!("{:?}", m))
+        .subscribe(sub, |m| println!("{:?}", m))
         .await
         .unwrap();
 }
@@ -54,7 +54,7 @@ async fn mini_ticker_all() {
     let sub = BinanceSubscription::MiniTickerAll;
 
     websocket
-        .subscribe_specific(sub, |m| println!("{:?}", m))
+        .subscribe(sub, |m| println!("{:?}", m))
         .await
         .unwrap();
 }
@@ -66,7 +66,7 @@ async fn order_book() {
     let sub = BinanceSubscription::OrderBook("bnbbtc".to_string(), 10);
 
     websocket
-        .subscribe_specific(sub, move |m| {
+        .subscribe(sub, move |m| {
             println!("{:?}", m);
             tx.send(()).unwrap();
         })
@@ -82,7 +82,7 @@ async fn ticker() {
     let sub = BinanceSubscription::Ticker("bnbbtc".to_string());
 
     websocket
-        .subscribe_specific(sub, |m| println!("{:?}", m))
+        .subscribe(sub, |m| println!("{:?}", m))
         .await
         .unwrap();
 }
@@ -94,7 +94,7 @@ async fn ticker_all() {
     let sub = BinanceSubscription::TickerAll;
 
     websocket
-        .subscribe_specific(sub, move |m| {
+        .subscribe(sub, move |m| {
             println!("{:?}", m);
             tx.send(()).unwrap();
         })
@@ -110,7 +110,7 @@ async fn trade() {
     let sub = BinanceSubscription::Trade("bnbbtc".to_string());
 
     websocket
-        .subscribe_specific(sub, |m| println!("{:?}", m))
+        .subscribe(sub, |m| println!("{:?}", m))
         .await
         .unwrap();
 }

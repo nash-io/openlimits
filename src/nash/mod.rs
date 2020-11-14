@@ -13,11 +13,12 @@ use crate::{
     exchange_ws::ExchangeWs,
     model::websocket::OpenLimitsWebSocketMessage,
     model::{
-        websocket::Subscription, AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest,
-        Candle, GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest,
-        GetOrderRequest, GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest,
-        OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse, OrderCanceled,
-        OrderStatus, OrderType, Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
+        websocket::{Subscription, WebSocketResponse},
+        AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
+        GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
+        GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
+        Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
+        Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
     shared::{timestamp_to_utc_datetime, Result},
 };
@@ -785,21 +786,23 @@ impl Clone for SubscriptionResponseWrapper {
     }
 }
 
-impl TryFrom<SubscriptionResponseWrapper> for OpenLimitsWebSocketMessage {
+impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResponseWrapper> {
     type Error = OpenLimitError;
 
     fn try_from(value: SubscriptionResponseWrapper) -> Result<Self> {
         match value.0 {
-            SubscriptionResponse::Orderbook(resp) => {
-                Ok(OpenLimitsWebSocketMessage::OrderBook(OrderBookResponse {
+            SubscriptionResponse::Orderbook(resp) => Ok(WebSocketResponse::Generic(
+                OpenLimitsWebSocketMessage::OrderBook(OrderBookResponse {
                     asks: resp.asks.into_iter().map(Into::into).collect(),
                     bids: resp.bids.into_iter().map(Into::into).collect(),
                     last_update_id: None,
-                }))
-            }
+                }),
+            )),
             SubscriptionResponse::Trades(resp) => {
                 let trades = resp.trades.into_iter().map(|x| x.into()).collect();
-                Ok(OpenLimitsWebSocketMessage::Trades(trades))
+                Ok(WebSocketResponse::Generic(
+                    OpenLimitsWebSocketMessage::Trades(trades),
+                ))
             }
         }
     }

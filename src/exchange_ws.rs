@@ -1,7 +1,11 @@
-use std::{any::Any, convert::TryInto};
+use std::{
+    any::Any,
+    convert::{TryFrom, TryInto},
+};
 
 use crate::{
     errors::OpenLimitError,
+    model::websocket::WebSocketResponse,
     model::websocket::{OpenLimitsWebSocketMessage, Subscription},
     shared::Result,
 };
@@ -27,16 +31,9 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
         self.websocket.create_stream_specific(subscriptions).await
     }
 
-    pub async fn subscribe_specific<F: Fn(&Result<E::Response>) + Sync + Send + 'static>(
-        &self,
-        subscription: E::Subscription,
-        callback: F,
-    ) -> Result<CallbackHandle> {
-        self.websocket
-            .subscribe_specific(subscription, callback)
-            .await
-    }
-    pub async fn subscribe<F: Fn(&Result<OpenLimitsWebSocketMessage>) + Sync + Send + 'static>(
+    pub async fn subscribe<
+        F: Fn(&Result<WebSocketResponse<E::Response>>) + Sync + Send + 'static,
+    >(
         &self,
         subscription: Subscription,
         callback: F,
@@ -49,7 +46,12 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
 pub trait ExchangeWs: Send + Sync {
     type InitParams;
     type Subscription: From<Subscription> + Send + Sync + Sized;
-    type Response: TryInto<OpenLimitsWebSocketMessage> + Send + Sync + Clone + Sized + 'static;
+    type Response: TryInto<WebSocketResponse<Self::Response>>
+        + Send
+        + Sync
+        + Clone
+        + Sized
+        + 'static;
 
     async fn new(params: Self::InitParams) -> Self;
 
@@ -58,15 +60,28 @@ pub trait ExchangeWs: Send + Sync {
         subscriptions: &[Self::Subscription],
     ) -> Result<BoxStream<'static, Result<Self::Response>>>;
 
-    async fn subscribe_specific<F: Fn(&Result<Self::Response>) + Send + 'static>(
+    async fn subscribe<
+        S: Into<Self::Subscription> + Send,
+        F: Fn(&Result<WebSocketResponse<Self::Response>>) + Send + 'static,
+    >(
         &self,
-        subscription: Self::Subscription,
+        subscription: S,
         callback: F,
     ) -> Result<CallbackHandle> {
-        let pin = self.create_stream_specific(&[subscription]).await.unwrap();
-        let fut = pin.then(move |m| {
-            callback(&m);
-            future::ready(m)
+        let stream = self
+            .create_stream_specific(&[subscription.into()])
+            .await
+            .unwrap();
+
+        let fut = stream.then(move |m| match m {
+            Ok(message) => {
+                let r = message
+                    .try_into()
+                    .map_err(|_| OpenLimitError::SocketError());
+                callback(&r);
+                future::ready(r)
+            }
+            Err(err) => future::ready(Err(err)),
         });
 
         let (tx, rx) = channel(1);
@@ -75,26 +90,17 @@ pub trait ExchangeWs: Send + Sync {
 
         Ok(CallbackHandle { rx: Box::new(rx) })
     }
-
-    async fn subscribe<F: Fn(&Result<OpenLimitsWebSocketMessage>) + Send + 'static>(
-        &self,
-        subscription: Subscription,
-        callback: F,
-    ) -> Result<CallbackHandle> {
-        self.subscribe_specific(subscription.into(), move |m| {
-            if let Ok(message) = m {
-                let r = message
-                    .clone()
-                    .try_into()
-                    .map_err(|_| OpenLimitError::SocketError());
-                callback(&r)
-            }
-        })
-        .await
-    }
 }
 
 #[derive(Debug)]
 pub struct CallbackHandle {
     rx: Box<dyn Any + Send>,
+}
+
+impl TryFrom<OpenLimitsWebSocketMessage> for WebSocketResponse<OpenLimitsWebSocketMessage> {
+    type Error = OpenLimitError;
+
+    fn try_from(value: OpenLimitsWebSocketMessage) -> Result<Self> {
+        todo!()
+    }
 }

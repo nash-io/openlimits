@@ -4,6 +4,7 @@ use crate::{
     exchange_ws::ExchangeWs,
     model::websocket::OpenLimitsWebSocketMessage,
     model::websocket::Subscription,
+    model::websocket::WebSocketResponse,
     shared::Result,
 };
 
@@ -141,17 +142,19 @@ impl From<Subscription> for BinanceSubscription {
     }
 }
 
-impl TryFrom<BinanceWebsocketMessage> for OpenLimitsWebSocketMessage {
+impl TryFrom<BinanceWebsocketMessage> for WebSocketResponse<BinanceWebsocketMessage> {
     type Error = OpenLimitError;
 
     fn try_from(value: BinanceWebsocketMessage) -> Result<Self> {
         match value {
-            BinanceWebsocketMessage::OrderBook(orderbook) => {
-                Ok(OpenLimitsWebSocketMessage::OrderBook(orderbook.into()))
+            BinanceWebsocketMessage::OrderBook(orderbook) => Ok(WebSocketResponse::Generic(
+                OpenLimitsWebSocketMessage::OrderBook(orderbook.into()),
+            )),
+            BinanceWebsocketMessage::Ping => {
+                Ok(WebSocketResponse::Generic(OpenLimitsWebSocketMessage::Ping))
             }
-            BinanceWebsocketMessage::Ping => Ok(OpenLimitsWebSocketMessage::Ping),
             BinanceWebsocketMessage::Close => Err(OpenLimitError::SocketError()),
-            _ => Err(OpenLimitError::WebSocketMessageNotSupported()),
+            _ => Ok(WebSocketResponse::Raw(value)),
         }
     }
 }

@@ -4,7 +4,6 @@
 
 use std::convert::TryFrom;
 
-use crate::exchange::{Exchange, ExchangeAccount, ExchangeMarketData};
 use crate::exchange_ws::{ExchangeWs, OpenLimitsWs};
 use crate::nash::{Nash, NashParameters, NashStream};
 use crate::{
@@ -14,6 +13,10 @@ use crate::{
 use crate::{
     binance::{Binance, BinanceParameters, BinanceWebsocket},
     model::websocket::OpenLimitsWebSocketMessage,
+};
+use crate::{
+    exchange::{Exchange, ExchangeAccount, ExchangeMarketData},
+    model::websocket::WebSocketResponse,
 };
 use crate::{
     model::{
@@ -215,7 +218,13 @@ impl ExchangeWs for AnyWsExchange {
                     .create_stream_specific(&v)
                     .await
                     .unwrap()
-                    .map(|r| OpenLimitsWebSocketMessage::try_from(r.unwrap()))
+                    .map(|r| WebSocketResponse::try_from(r.unwrap()))
+                    .map(|r| {
+                        r.map(|resp| match resp {
+                            WebSocketResponse::Generic(generic) => generic,
+                            WebSocketResponse::Raw(_) => panic!("Should never happen"),
+                        })
+                    })
                     .boxed();
 
                 Ok(s)
@@ -230,7 +239,13 @@ impl ExchangeWs for AnyWsExchange {
                     .create_stream_specific(&v)
                     .await
                     .unwrap()
-                    .map(|r| OpenLimitsWebSocketMessage::try_from(r.unwrap()))
+                    .map(|r| WebSocketResponse::try_from(r.unwrap()))
+                    .map(|r| {
+                        r.map(|resp| match resp {
+                            WebSocketResponse::Generic(generic) => generic,
+                            WebSocketResponse::Raw(_) => panic!("Should never happen"),
+                        })
+                    })
                     .boxed();
 
                 Ok(s)
