@@ -53,7 +53,7 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
 pub trait ExchangeWs: Send + Sync {
     type InitParams;
     type Subscription: From<Subscription> + Send + Sync + Sized;
-    type Response: TryInto<WebSocketResponse<Self::Response>>
+    type Response: TryInto<WebSocketResponse<Self::Response>, Error = OpenLimitError>
         + Send
         + Sync
         + Clone
@@ -75,16 +75,11 @@ pub trait ExchangeWs: Send + Sync {
         subscription: S,
         callback: F,
     ) -> Result<CallbackHandle> {
-        let stream = self
-            .create_stream_specific(&[subscription.into()])
-            .await
-            .unwrap();
+        let stream = self.create_stream_specific(&[subscription.into()]).await?;
 
         let fut = stream.then(move |m| match m {
             Ok(message) => {
-                let r = message
-                    .try_into()
-                    .map_err(|_| OpenLimitError::SocketError());
+                let r = message.try_into();
                 callback(&r);
                 future::ready(r)
             }
@@ -111,9 +106,7 @@ pub trait ExchangeWs: Send + Sync {
         let stream = self
             .create_stream_specific(&v)
             .await?
-            .map(|r| r.unwrap())
-            .map(|r| r.try_into())
-            .map(|r| r.map_err(|_| OpenLimitError::SocketError()))
+            .map(|r| r?.try_into())
             .boxed();
 
         Ok(stream)
@@ -129,6 +122,6 @@ impl TryFrom<OpenLimitsWebSocketMessage> for WebSocketResponse<OpenLimitsWebSock
     type Error = OpenLimitError;
 
     fn try_from(value: OpenLimitsWebSocketMessage) -> Result<Self> {
-        todo!()
+        Ok(WebSocketResponse::Generic(value))
     }
 }

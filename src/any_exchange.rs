@@ -214,10 +214,10 @@ impl ExchangeWs for AnyWsExchange {
                     .cloned()
                     .map(SubscriptionRequest::from)
                     .collect::<Vec<_>>();
+
                 let s = nash
                     .create_stream_specific(&v)
-                    .await
-                    .unwrap()
+                    .await?
                     .map(|r| WebSocketResponse::try_from(r.unwrap()))
                     .map(|r| {
                         r.map(|resp| match resp {
@@ -235,10 +235,10 @@ impl ExchangeWs for AnyWsExchange {
                     .cloned()
                     .map(BinanceSubscription::from)
                     .collect::<Vec<_>>();
+
                 let s = binance
                     .create_stream_specific(&v)
-                    .await
-                    .unwrap()
+                    .await?
                     .map(|r| WebSocketResponse::try_from(r.unwrap()))
                     .map(|r| {
                         r.map(|resp| match resp {
