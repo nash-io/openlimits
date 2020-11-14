@@ -90,8 +90,32 @@ impl<'de> Deserialize<'de> for BinanceWebsocketMessage {
     {
         let stream: BinanceWebsocketStream = BinanceWebsocketStream::deserialize(deserializer)?;
 
-        if stream.name.eq("!ticker@arr") {
+        if stream.name.ends_with("@aggTrade") {
+            Ok(BinanceWebsocketMessage::AggregateTrade(
+                serde_json::from_value(stream.data).map_err(de::Error::custom)?,
+            ))
+        } else if stream.name.contains("@trade") {
+            Ok(BinanceWebsocketMessage::Trade(
+                serde_json::from_value(stream.data).map_err(de::Error::custom)?,
+            ))
+        } else if stream.name.contains("@kline_") {
+            Ok(BinanceWebsocketMessage::Candlestick(
+                serde_json::from_value(stream.data).map_err(de::Error::custom)?,
+            ))
+        } else if stream.name.contains("@ticker") {
+            Ok(BinanceWebsocketMessage::Ticker(
+                serde_json::from_value(stream.data).map_err(de::Error::custom)?,
+            ))
+        } else if stream.name.eq("!ticker@arr") {
             Ok(BinanceWebsocketMessage::TickerAll(
+                serde_json::from_value(stream.data).map_err(de::Error::custom)?,
+            ))
+        } else if stream.name.ends_with("@miniTicker") {
+            Ok(BinanceWebsocketMessage::MiniTicker(
+                serde_json::from_value(stream.data).map_err(de::Error::custom)?,
+            ))
+        } else if stream.name.ends_with("!miniTicker@arr") {
+            Ok(BinanceWebsocketMessage::MiniTickerAll(
                 serde_json::from_value(stream.data).map_err(de::Error::custom)?,
             ))
         } else if stream.name.contains("@depth10") {
