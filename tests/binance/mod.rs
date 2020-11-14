@@ -1,3 +1,4 @@
 mod account;
 mod market;
-mod websocket;
+mod ws_callbacks;
+mod ws_streams;

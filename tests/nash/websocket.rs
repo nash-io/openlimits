@@ -5,7 +5,7 @@ use std::env;
 #[tokio::test]
 async fn orderbook() {
     let client = init().await;
-    let sub = Subscription::OrderBook("btc_usdc".to_string());
+    let sub = Subscription::OrderBookUpdates("btc_usdc".to_string());
     client
         .subscribe(sub, |m| println!("{:?}", m))
         .await

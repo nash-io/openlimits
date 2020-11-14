@@ -40,6 +40,13 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
     ) -> Result<CallbackHandle> {
         self.websocket.subscribe(subscription, callback).await
     }
+
+    pub async fn create_stream<S: Into<E::Subscription> + Clone + Send + Sync>(
+        &self,
+        subscriptions: &[S],
+    ) -> Result<BoxStream<'static, Result<WebSocketResponse<E::Response>>>> {
+        self.websocket.create_stream(subscriptions).await
+    }
 }
 
 #[async_trait]
@@ -89,6 +96,27 @@ pub trait ExchangeWs: Send + Sync {
         tokio::spawn(fut.map(Ok).skip_while(|_| future::ready(true)).forward(tx));
 
         Ok(CallbackHandle { rx: Box::new(rx) })
+    }
+
+    async fn create_stream<S: Into<Self::Subscription> + Clone + Send + Sync>(
+        &self,
+        subscriptions: &[S],
+    ) -> Result<BoxStream<'static, Result<WebSocketResponse<Self::Response>>>> {
+        let v = subscriptions
+            .iter()
+            .cloned()
+            .map(S::into)
+            .collect::<Vec<_>>();
+
+        let stream = self
+            .create_stream_specific(&v)
+            .await?
+            .map(|r| r.unwrap())
+            .map(|r| r.try_into())
+            .map(|r| r.map_err(|_| OpenLimitError::SocketError()))
+            .boxed();
+
+        Ok(stream)
     }
 }
 

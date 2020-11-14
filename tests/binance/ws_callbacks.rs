@@ -9,7 +9,7 @@ use openlimits::{
 async fn orderbook() {
     let (tx, rx) = sync_channel(0);
     let ws = init();
-    let sub = Subscription::OrderBook("bnbbtc".to_string());
+    let sub = Subscription::OrderBookUpdates("bnbbtc".to_string());
     ws.subscribe(sub, move |m| {
         println!("{:?}", m);
         tx.send(()).unwrap();

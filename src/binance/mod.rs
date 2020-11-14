@@ -298,6 +298,35 @@ impl From<model::OrderBook> for OrderBookResponse {
     }
 }
 
+impl From<model::websocket::Depth> for OrderBookResponse {
+    fn from(depth: model::websocket::Depth) -> Self {
+        Self {
+            last_update_id: Some(depth.final_update_id),
+            bids: depth.bids.into_iter().map(Into::into).collect(),
+            asks: depth.asks.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+impl From<model::websocket::TradeMessage> for Vec<Trade> {
+    fn from(trade_message: model::websocket::TradeMessage) -> Self {
+        vec![Trade {
+            id: trade_message.trade_id.to_string(),
+            order_id: trade_message.buyer_order_id.to_string(),
+            market_pair: trade_message.symbol,
+            price: trade_message.price,
+            qty: trade_message.qty,
+            fees: None,
+            side: match trade_message.is_buyer_maker {
+                true => Side::Buy,
+                false => Side::Sell,
+            },
+            liquidity: None,
+            created_at: trade_message.event_time,
+        }]
+    }
+}
+
 impl From<TradeMessage> for Trade {
     fn from(trade: TradeMessage) -> Self {
         Self {

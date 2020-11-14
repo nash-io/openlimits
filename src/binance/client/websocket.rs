@@ -118,12 +118,12 @@ impl<'de> Deserialize<'de> for BinanceWebsocketMessage {
             Ok(BinanceWebsocketMessage::MiniTickerAll(
                 serde_json::from_value(stream.data).map_err(de::Error::custom)?,
             ))
-        } else if stream.name.contains("@depth10") {
-            Ok(BinanceWebsocketMessage::OrderBook(
+        } else if stream.name.ends_with("@depth") {
+            Ok(BinanceWebsocketMessage::Depth(
                 serde_json::from_value(stream.data).map_err(de::Error::custom)?,
             ))
         } else if stream.name.contains("@depth") {
-            Ok(BinanceWebsocketMessage::Depth(
+            Ok(BinanceWebsocketMessage::OrderBook(
                 serde_json::from_value(stream.data).map_err(de::Error::custom)?,
             ))
         } else {
@@ -159,7 +159,7 @@ impl Display for BinanceSubscription {
 impl From<Subscription> for BinanceSubscription {
     fn from(subscription: Subscription) -> Self {
         match subscription {
-            Subscription::OrderBook(symbol) => BinanceSubscription::Depth(symbol, None),
+            Subscription::OrderBookUpdates(symbol) => BinanceSubscription::Depth(symbol, None),
             Subscription::Trades(symbol) => BinanceSubscription::Trade(symbol),
             _ => panic!("Not implemented"),
         }
@@ -171,8 +171,11 @@ impl TryFrom<BinanceWebsocketMessage> for WebSocketResponse<BinanceWebsocketMess
 
     fn try_from(value: BinanceWebsocketMessage) -> Result<Self> {
         match value {
-            BinanceWebsocketMessage::OrderBook(orderbook) => Ok(WebSocketResponse::Generic(
+            BinanceWebsocketMessage::Depth(orderbook) => Ok(WebSocketResponse::Generic(
                 OpenLimitsWebSocketMessage::OrderBook(orderbook.into()),
+            )),
+            BinanceWebsocketMessage::Trade(trade) => Ok(WebSocketResponse::Generic(
+                OpenLimitsWebSocketMessage::Trades(trade.into()),
             )),
             BinanceWebsocketMessage::Ping => {
                 Ok(WebSocketResponse::Generic(OpenLimitsWebSocketMessage::Ping))
