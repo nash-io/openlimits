@@ -1,6 +1,7 @@
 use std::{
     any::Any,
     convert::{TryFrom, TryInto},
+    slice,
 };
 
 use crate::{
@@ -26,7 +27,7 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
 
     pub async fn create_stream_specific(
         &self,
-        subscriptions: &[E::Subscription],
+        subscriptions: Subscriptions<E::Subscription>,
     ) -> Result<BoxStream<'static, Result<E::Response>>> {
         self.websocket.create_stream_specific(subscriptions).await
     }
@@ -64,18 +65,19 @@ pub trait ExchangeWs: Send + Sync {
 
     async fn create_stream_specific(
         &self,
-        subscriptions: &[Self::Subscription],
+        subscriptions: Subscriptions<Self::Subscription>,
     ) -> Result<BoxStream<'static, Result<Self::Response>>>;
 
     async fn subscribe<
-        S: Into<Self::Subscription> + Send,
+        S: Into<Self::Subscription> + Sync + Send + Clone,
         F: Fn(&Result<WebSocketResponse<Self::Response>>) + Send + 'static,
     >(
         &self,
         subscription: S,
         callback: F,
     ) -> Result<CallbackHandle> {
-        let stream = self.create_stream_specific(&[subscription.into()]).await?;
+        let s = slice::from_ref(&subscription);
+        let stream = self.create_stream_specific(s.into()).await?;
 
         let fut = stream.then(move |m| match m {
             Ok(message) => {
@@ -97,14 +99,8 @@ pub trait ExchangeWs: Send + Sync {
         &self,
         subscriptions: &[S],
     ) -> Result<BoxStream<'static, Result<WebSocketResponse<Self::Response>>>> {
-        let v = subscriptions
-            .iter()
-            .cloned()
-            .map(S::into)
-            .collect::<Vec<_>>();
-
         let stream = self
-            .create_stream_specific(&v)
+            .create_stream_specific(subscriptions.into())
             .await?
             .map(|r| r?.try_into())
             .boxed();
@@ -123,5 +119,32 @@ impl TryFrom<OpenLimitsWebSocketMessage> for WebSocketResponse<OpenLimitsWebSock
 
     fn try_from(value: OpenLimitsWebSocketMessage) -> Result<Self> {
         Ok(WebSocketResponse::Generic(value))
+    }
+}
+
+pub struct Subscriptions<T: From<Subscription>> {
+    inner: Vec<T>,
+}
+
+impl<T: From<Subscription>> Subscriptions<T> {
+    pub fn as_slice(&self) -> &[T] {
+        &self.inner[..]
+    }
+}
+
+impl<T: From<Subscription>> IntoIterator for Subscriptions<T> {
+    type Item = T;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.inner.into_iter()
+    }
+}
+
+impl<T: From<Subscription>, U: Into<T> + Clone> From<&[U]> for Subscriptions<T> {
+    fn from(s: &[U]) -> Self {
+        let v = s.iter().cloned().map(U::into).collect::<Vec<_>>();
+
+        Subscriptions { inner: v }
     }
 }

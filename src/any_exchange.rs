@@ -4,12 +4,9 @@
 
 use std::convert::TryFrom;
 
-use crate::exchange_ws::{ExchangeWs, OpenLimitsWs};
+use crate::exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
+use crate::exchange_ws::{ExchangeWs, OpenLimitsWs, Subscriptions};
 use crate::nash::{Nash, NashParameters, NashStream};
-use crate::{
-    binance::model::websocket::BinanceSubscription,
-    exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
-};
 use crate::{
     binance::{Binance, BinanceParameters, BinanceWebsocket},
     model::websocket::OpenLimitsWebSocketMessage,
@@ -30,7 +27,6 @@ use crate::{
 };
 use async_trait::async_trait;
 use futures::stream::{BoxStream, StreamExt};
-use nash_protocol::protocol::subscriptions::SubscriptionRequest;
 
 #[derive(Clone)]
 pub enum InitAnyExchange {
@@ -205,52 +201,33 @@ impl ExchangeWs for AnyWsExchange {
 
     async fn create_stream_specific(
         &self,
-        subscriptions: &[Self::Subscription],
+        subscriptions: Subscriptions<Self::Subscription>,
     ) -> Result<BoxStream<'static, Result<Self::Response>>> {
-        match self {
-            Self::Nash(nash) => {
-                let v = subscriptions
-                    .iter()
-                    .cloned()
-                    .map(SubscriptionRequest::from)
-                    .collect::<Vec<_>>();
-
-                let s = nash
-                    .create_stream_specific(&v)
-                    .await?
-                    .map(|r| WebSocketResponse::try_from(r.unwrap()))
-                    .map(|r| {
-                        r.map(|resp| match resp {
-                            WebSocketResponse::Generic(generic) => generic,
-                            WebSocketResponse::Raw(_) => panic!("Should never happen"),
-                        })
+        let s = match self {
+            Self::Nash(nash) => nash
+                .create_stream_specific(subscriptions.as_slice().into())
+                .await?
+                .map(|r| WebSocketResponse::try_from(r.unwrap()))
+                .map(|r| {
+                    r.map(|resp| match resp {
+                        WebSocketResponse::Generic(generic) => generic,
+                        WebSocketResponse::Raw(_) => panic!("Should never happen"),
                     })
-                    .boxed();
-
-                Ok(s)
-            }
-            Self::Binance(binance) => {
-                let v = subscriptions
-                    .iter()
-                    .cloned()
-                    .map(BinanceSubscription::from)
-                    .collect::<Vec<_>>();
-
-                let s = binance
-                    .create_stream_specific(&v)
-                    .await?
-                    .map(|r| WebSocketResponse::try_from(r.unwrap()))
-                    .map(|r| {
-                        r.map(|resp| match resp {
-                            WebSocketResponse::Generic(generic) => generic,
-                            WebSocketResponse::Raw(_) => panic!("Should never happen"),
-                        })
+                })
+                .boxed(),
+            Self::Binance(binance) => binance
+                .create_stream_specific(subscriptions.as_slice().into())
+                .await?
+                .map(|r| WebSocketResponse::try_from(r.unwrap()))
+                .map(|r| {
+                    r.map(|resp| match resp {
+                        WebSocketResponse::Generic(generic) => generic,
+                        WebSocketResponse::Raw(_) => panic!("Should never happen"),
                     })
-                    .boxed();
-
-                Ok(s)
-            }
-        }
+                })
+                .boxed(),
+        };
+        Ok(s)
     }
 }
 

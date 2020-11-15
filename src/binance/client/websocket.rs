@@ -2,6 +2,7 @@ use crate::{
     binance::model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
     errors::OpenLimitError,
     exchange_ws::ExchangeWs,
+    exchange_ws::Subscriptions,
     model::websocket::OpenLimitsWebSocketMessage,
     model::websocket::Subscription,
     model::websocket::WebSocketResponse,
@@ -53,10 +54,10 @@ impl ExchangeWs for BinanceWebsocket {
 
     async fn create_stream_specific(
         &self,
-        subscriptions: &[Self::Subscription],
+        subscriptions: Subscriptions<Self::Subscription>,
     ) -> Result<BoxStream<'static, Result<Self::Response>>> {
         let streams = subscriptions
-            .iter()
+            .into_iter()
             .map(|bs| bs.to_string())
             .collect::<Vec<String>>()
             .join("/");

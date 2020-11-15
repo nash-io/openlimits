@@ -11,6 +11,7 @@ use crate::{
     exchange_info::MarketPairHandle,
     exchange_info::{ExchangeInfoRetrieval, MarketPair},
     exchange_ws::ExchangeWs,
+    exchange_ws::Subscriptions,
     model::websocket::OpenLimitsWebSocketMessage,
     model::{
         websocket::{Subscription, WebSocketResponse},
@@ -716,11 +717,11 @@ impl ExchangeWs for NashStream {
 
     async fn create_stream_specific(
         &self,
-        subscriptions: &[Self::Subscription],
+        subscriptions: Subscriptions<Self::Subscription>,
     ) -> Result<BoxStream<'static, Result<Self::Response>>> {
         let mut streams = SelectAll::new();
 
-        for subscription in subscriptions.iter() {
+        for subscription in subscriptions.into_iter() {
             let stream = Client::subscribe_protocol(&self.client, subscription.clone()).await;
             let stream = stream.map_err(|e| Err(OpenLimitError::NashProtocolError(e)));
 
