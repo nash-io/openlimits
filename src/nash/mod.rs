@@ -714,7 +714,6 @@ impl ExchangeWs for NashStream {
     type Subscription = SubscriptionRequest;
     type Response = SubscriptionResponseWrapper;
 
-
     async fn new(params: Self::InitParams) -> Self {
         Self {
             client: client_from_params(params).await,
