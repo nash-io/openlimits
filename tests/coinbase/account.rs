@@ -5,7 +5,6 @@ use openlimits::{
     coinbase::Coinbase,
     coinbase::CoinbaseCredentials,
     coinbase::CoinbaseParameters,
-    exchange::Exchange,
     exchange::{ExchangeAccount, OpenLimits},
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,

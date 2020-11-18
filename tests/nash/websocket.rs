@@ -1,29 +1,37 @@
 use dotenv::dotenv;
-use futures::StreamExt;
-use openlimits::{
-    exchange::Exchange, exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::Nash,
-    nash::NashStream,
-};
-use std::env;
+use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::NashStream};
+use std::{env, sync::mpsc::sync_channel};
 
-#[tokio::test]
+#[tokio::test(core_threads = 2)]
 async fn orderbook() {
-    let mut client = init().await;
-    let sub = Subscription::OrderBook("btc_usdc".to_string(), 5);
-    client.subscribe(sub).await.unwrap();
+    let (tx, rx) = sync_channel(0);
+    let client = init().await;
+    let sub = Subscription::OrderBookUpdates("btc_usdc".to_string());
+    client
+        .subscribe(sub, move |m| {
+            println!("{:?}", m);
+            tx.send(()).unwrap();
+        })
+        .await
+        .unwrap();
 
-    let item = client.next().await;
-    println!("{:?}", item.unwrap().unwrap());
+    rx.recv().unwrap();
 }
 
-#[tokio::test]
+#[tokio::test(core_threads = 2)]
 async fn trades() {
-    let mut client = init().await;
-    let sub = Subscription::Trade("btc_usdc".to_string());
-    client.subscribe(sub).await.unwrap();
+    let (tx, rx) = sync_channel(0);
+    let client = init().await;
+    let sub = Subscription::Trades("btc_usdc".to_string());
+    client
+        .subscribe(sub, move |m| {
+            println!("{:?}", m);
+            tx.send(()).unwrap();
+        })
+        .await
+        .unwrap();
 
-    let item = client.next().await;
-    println!("{:?}", item.unwrap().unwrap());
+    rx.recv().unwrap();
 }
 
 async fn init() -> OpenLimitsWs<NashStream> {

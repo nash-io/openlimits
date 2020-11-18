@@ -460,7 +460,7 @@ impl From<TimeInForce> for model::OrderTimeInForce {
                     }
                 } else if duration == minute {
                     model::OrderTimeInForce::GTT {
-                        cancel_after: model::CancelAfter::Hour,
+                        cancel_after: model::CancelAfter::Min,
                     }
                 } else {
                     panic!("Coinbase only supports durations of 1 day, 1 hour or 1 minute")
