@@ -38,6 +38,6 @@ async fn trades() {
 
 async fn init() -> OpenLimitsWs<BinanceWebsocket> {
     OpenLimitsWs {
-        websocket: BinanceWebsocket::new(BinanceParameters::sandbox()).await,
+        websocket: BinanceWebsocket::new(BinanceParameters::prod()).await,
     }
 }
