@@ -1,5 +1,8 @@
 use crate::{
-    binance::model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
+    binance::{
+        model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
+        BinanceParameters,
+    },
     errors::OpenLimitError,
     exchange_ws::ExchangeWs,
     exchange_ws::Subscriptions,
@@ -10,16 +13,14 @@ use crate::{
 };
 
 use async_trait::async_trait;
-use futures::{stream::BoxStream, stream::SplitStream, StreamExt};
+use futures::{stream::BoxStream, StreamExt};
 use serde::{de, Deserialize, Serialize};
 use serde_json::Value;
-use std::{collections::HashMap, convert::TryFrom, fmt::Display};
-use tokio::net::TcpStream;
-use tokio_tungstenite::{
-    connect_async, tungstenite::protocol::Message, MaybeTlsStream, WebSocketStream,
-};
+use std::{convert::TryFrom, fmt::Display};
+use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 
-const WS_URL: &str = "wss://stream.binance.com:9443/stream";
+const WS_URL_PROD: &str = "wss://stream.binance.com:9443/stream";
+const WS_URL_SANDBOX: &str = "wss://stream.binance.com:9443/stream";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
@@ -28,28 +29,18 @@ enum Either<L, R> {
     Right(R),
 }
 
-type WSStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
-
 pub struct BinanceWebsocket {
-    pub subscriptions: HashMap<Subscription, SplitStream<WSStream>>,
-}
-
-impl BinanceWebsocket {
-    pub fn new() -> Self {
-        Self {
-            subscriptions: HashMap::new(),
-        }
-    }
+    parameters: BinanceParameters,
 }
 
 #[async_trait]
 impl ExchangeWs for BinanceWebsocket {
-    type InitParams = ();
+    type InitParams = BinanceParameters;
     type Subscription = BinanceSubscription;
     type Response = BinanceWebsocketMessage;
 
-    async fn new(_: ()) -> Self {
-        BinanceWebsocket::new()
+    async fn new(parameters: Self::InitParams) -> Self {
+        BinanceWebsocket { parameters }
     }
 
     async fn create_stream_specific(
@@ -62,18 +53,16 @@ impl ExchangeWs for BinanceWebsocket {
             .collect::<Vec<String>>()
             .join("/");
 
-        let endpoint = url::Url::parse(&format!("{}?streams={}", WS_URL, streams)).unwrap();
+        let ws_url = match self.parameters.sandbox {
+            true => WS_URL_SANDBOX,
+            false => WS_URL_PROD,
+        };
+        let endpoint = url::Url::parse(&format!("{}?streams={}", ws_url, streams)).unwrap();
         let (ws_stream, _) = connect_async(endpoint).await?;
 
         let s = ws_stream.map(|message| parse_message(message.unwrap()));
 
         Ok(s.boxed())
-    }
-}
-
-impl Default for BinanceWebsocket {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
