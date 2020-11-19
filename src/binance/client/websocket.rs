@@ -20,7 +20,7 @@ use std::{convert::TryFrom, fmt::Display};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 
 const WS_URL_PROD: &str = "wss://stream.binance.com:9443/stream";
-const WS_URL_SANDBOX: &str = "wss://stream.binance.com:9443/stream";
+const WS_URL_SANDBOX: &str = "wss://testnet.binance.vision/stream";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
