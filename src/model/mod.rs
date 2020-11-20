@@ -104,7 +104,7 @@ pub struct OpenLimitOrderRequest {
     pub size: Decimal,
     pub price: Decimal,
     pub time_in_force: TimeInForce,
-    pub post_only: bool
+    pub post_only: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]

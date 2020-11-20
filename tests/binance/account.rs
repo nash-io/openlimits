@@ -41,7 +41,6 @@ async fn limit_sell() {
     println!("{:?}", resp);
 }
 
-
 #[tokio::test]
 async fn post_only() {
     let exchange = init().await;

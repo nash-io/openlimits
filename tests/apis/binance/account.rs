@@ -169,7 +169,7 @@ async fn limit_sell_fok() {
             Decimal::new(1, 1),
             Decimal::new(2, 3),
             TimeInForce::FOK,
-            false
+            false,
         )
         .await
         .unwrap();
@@ -188,7 +188,7 @@ async fn limit_sell_ioc() {
             Decimal::new(1, 1),
             Decimal::new(2, 3),
             TimeInForce::IOC,
-            false
+            false,
         )
         .await
         .unwrap();
@@ -234,7 +234,7 @@ async fn cancel_order() {
             Decimal::new(1, 1),
             Decimal::new(2, 3),
             TimeInForce::GTC,
-            false
+            false,
         )
         .await
         .unwrap();
