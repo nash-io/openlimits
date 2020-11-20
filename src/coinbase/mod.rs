@@ -107,7 +107,7 @@ impl ExchangeInfoRetrieval for Coinbase {
                     base_increment: product.base_increment,
                     quote_increment: product.quote_increment,
                     min_base_trade_size: None,
-                    min_quote_trade_size: None
+                    min_quote_trade_size: None,
                 })
                 .collect()
         })

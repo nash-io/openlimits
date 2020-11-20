@@ -599,8 +599,11 @@ impl TryFrom<&GetOrderHistoryRequest>
 impl From<nash_protocol::types::Order> for Order {
     fn from(order: nash_protocol::types::Order) -> Self {
         let size = Decimal::from_str(&format!("{}", &order.amount_placed.amount.value)).unwrap();
-        let price = order.limit_price.map(|p| Decimal::from_str(&format!("{}", &p.amount.value)).unwrap());
-        let remaining = Some(Decimal::from_str(&format!("{}", &order.amount_remaining.amount.value)).unwrap());
+        let price = order
+            .limit_price
+            .map(|p| Decimal::from_str(&format!("{}", &p.amount.value)).unwrap());
+        let remaining =
+            Some(Decimal::from_str(&format!("{}", &order.amount_remaining.amount.value)).unwrap());
 
         Self {
             id: order.id,
@@ -612,7 +615,7 @@ impl From<nash_protocol::types::Order> for Order {
             status: order.status.into(),
             size,
             price,
-            remaining
+            remaining,
         }
     }
 }
@@ -640,14 +643,20 @@ impl From<nash_protocol::protocol::get_ticker::TickerResponse> for Ticker {
     fn from(resp: nash_protocol::protocol::get_ticker::TickerResponse) -> Self {
         let mut price = None;
         if resp.best_ask_price.is_some() && resp.best_bid_price.is_some() {
-            let ask = Decimal::from_str(&format!("{}", &resp.best_ask_price.unwrap().amount.value)).unwrap();
-            let bid = Decimal::from_str(&format!("{}", &resp.best_bid_price.unwrap().amount.value)).unwrap();
+            let ask = Decimal::from_str(&format!("{}", &resp.best_ask_price.unwrap().amount.value))
+                .unwrap();
+            let bid = Decimal::from_str(&format!("{}", &resp.best_bid_price.unwrap().amount.value))
+                .unwrap();
             price = Some((ask + bid) / Decimal::from(2));
         }
         let mut price_24h = None;
         if resp.high_price_24h.is_some() && resp.low_price_24h.is_some() {
-            let day_high = Decimal::from_str(&format!("{}", &resp.high_price_24h.unwrap().amount.value)).unwrap();
-            let day_low = Decimal::from_str(&format!("{}", &resp.low_price_24h.unwrap().amount.value)).unwrap();
+            let day_high =
+                Decimal::from_str(&format!("{}", &resp.high_price_24h.unwrap().amount.value))
+                    .unwrap();
+            let day_low =
+                Decimal::from_str(&format!("{}", &resp.low_price_24h.unwrap().amount.value))
+                    .unwrap();
             price_24h = Some((day_high + day_low) / Decimal::from(2));
         }
         Self { price, price_24h }
@@ -878,8 +887,12 @@ impl ExchangeInfoRetrieval for Nash {
                 quote: v.asset_b.asset.name().to_string(),
                 base_increment: Decimal::new(1, v.asset_a.precision),
                 quote_increment: Decimal::new(1, v.asset_b.precision),
-                min_base_trade_size: Some(Decimal::from_str(&format!("{}", &v.min_trade_size_a.amount.value)).unwrap()),
-                min_quote_trade_size: Some(Decimal::from_str(&format!("{}", &v.min_trade_size_b.amount.value)).unwrap()),
+                min_base_trade_size: Some(
+                    Decimal::from_str(&format!("{}", &v.min_trade_size_a.amount.value)).unwrap(),
+                ),
+                min_quote_trade_size: Some(
+                    Decimal::from_str(&format!("{}", &v.min_trade_size_b.amount.value)).unwrap(),
+                ),
             })
             .collect())
     }
