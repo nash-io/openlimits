@@ -5,7 +5,7 @@ use super::BaseClient;
 use crate::{
     binance::model::{
         AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest, TimeInForce,
-        TradeHistory, TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
+        TradeHistory, TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT, ORDER_TYPE_LIMIT_MAKER,
         ORDER_TYPE_MARKET,
     },
     errors::OpenLimitError,
@@ -86,7 +86,12 @@ impl BaseClient {
         qty: Decimal,
         price: Decimal,
         tif: TimeInForce,
+        post_only: bool
     ) -> Result<Order> {
+        let order_type = match post_only {
+            true => ORDER_TYPE_LIMIT_MAKER,
+            false => ORDER_TYPE_LIMIT,
+        }.to_string();
         let buy: OrderRequest = OrderRequest {
             symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -95,7 +100,7 @@ impl BaseClient {
                 RoundingStrategy::RoundDown,
             )),
             order_side: ORDER_SIDE_BUY.to_string(),
-            order_type: ORDER_TYPE_LIMIT.to_string(),
+            order_type,
             time_in_force: Some(tif),
         };
 
@@ -115,7 +120,13 @@ impl BaseClient {
         qty: Decimal,
         price: Decimal,
         tif: TimeInForce,
+        post_only: bool
     ) -> Result<Order> {
+
+        let order_type = match post_only {
+            true => ORDER_TYPE_LIMIT_MAKER,
+            false => ORDER_TYPE_LIMIT,
+        }.to_string();
         let sell: OrderRequest = OrderRequest {
             symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -124,7 +135,7 @@ impl BaseClient {
                 RoundingStrategy::RoundUp,
             )),
             order_side: ORDER_SIDE_SELL.to_string(),
-            order_type: ORDER_TYPE_LIMIT.to_string(),
+            order_type,
             time_in_force: Some(tif),
         };
 

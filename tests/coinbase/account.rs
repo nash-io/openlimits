@@ -18,6 +18,7 @@ async fn limit_buy() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
+        post_only: false,
         price: Decimal::new(1, 3),
         size: Decimal::new(1, 1),
         market_pair: String::from("ETH-BTC"),
@@ -31,8 +32,23 @@ async fn limit_sell() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
+        post_only: false,
         price: Decimal::new(1, 1),
         size: Decimal::new(1, 1),
+        market_pair: String::from("ETH-BTC"),
+    };
+    let resp = exchange.limit_sell(&req).await.unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn post_only() {
+    let exchange = init().await;
+    let req = OpenLimitOrderRequest {
+        time_in_force: TimeInForce::GoodTillCancelled,
+        price: Decimal::new(1, 1),
+        size: Decimal::new(1, 1),
+        post_only: true,
         market_pair: String::from("ETH-BTC"),
     };
     let resp = exchange.limit_sell(&req).await.unwrap();
@@ -66,6 +82,7 @@ async fn cancel_order() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
+        post_only: false,
         price: Decimal::new(1, 1),
         size: Decimal::new(1, 1),
         market_pair: String::from("ETH-BTC"),
@@ -85,6 +102,7 @@ async fn cancel_all_orders() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
+        post_only: false,
         price: Decimal::new(1, 1),
         size: Decimal::new(1, 1),
         market_pair: String::from("ETH-BTC"),
@@ -118,6 +136,7 @@ async fn get_all_open_orders() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
+        post_only: false,
         price: Decimal::new(1, 1),
         size: Decimal::new(1, 1),
         market_pair: String::from("ETH-BTC"),

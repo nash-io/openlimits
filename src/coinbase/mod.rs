@@ -202,7 +202,7 @@ impl ExchangeAccount for Coinbase {
                 req.size,
                 req.price,
                 model::OrderTimeInForce::from(req.time_in_force.clone()),
-                false,
+                req.post_only,
             )
             .await
             .map(Into::into)
@@ -216,7 +216,7 @@ impl ExchangeAccount for Coinbase {
                 req.size,
                 req.price,
                 model::OrderTimeInForce::from(req.time_in_force.clone()),
-                false,
+                req.post_only,
             )
             .await
             .map(Into::into)

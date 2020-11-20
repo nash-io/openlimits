@@ -308,7 +308,7 @@ impl Nash {
             cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(
                 req.time_in_force,
             ),
-            allow_taker: true,
+            allow_taker: !req.post_only,
             market: req.market_pair.clone(),
             buy_or_sell,
             amount: format!("{}", req.size),

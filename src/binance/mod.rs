@@ -190,6 +190,7 @@ impl ExchangeAccount for Binance {
                 req.size,
                 req.price,
                 model::TimeInForce::from(req.time_in_force),
+                req.post_only,
             )
             .await
             .map(Into::into)
@@ -202,6 +203,7 @@ impl ExchangeAccount for Binance {
                 req.size,
                 req.price,
                 model::TimeInForce::from(req.time_in_force),
+                req.post_only,
             )
             .await
             .map(Into::into)

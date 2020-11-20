@@ -22,6 +22,7 @@ async fn limit_buy() {
         price: Decimal::from_str("414.46").unwrap(),
         size: Decimal::from_str("0.10000").unwrap(),
         market_pair: String::from("eth_usdc"),
+        post_only: false,
     };
     let resp = exchange.limit_buy(&req).await.unwrap();
     println!("{:?}", resp);
@@ -35,6 +36,7 @@ async fn limit_buy_ioc() {
         price: Decimal::from_str("414.46").unwrap(),
         size: Decimal::from_str("0.10000").unwrap(),
         market_pair: String::from("eth_usdc"),
+        post_only: false,
     };
     let resp = exchange.limit_buy(&req).await.unwrap();
     println!("{:?}", resp);
@@ -48,6 +50,7 @@ async fn limit_buy_fok() {
         price: Decimal::from_str("414.46").unwrap(),
         size: Decimal::from_str("0.10000").unwrap(),
         market_pair: String::from("eth_usdc"),
+        post_only: false,
     };
     let resp = exchange.limit_buy(&req).await.unwrap();
     println!("{:?}", resp);
@@ -61,6 +64,7 @@ async fn limit_buy_ggt() {
         price: Decimal::from_str("414.46").unwrap(),
         size: Decimal::from_str("0.10000").unwrap(),
         market_pair: String::from("eth_usdc"),
+        post_only: false,
     };
     let resp = exchange.limit_buy(&req).await.unwrap();
     println!("{:?}", resp);
@@ -74,6 +78,7 @@ async fn limit_sell() {
         price: Decimal::from_str("414.46").unwrap(),
         size: Decimal::from_str("0.10000").unwrap(),
         market_pair: String::from("eth_usdc"),
+        post_only: false,
     };
     let resp = exchange.limit_sell(&req).await.unwrap();
     println!("{:?}", resp);
@@ -87,6 +92,7 @@ async fn cancel_order() {
         price: Decimal::from_str("200.46").unwrap(),
         size: Decimal::from_str("0.10000").unwrap(),
         market_pair: String::from("eth_usdc"),
+        post_only: false,
     };
     let order = exchange.limit_buy(&req).await.unwrap();
 
@@ -106,6 +112,7 @@ async fn cancel_all_orders() {
         price: Decimal::from_str("200.46").unwrap(),
         size: Decimal::from_str("0.10000").unwrap(),
         market_pair: String::from("eth_usdc"),
+        post_only: false,
     };
 
     exchange.limit_sell(&req).await.unwrap();
