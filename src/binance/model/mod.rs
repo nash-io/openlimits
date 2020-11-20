@@ -60,7 +60,8 @@ pub struct Order {
     pub price: Decimal,
     #[serde(with = "string_to_decimal")]
     pub orig_qty: Decimal,
-    pub executed_qty: String,
+    #[serde(with = "string_to_decimal")]
+    pub executed_qty: Decimal,
     pub status: OrderStatus,
     pub time_in_force: String,
     #[serde(rename = "type")]
