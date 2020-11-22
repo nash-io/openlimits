@@ -36,6 +36,6 @@ tungstenite = "0.11.0"
 sha2 = "0.9.1"
 url = "2.1.1"
 derive_more = "0.99"
-nash-protocol = { version = "=0.1.10", default-features = false, features = ["num_bigint"] }
-nash-native-client = { version = "=0.1.5", default-features = false, features = ["num_bigint"] }
+nash-protocol = { version = "0.1.11", default-features = false, features = ["num_bigint"] }
+nash-native-client = { version = "0.1.6", default-features = false, features = ["num_bigint"] }
 pyo3 = { version = "0.12.3", optional = true }
