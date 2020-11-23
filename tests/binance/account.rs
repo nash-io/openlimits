@@ -5,7 +5,6 @@ use openlimits::{
     binance::Binance,
     binance::BinanceCredentials,
     binance::BinanceParameters,
-    exchange::Exchange,
     exchange::{ExchangeAccount, OpenLimits},
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
@@ -21,6 +20,7 @@ async fn limit_buy() {
         price: Decimal::new(1, 3),
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
+        post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
     let resp = exchange.limit_buy(&req).await.unwrap();
@@ -32,7 +32,22 @@ async fn limit_sell() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         price: Decimal::new(1, 3),
+        post_only: false,
         size: Decimal::new(1, 1),
+        market_pair: String::from("BNBBTC"),
+        time_in_force: TimeInForce::GoodTillCancelled,
+    };
+    let resp = exchange.limit_sell(&req).await.unwrap();
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn post_only() {
+    let exchange = init().await;
+    let req = OpenLimitOrderRequest {
+        price: Decimal::new(1, 3),
+        size: Decimal::new(1, 1),
+        post_only: true,
         market_pair: String::from("BNBBTC"),
         time_in_force: TimeInForce::GoodTillCancelled,
     };
@@ -69,6 +84,7 @@ async fn cancel_order() {
         price: Decimal::new(5, 3),
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
+        post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
     let order = exchange.limit_sell(&req).await.unwrap();
@@ -89,6 +105,7 @@ async fn cancel_all_orders() {
         price: Decimal::new(1, 3),
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
+        post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
     exchange.limit_sell(&req).await.unwrap();
@@ -123,6 +140,7 @@ async fn get_all_open_orders() {
         price: Decimal::new(5, 3),
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
+        post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
     exchange.limit_sell(&req).await.unwrap();

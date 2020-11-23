@@ -11,8 +11,10 @@ use crate::{
     exchange_info::MarketPairHandle,
     exchange_info::{ExchangeInfoRetrieval, MarketPair},
     exchange_ws::ExchangeWs,
+    exchange_ws::Subscriptions,
+    model::websocket::OpenLimitsWebSocketMessage,
     model::{
-        websocket::{OpenLimitsWebsocketMessage, Subscription},
+        websocket::{Subscription, WebSocketResponse},
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
@@ -306,7 +308,7 @@ impl Nash {
             cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(
                 req.time_in_force,
             ),
-            allow_taker: true,
+            allow_taker: !req.post_only,
             market: req.market_pair.clone(),
             buy_or_sell,
             amount: format!("{}", req.size),
@@ -325,7 +327,7 @@ impl From<&OrderBookRequest> for nash_protocol::protocol::orderbook::OrderbookRe
 impl From<nash_protocol::protocol::orderbook::OrderbookResponse> for OrderBookResponse {
     fn from(book: nash_protocol::protocol::orderbook::OrderbookResponse) -> Self {
         Self {
-            last_update_id: None,
+            last_update_id: Some(book.update_id as u64),
             bids: book.bids.into_iter().map(Into::into).collect(),
             asks: book.asks.into_iter().map(Into::into).collect(),
         }
@@ -384,14 +386,15 @@ impl From<nash_protocol::protocol::place_order::LimitOrderResponse> for Order {
     fn from(resp: nash_protocol::protocol::place_order::LimitOrderResponse) -> Self {
         Self {
             id: resp.order_id,
+            market_pair: resp.market_name,
             client_order_id: None,
             created_at: Some(resp.placed_at.timestamp_millis() as u64),
-            market_pair: resp.market_name,
             order_type: resp.order_type.into(),
-            size: Decimal::from(0),
-            price: None,
             side: resp.buy_or_sell.into(),
             status: resp.status.into(),
+            size: Decimal::from(0),
+            price: None,
+            remaining: None,
         }
     }
 }
@@ -596,19 +599,23 @@ impl TryFrom<&GetOrderHistoryRequest>
 impl From<nash_protocol::types::Order> for Order {
     fn from(order: nash_protocol::types::Order) -> Self {
         let size = Decimal::from_str(&format!("{}", &order.amount_placed.amount.value)).unwrap();
+        let price = order
+            .limit_price
+            .map(|p| Decimal::from_str(&format!("{}", &p.amount.value)).unwrap());
+        let remaining =
+            Some(Decimal::from_str(&format!("{}", &order.amount_remaining.amount.value)).unwrap());
 
         Self {
             id: order.id,
+            market_pair: order.market.market_name(),
             client_order_id: None,
             created_at: Some(order.placed_at.timestamp_millis() as u64),
-            market_pair: order.market.market_name(),
             order_type: order.order_type.into(),
-            price: order
-                .limit_price
-                .map(|p| Decimal::from_str(&format!("{}", &p.amount.value)).unwrap()),
-            size,
             side: order.buy_or_sell.into(),
             status: order.status.into(),
+            size,
+            price,
+            remaining,
         }
     }
 }
@@ -634,11 +641,25 @@ impl From<&GetPriceTickerRequest> for nash_protocol::protocol::get_ticker::Ticke
 
 impl From<nash_protocol::protocol::get_ticker::TickerResponse> for Ticker {
     fn from(resp: nash_protocol::protocol::get_ticker::TickerResponse) -> Self {
-        let ask = Decimal::from_str(&format!("{}", &resp.best_ask_price.amount.value)).unwrap();
-        let bid = Decimal::from_str(&format!("{}", &resp.best_bid_price.amount.value)).unwrap();
-        let price = (ask + bid) / Decimal::from(2);
-
-        Self { price }
+        let mut price = None;
+        if resp.best_ask_price.is_some() && resp.best_bid_price.is_some() {
+            let ask = Decimal::from_str(&format!("{}", &resp.best_ask_price.unwrap().amount.value))
+                .unwrap();
+            let bid = Decimal::from_str(&format!("{}", &resp.best_bid_price.unwrap().amount.value))
+                .unwrap();
+            price = Some((ask + bid) / Decimal::from(2));
+        }
+        let mut price_24h = None;
+        if resp.high_price_24h.is_some() && resp.low_price_24h.is_some() {
+            let day_high =
+                Decimal::from_str(&format!("{}", &resp.high_price_24h.unwrap().amount.value))
+                    .unwrap();
+            let day_low =
+                Decimal::from_str(&format!("{}", &resp.low_price_24h.unwrap().amount.value))
+                    .unwrap();
+            price_24h = Some((day_high + day_low) / Decimal::from(2));
+        }
+        Self { price, price_24h }
     }
 }
 
@@ -650,8 +671,11 @@ impl From<&GetOrderRequest> for nash_protocol::protocol::get_account_order::GetA
     }
 }
 
-use futures::stream::{Stream, StreamExt};
-use nash_protocol::protocol::ResponseOrError;
+use futures::stream::{BoxStream, SelectAll, Stream, StreamExt};
+use nash_protocol::protocol::{
+    subscriptions::{SubscriptionRequest, SubscriptionResponse},
+    ResponseOrError,
+};
 use std::{pin::Pin, task::Context, task::Poll};
 
 pub struct NashStream {
@@ -706,27 +730,38 @@ impl Stream for NashStream {
 impl ExchangeWs for NashStream {
     type InitParams = NashParameters;
 
+    type Subscription = SubscriptionRequest;
+    type Response = SubscriptionResponseWrapper;
+
     async fn new(params: Self::InitParams) -> Self {
         Self {
             client: client_from_params(params).await,
         }
     }
 
-    async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
-        let sub: nash_protocol::protocol::subscriptions::SubscriptionRequest = subscription.into();
-        let _stream = Client::subscribe_protocol(&self.client, sub).await;
-        let _stream = _stream.map_err(|e| Err(OpenLimitError::NashProtocolError(e)));
-        if _stream.is_err() {
-            return _stream.unwrap_err();
+    async fn create_stream_specific(
+        &self,
+        subscriptions: Subscriptions<Self::Subscription>,
+    ) -> Result<BoxStream<'static, Result<Self::Response>>> {
+        let mut streams = SelectAll::new();
+
+        for subscription in subscriptions.into_iter() {
+            let stream = Client::subscribe_protocol(&self.client, subscription.clone()).await;
+            let stream = stream.map_err(|e| Err(OpenLimitError::NashProtocolError(e)));
+
+            match stream {
+                Ok(s) => {
+                    streams.push(s);
+                }
+                Err(_) => {
+                    return stream.unwrap_err();
+                }
+            }
         }
 
-        Ok(())
-    }
-
-    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
-        match message {
+        let s = streams.map(|message| match message {
             Ok(msg) => match msg {
-                ResponseOrError::Response(resp) => Ok(resp.data.into()),
+                ResponseOrError::Response(resp) => Ok(SubscriptionResponseWrapper(resp.data)),
                 ResponseOrError::Error(resp) => {
                     let f = resp
                         .errors
@@ -734,23 +769,25 @@ impl ExchangeWs for NashStream {
                         .map(|f| f.message.clone())
                         .collect::<Vec<String>>()
                         .join("\n");
-                    Err(OpenLimitError::NotParsableResponse(String::from(f)))
+                    Err(OpenLimitError::NotParsableResponse(f))
                 }
             },
             Err(_) => Err(OpenLimitError::SocketError()),
-        }
+        });
+
+        Ok(s.boxed())
     }
 }
 
 impl From<Subscription> for nash_protocol::protocol::subscriptions::SubscriptionRequest {
     fn from(sub: Subscription) -> Self {
         match sub {
-            Subscription::OrderBook(market, _depth) => Self::Orderbook(
+            Subscription::OrderBookUpdates(market) => Self::Orderbook(
                 nash_protocol::protocol::subscriptions::updated_orderbook::SubscribeOrderbook {
                     market,
                 },
             ),
-            Subscription::Trade(market) => Self::Trades(
+            Subscription::Trades(market) => Self::Trades(
                 nash_protocol::protocol::subscriptions::trades::SubscribeTrades { market },
             ),
             _ => panic!("Not supported Subscription"),
@@ -758,21 +795,39 @@ impl From<Subscription> for nash_protocol::protocol::subscriptions::Subscription
     }
 }
 
-impl From<nash_protocol::protocol::subscriptions::SubscriptionResponse>
-    for OpenLimitsWebsocketMessage
-{
-    fn from(message: nash_protocol::protocol::subscriptions::SubscriptionResponse) -> Self {
-        match message {
-            nash_protocol::protocol::subscriptions::SubscriptionResponse::Orderbook(resp) => {
-                OpenLimitsWebsocketMessage::OrderBook(OrderBookResponse {
+#[derive(Debug)]
+pub struct SubscriptionResponseWrapper(SubscriptionResponse);
+
+impl Clone for SubscriptionResponseWrapper {
+    fn clone(&self) -> Self {
+        match &self.0 {
+            SubscriptionResponse::Orderbook(o) => {
+                SubscriptionResponseWrapper(SubscriptionResponse::Orderbook(o.clone()))
+            }
+            SubscriptionResponse::Trades(t) => {
+                SubscriptionResponseWrapper(SubscriptionResponse::Trades(t.clone()))
+            }
+        }
+    }
+}
+
+impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResponseWrapper> {
+    type Error = OpenLimitError;
+
+    fn try_from(value: SubscriptionResponseWrapper) -> Result<Self> {
+        match value.0 {
+            SubscriptionResponse::Orderbook(resp) => Ok(WebSocketResponse::Generic(
+                OpenLimitsWebSocketMessage::OrderBook(OrderBookResponse {
                     asks: resp.asks.into_iter().map(Into::into).collect(),
                     bids: resp.bids.into_iter().map(Into::into).collect(),
                     last_update_id: None,
-                })
-            }
-            nash_protocol::protocol::subscriptions::SubscriptionResponse::Trades(resp) => {
+                }),
+            )),
+            SubscriptionResponse::Trades(resp) => {
                 let trades = resp.trades.into_iter().map(|x| x.into()).collect();
-                OpenLimitsWebsocketMessage::Trades(trades)
+                Ok(WebSocketResponse::Generic(
+                    OpenLimitsWebSocketMessage::Trades(trades),
+                ))
             }
         }
     }
@@ -832,6 +887,12 @@ impl ExchangeInfoRetrieval for Nash {
                 quote: v.asset_b.asset.name().to_string(),
                 base_increment: Decimal::new(1, v.asset_a.precision),
                 quote_increment: Decimal::new(1, v.asset_b.precision),
+                min_base_trade_size: Some(
+                    Decimal::from_str(&format!("{}", &v.min_trade_size_a.amount.value)).unwrap(),
+                ),
+                min_quote_trade_size: Some(
+                    Decimal::from_str(&format!("{}", &v.min_trade_size_b.amount.value)).unwrap(),
+                ),
             })
             .collect())
     }

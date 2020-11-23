@@ -106,6 +106,8 @@ impl ExchangeInfoRetrieval for Coinbase {
                     quote: product.quote_currency,
                     base_increment: product.base_increment,
                     quote_increment: product.quote_increment,
+                    min_base_trade_size: None,
+                    min_quote_trade_size: None,
                 })
                 .collect()
         })
@@ -183,11 +185,12 @@ impl From<model::Order> for Order {
             market_pair: order.product_id,
             client_order_id: None,
             created_at: Some((order.created_at.timestamp_millis()) as u64),
-            price,
-            size,
+            order_type,
             side: order.side.into(),
             status: order.status.into(),
-            order_type,
+            size,
+            price,
+            remaining: Some(size - order.filled_size),
         }
     }
 }
@@ -202,7 +205,7 @@ impl ExchangeAccount for Coinbase {
                 req.size,
                 req.price,
                 model::OrderTimeInForce::from(req.time_in_force.clone()),
-                false,
+                req.post_only,
             )
             .await
             .map(Into::into)
@@ -216,7 +219,7 @@ impl ExchangeAccount for Coinbase {
                 req.size,
                 req.price,
                 model::OrderTimeInForce::from(req.time_in_force.clone()),
-                false,
+                req.post_only,
             )
             .await
             .map(Into::into)
@@ -338,7 +341,8 @@ impl From<model::Fill> for Trade {
 impl From<model::Ticker> for Ticker {
     fn from(ticker: model::Ticker) -> Self {
         Self {
-            price: ticker.price,
+            price: Some(ticker.price),
+            price_24h: None,
         }
     }
 }
@@ -460,7 +464,7 @@ impl From<TimeInForce> for model::OrderTimeInForce {
                     }
                 } else if duration == minute {
                     model::OrderTimeInForce::GTT {
-                        cancel_after: model::CancelAfter::Hour,
+                        cancel_after: model::CancelAfter::Min,
                     }
                 } else {
                     panic!("Coinbase only supports durations of 1 day, 1 hour or 1 minute")

@@ -66,6 +66,8 @@ pub enum OpenLimitError {
     #[error("")]
     SocketError(),
     #[error("")]
+    WebSocketMessageNotSupported(),
+    #[error("")]
     GetTimestampFailed(),
     #[error(transparent)]
     ReqError(#[from] reqwest::Error),

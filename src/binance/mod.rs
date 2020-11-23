@@ -9,9 +9,7 @@ use crate::{
     exchange::ExchangeAccount,
     exchange::{Exchange, ExchangeMarketData},
     exchange_info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
-    exchange_ws::ExchangeWs,
     model::{
-        websocket::{OpenLimitsWebsocketMessage, Subscription},
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
@@ -135,6 +133,8 @@ impl ExchangeInfoRetrieval for Binance {
                         symbol: symbol.symbol,
                         base_increment: *lot_size,
                         quote_increment: *tick_size,
+                        min_base_trade_size: None,
+                        min_quote_trade_size: None,
                     }
                 })
                 .collect()
@@ -192,6 +192,7 @@ impl ExchangeAccount for Binance {
                 req.size,
                 req.price,
                 model::TimeInForce::from(req.time_in_force),
+                req.post_only,
             )
             .await
             .map(Into::into)
@@ -204,6 +205,7 @@ impl ExchangeAccount for Binance {
                 req.size,
                 req.price,
                 model::TimeInForce::from(req.time_in_force),
+                req.post_only,
             )
             .await
             .map(Into::into)
@@ -300,6 +302,35 @@ impl From<model::OrderBook> for OrderBookResponse {
     }
 }
 
+impl From<model::websocket::Depth> for OrderBookResponse {
+    fn from(depth: model::websocket::Depth) -> Self {
+        Self {
+            last_update_id: Some(depth.final_update_id),
+            bids: depth.bids.into_iter().map(Into::into).collect(),
+            asks: depth.asks.into_iter().map(Into::into).collect(),
+        }
+    }
+}
+
+impl From<model::websocket::TradeMessage> for Vec<Trade> {
+    fn from(trade_message: model::websocket::TradeMessage) -> Self {
+        vec![Trade {
+            id: trade_message.trade_id.to_string(),
+            order_id: trade_message.buyer_order_id.to_string(),
+            market_pair: trade_message.symbol,
+            price: trade_message.price,
+            qty: trade_message.qty,
+            fees: None,
+            side: match trade_message.is_buyer_maker {
+                true => Side::Buy,
+                false => Side::Sell,
+            },
+            liquidity: None,
+            created_at: trade_message.event_time,
+        }]
+    }
+}
+
 impl From<TradeMessage> for Trade {
     fn from(trade: TradeMessage) -> Self {
         Self {
@@ -356,8 +387,9 @@ impl From<model::Order> for Order {
             order_type,
             side: order.side.into(),
             status: order.status.into(),
-            price: Some(order.price),
             size: order.orig_qty,
+            price: Some(order.price),
+            remaining: Some(order.orig_qty - order.executed_qty),
         }
     }
 }
@@ -405,7 +437,8 @@ impl From<model::TradeHistory> for Trade {
 impl From<model::SymbolPrice> for Ticker {
     fn from(ticker: model::SymbolPrice) -> Self {
         Self {
-            price: ticker.price,
+            price: Some(ticker.price),
+            price_24h: None,
         }
     }
 }
@@ -530,49 +563,6 @@ impl From<model::OrderStatus> for OrderStatus {
             model::OrderStatus::PartiallyFilled => OrderStatus::PartiallyFilled,
             model::OrderStatus::PendingCancel => OrderStatus::PendingCancel,
             model::OrderStatus::Rejected => OrderStatus::Rejected,
-        }
-    }
-}
-
-#[async_trait]
-impl ExchangeWs for BinanceWebsocket {
-    type InitParams = ();
-    async fn new(_: ()) -> Self {
-        BinanceWebsocket::new()
-    }
-    async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
-        BinanceWebsocket::subscribe(self, subscription.into()).await
-    }
-    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
-        match message? {
-            model::websocket::BinanceWebsocketMessage::Close => Err(OpenLimitError::SocketError()),
-            msg => Ok(msg.into()),
-        }
-    }
-}
-impl From<Subscription> for model::websocket::Subscription {
-    fn from(sub: Subscription) -> Self {
-        match sub {
-            Subscription::OrderBook(symbol, depth) => {
-                model::websocket::Subscription::OrderBook(symbol, depth)
-            }
-            Subscription::Trade(symbol) => model::websocket::Subscription::Trade(symbol),
-            _ => panic!("Not supported Subscription"),
-        }
-    }
-}
-
-impl From<model::websocket::BinanceWebsocketMessage> for OpenLimitsWebsocketMessage {
-    fn from(message: model::websocket::BinanceWebsocketMessage) -> Self {
-        match message {
-            model::websocket::BinanceWebsocketMessage::Ping => OpenLimitsWebsocketMessage::Ping,
-            model::websocket::BinanceWebsocketMessage::Trade(trade) => {
-                OpenLimitsWebsocketMessage::Trades(vec![trade.into()])
-            }
-            model::websocket::BinanceWebsocketMessage::OrderBook(orderbook) => {
-                OpenLimitsWebsocketMessage::OrderBook(orderbook.into())
-            }
-            _ => panic!("Not supported Message"),
         }
     }
 }

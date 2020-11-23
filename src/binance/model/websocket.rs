@@ -10,7 +10,7 @@ use super::{
 use rust_decimal::prelude::Decimal;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum Subscription {
+pub enum BinanceSubscription {
     UserData(String),            // listen key
     AggregateTrade(String),      // symbol
     Trade(String),               // symbol

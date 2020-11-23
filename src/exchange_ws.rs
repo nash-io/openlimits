@@ -1,10 +1,18 @@
-use crate::model::websocket::{OpenLimitsWebsocketMessage, Subscription};
+use std::{
+    any::Any,
+    convert::{TryFrom, TryInto},
+    slice,
+};
+
+use crate::{
+    errors::OpenLimitError,
+    model::websocket::WebSocketResponse,
+    model::websocket::{OpenLimitsWebSocketMessage, Subscription},
+    shared::Result,
+};
 use async_trait::async_trait;
 use derive_more::Constructor;
-use futures::stream::Stream;
-
-use crate::shared::Result;
-use std::{pin::Pin, task::Context, task::Poll};
+use futures::{channel::mpsc::channel, future, stream::BoxStream, StreamExt};
 
 #[derive(Constructor)]
 pub struct OpenLimitsWs<E: ExchangeWs> {
@@ -16,29 +24,127 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
         let websocket = E::new(params).await;
         Self { websocket }
     }
-    pub async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
-        self.websocket.subscribe(subscription).await
+
+    pub async fn create_stream_specific(
+        &self,
+        subscriptions: Subscriptions<E::Subscription>,
+    ) -> Result<BoxStream<'static, Result<E::Response>>> {
+        self.websocket.create_stream_specific(subscriptions).await
+    }
+
+    pub async fn subscribe<
+        F: Fn(&Result<WebSocketResponse<E::Response>>) + Sync + Send + 'static,
+    >(
+        &self,
+        subscription: Subscription,
+        callback: F,
+    ) -> Result<CallbackHandle> {
+        self.websocket.subscribe(subscription, callback).await
+    }
+
+    pub async fn create_stream<S: Into<E::Subscription> + Clone + Send + Sync>(
+        &self,
+        subscriptions: &[S],
+    ) -> Result<BoxStream<'static, Result<WebSocketResponse<E::Response>>>> {
+        self.websocket.create_stream(subscriptions).await
     }
 }
 
 #[async_trait]
-pub trait ExchangeWs: Stream + Unpin {
+pub trait ExchangeWs: Send + Sync {
     type InitParams;
+    type Subscription: From<Subscription> + Send + Sync + Sized;
+    type Response: TryInto<WebSocketResponse<Self::Response>, Error = OpenLimitError>
+        + Send
+        + Sync
+        + Clone
+        + Sized
+        + 'static;
+
     async fn new(params: Self::InitParams) -> Self;
-    async fn subscribe(&mut self, subscription: Subscription) -> Result<()>;
-    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage>;
+
+    async fn create_stream_specific(
+        &self,
+        subscriptions: Subscriptions<Self::Subscription>,
+    ) -> Result<BoxStream<'static, Result<Self::Response>>>;
+
+    async fn subscribe<
+        S: Into<Self::Subscription> + Sync + Send + Clone,
+        F: Fn(&Result<WebSocketResponse<Self::Response>>) + Send + 'static,
+    >(
+        &self,
+        subscription: S,
+        callback: F,
+    ) -> Result<CallbackHandle> {
+        let s = slice::from_ref(&subscription);
+        let stream = self.create_stream_specific(s.into()).await?;
+
+        let fut = stream.then(move |m| match m {
+            Ok(message) => {
+                let r = message.try_into();
+                callback(&r);
+                future::ready(r)
+            }
+            Err(err) => future::ready(Err(err)),
+        });
+
+        let (tx, rx) = channel(1);
+
+        tokio::spawn(fut.map(Ok).skip_while(|_| future::ready(true)).forward(tx));
+
+        Ok(CallbackHandle { rx: Box::new(rx) })
+    }
+
+    async fn create_stream<S: Into<Self::Subscription> + Clone + Send + Sync>(
+        &self,
+        subscriptions: &[S],
+    ) -> Result<BoxStream<'static, Result<WebSocketResponse<Self::Response>>>> {
+        let stream = self
+            .create_stream_specific(subscriptions.into())
+            .await?
+            .map(|r| r?.try_into())
+            .boxed();
+
+        Ok(stream)
+    }
 }
 
-impl<E: ExchangeWs> Stream for OpenLimitsWs<E> {
-    type Item = Result<OpenLimitsWebsocketMessage>;
+#[derive(Debug)]
+pub struct CallbackHandle {
+    rx: Box<dyn Any + Send>,
+}
 
-    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        if let Poll::Ready(Some(message)) = Pin::new(&mut self.websocket).poll_next(cx) {
-            let m = self.websocket.parse_message(message);
+impl TryFrom<OpenLimitsWebSocketMessage> for WebSocketResponse<OpenLimitsWebSocketMessage> {
+    type Error = OpenLimitError;
 
-            return Poll::Ready(Some(m));
-        }
+    fn try_from(value: OpenLimitsWebSocketMessage) -> Result<Self> {
+        Ok(WebSocketResponse::Generic(value))
+    }
+}
 
-        Poll::Pending
+pub struct Subscriptions<T: From<Subscription>> {
+    inner: Vec<T>,
+}
+
+impl<T: From<Subscription>> Subscriptions<T> {
+    pub fn as_slice(&self) -> &[T] {
+        &self.inner[..]
+    }
+}
+
+impl<T: From<Subscription>> IntoIterator for Subscriptions<T> {
+    type Item = T;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.inner.into_iter()
+    }
+}
+
+impl<T: From<Subscription>, U: Into<T> + Clone> From<&[U]> for Subscriptions<T> {
+    fn from(s: &[U]) -> Self {
+        let v = s.iter().cloned().map(U::into).collect::<Vec<_>>();
+
+        Subscriptions { inner: v }
     }
 }

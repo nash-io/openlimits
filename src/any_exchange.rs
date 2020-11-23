@@ -2,24 +2,31 @@
 //! constraints on generics. This module provides an enum wrapper type for all openlimits exchanges that code can
 //! use to operate over any openlimits-supported exchange without generics
 
-use crate::binance::{Binance, BinanceParameters, BinanceWebsocket};
-use crate::exchange::{Exchange, ExchangeAccount, ExchangeMarketData};
+use std::convert::TryFrom;
+
 use crate::exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
-use crate::exchange_ws::{ExchangeWs, OpenLimitsWs};
+use crate::exchange_ws::{ExchangeWs, OpenLimitsWs, Subscriptions};
 use crate::nash::{Nash, NashParameters, NashStream};
 use crate::{
+    binance::{Binance, BinanceParameters, BinanceWebsocket},
+    model::websocket::OpenLimitsWebSocketMessage,
+};
+use crate::{
+    exchange::{Exchange, ExchangeAccount, ExchangeMarketData},
+    model::websocket::WebSocketResponse,
+};
+use crate::{
     model::{
-        websocket::{OpenLimitsWebsocketMessage, Subscription},
-        Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
-        GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
-        OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
-        OrderCanceled, Paginator, Ticker, Trade, TradeHistoryRequest,
+        websocket::Subscription, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
+        GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
+        GetPriceTickerRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
+        OrderBookRequest, OrderBookResponse, OrderCanceled, Paginator, Ticker, Trade,
+        TradeHistoryRequest,
     },
     shared::Result,
 };
 use async_trait::async_trait;
-use futures::stream::{Stream, StreamExt};
-use std::{pin::Pin, task::Context, task::Poll};
+use futures::stream::{BoxStream, StreamExt};
 
 #[derive(Clone)]
 pub enum InitAnyExchange {
@@ -175,19 +182,12 @@ pub enum AnyWsExchange {
     Binance(OpenLimitsWs<BinanceWebsocket>),
 }
 
-impl Stream for AnyWsExchange {
-    type Item = Result<OpenLimitsWebsocketMessage>;
-    fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        match unsafe { self.get_unchecked_mut() } {
-            Self::Nash(nash) => nash.poll_next_unpin(cx),
-            Self::Binance(binance) => binance.poll_next_unpin(cx),
-        }
-    }
-}
-
 #[async_trait]
 impl ExchangeWs for AnyWsExchange {
     type InitParams = InitAnyExchange;
+    type Subscription = Subscription;
+    type Response = OpenLimitsWebSocketMessage;
+
     async fn new(params: Self::InitParams) -> Self {
         match params {
             InitAnyExchange::Nash(params) => {
@@ -198,14 +198,36 @@ impl ExchangeWs for AnyWsExchange {
                 .into(),
         }
     }
-    async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
-        match self {
-            Self::Nash(nash) => nash.subscribe(subscription).await,
-            Self::Binance(binance) => binance.subscribe(subscription).await,
-        }
-    }
-    fn parse_message(&self, message: Self::Item) -> Result<OpenLimitsWebsocketMessage> {
-        message
+
+    async fn create_stream_specific(
+        &self,
+        subscriptions: Subscriptions<Self::Subscription>,
+    ) -> Result<BoxStream<'static, Result<Self::Response>>> {
+        let s = match self {
+            Self::Nash(nash) => nash
+                .create_stream_specific(subscriptions.as_slice().into())
+                .await?
+                .map(|r| WebSocketResponse::try_from(r.unwrap()))
+                .map(|r| {
+                    r.map(|resp| match resp {
+                        WebSocketResponse::Generic(generic) => generic,
+                        WebSocketResponse::Raw(_) => panic!("Should never happen"),
+                    })
+                })
+                .boxed(),
+            Self::Binance(binance) => binance
+                .create_stream_specific(subscriptions.as_slice().into())
+                .await?
+                .map(|r| WebSocketResponse::try_from(r.unwrap()))
+                .map(|r| {
+                    r.map(|resp| match resp {
+                        WebSocketResponse::Generic(generic) => generic,
+                        WebSocketResponse::Raw(_) => panic!("Should never happen"),
+                    })
+                })
+                .boxed(),
+        };
+        Ok(s)
     }
 }
 

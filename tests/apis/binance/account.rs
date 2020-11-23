@@ -87,6 +87,7 @@ async fn get_order() {
             Decimal::new(1, 1),
             Decimal::new(2, 3),
             TimeInForce::GTC,
+            false,
         )
         .await
         .unwrap();
@@ -111,6 +112,7 @@ async fn limit_buy() {
             Decimal::new(1, 1),
             Decimal::new(1, 3),
             TimeInForce::GTC,
+            false,
         )
         .await
         .unwrap();
@@ -129,6 +131,7 @@ async fn rounded_limit_buy() {
             Decimal::new(12345678, 8),
             Decimal::new(1, 3),
             TimeInForce::GTC,
+            false,
         )
         .await
         .unwrap();
@@ -147,6 +150,7 @@ async fn limit_sell() {
             Decimal::new(1, 1),
             Decimal::new(2, 3),
             TimeInForce::GTC,
+            false,
         )
         .await
         .unwrap();
@@ -165,6 +169,7 @@ async fn limit_sell_fok() {
             Decimal::new(1, 1),
             Decimal::new(2, 3),
             TimeInForce::FOK,
+            false,
         )
         .await
         .unwrap();
@@ -183,6 +188,7 @@ async fn limit_sell_ioc() {
             Decimal::new(1, 1),
             Decimal::new(2, 3),
             TimeInForce::IOC,
+            false,
         )
         .await
         .unwrap();
@@ -228,6 +234,7 @@ async fn cancel_order() {
             Decimal::new(1, 1),
             Decimal::new(2, 3),
             TimeInForce::GTC,
+            false,
         )
         .await
         .unwrap();

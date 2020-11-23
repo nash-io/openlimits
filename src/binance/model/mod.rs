@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use rust_decimal::prelude::Decimal;
 
 pub const ORDER_TYPE_LIMIT: &str = "LIMIT";
+pub const ORDER_TYPE_LIMIT_MAKER: &str = "LIMIT_MAKER";
 pub const ORDER_TYPE_MARKET: &str = "MARKET";
 pub const ORDER_SIDE_BUY: &str = "BUY";
 pub const ORDER_SIDE_SELL: &str = "SELL";
@@ -59,7 +60,8 @@ pub struct Order {
     pub price: Decimal,
     #[serde(with = "string_to_decimal")]
     pub orig_qty: Decimal,
-    pub executed_qty: String,
+    #[serde(with = "string_to_decimal")]
+    pub executed_qty: Decimal,
     pub status: OrderStatus,
     pub time_in_force: String,
     #[serde(rename = "type")]

@@ -24,7 +24,7 @@ pub struct OrderBookResponse {
     pub asks: Vec<AskBid>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Copy, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct AskBid {
     pub price: Decimal,
     pub qty: Decimal,
@@ -104,6 +104,7 @@ pub struct OpenLimitOrderRequest {
     pub size: Decimal,
     pub price: Decimal,
     pub time_in_force: TimeInForce,
+    pub post_only: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
@@ -123,6 +124,7 @@ pub struct Order {
     pub status: OrderStatus,
     pub size: Decimal,
     pub price: Option<Decimal>,
+    pub remaining: Option<Decimal>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
@@ -197,7 +199,8 @@ pub struct Balance {
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq)]
 pub struct Ticker {
-    pub price: Decimal,
+    pub price: Option<Decimal>,
+    pub price_24h: Option<Decimal>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq)]
