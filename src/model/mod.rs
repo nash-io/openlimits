@@ -125,6 +125,7 @@ pub struct Order {
     pub size: Decimal,
     pub price: Option<Decimal>,
     pub remaining: Option<Decimal>,
+    pub trades: Vec<Trade>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
