@@ -13,8 +13,7 @@ async fn order_book() {
     let req = OrderBookRequest {
         market_pair: "ETH-BTC".to_string(),
     };
-    let resp = exchange.order_book(&req).await.unwrap();
-    println!("{:?}", resp);
+    let _response = exchange.order_book(&req).await.expect("Couldn't get order book.");
 }
 
 #[tokio::test]
@@ -23,8 +22,7 @@ async fn get_price_ticker() {
     let req = GetPriceTickerRequest {
         market_pair: "ETH-BTC".to_string(),
     };
-    let resp = exchange.get_price_ticker(&req).await.unwrap();
-    println!("{:?}", resp);
+    let _response = exchange.get_price_ticker(&req).await.expect("Couldn't get price ticker.");
 }
 
 #[tokio::test]
@@ -35,8 +33,7 @@ async fn get_historic_rates() {
         interval: Interval::OneHour,
         paginator: None,
     };
-    let resp = exchange.get_historic_rates(&req).await.unwrap();
-    println!("{:?}", resp);
+    let _response = exchange.get_historic_rates(&req).await.expect("Couldn't get historic rates.");
 }
 
 #[tokio::test]
@@ -47,15 +44,13 @@ async fn get_historic_rates_invalid_interval() {
         interval: Interval::TwoHours,
         paginator: None,
     };
-    let resp = exchange.get_historic_rates(&req).await;
-    assert!(resp.is_err());
+    let _response = exchange.get_historic_rates(&req).await.expect_err("Invalid rate isn't invalid.");
 }
 
 #[tokio::test]
 async fn pair() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.get_pair("BTC-USD").await.unwrap();
-    println!("{:?}", res);
+    let _response = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair.");
 }
 
 async fn init() -> Coinbase {
