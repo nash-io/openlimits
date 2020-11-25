@@ -36,6 +36,6 @@ tungstenite = "0.11.0"
 sha2 = "0.9.1"
 url = "2.1.1"
 derive_more = "0.99"
-nash-protocol = { version = "0.1.12", default-features = false, features = ["num_bigint"] }
-nash-native-client = { version = "0.1.6", default-features = false, features = ["num_bigint"] }
+nash-protocol = { default-features = false, features = ["num_bigint"], git = "https://github.com/nash-io/nash-rust", rev = "e52d8facea8bc3ea824897bda3329fe5c7e16967" }
+nash-native-client = { default-features = false, features = ["num_bigint"], git = "https://github.com/nash-io/nash-rust.git", rev = "e52d8facea8bc3ea824897bda3329fe5c7e16967" }
 pyo3 = { version = "0.12.3", optional = true }

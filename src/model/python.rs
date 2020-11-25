@@ -2,7 +2,7 @@ use super::super::any_exchange::InitAnyExchange;
 use super::super::binance::{BinanceCredentials, BinanceParameters};
 use super::super::model::{Interval, Paginator, TimeInForce};
 use super::super::nash::{Environment, NashCredentials, NashParameters};
-use super::websocket::{OpenLimitsWebsocketMessage, Subscription};
+use super::websocket::{OpenLimitsWebSocketMessage, Subscription};
 use pyo3::exceptions::PyException;
 use pyo3::prelude::{FromPyObject, IntoPy, PyObject, PyResult, Python, ToPyObject};
 use pyo3::types::PyDict;
@@ -17,7 +17,7 @@ impl<'a> FromPyObject<'a> for TimeInForce {
         } else {
             let value: String = ob.get_item("time_in_force")?.extract()?;
             match &value[..] {
-                "good_til_cancelled" => Ok(TimeInForce::GoodTillCancelled),
+                "good_til_caacncelled" => Ok(TimeInForce::GoodTillCancelled),
                 "immediate_or_cancelled" => Ok(TimeInForce::ImmediateOrCancelled),
                 "fill_or_kill" => Ok(TimeInForce::FillOrKill),
                 _ => Err(PyException::new_err("Invalid time in force")),
@@ -127,6 +127,9 @@ impl<'a> FromPyObject<'a> for NashParameters {
                 "session not included in nash credentials",
             ))?
             .extract()?;
+        let affiliate_code: Option<String> = py_dict
+            .get_item("affiliate_code")
+            .extract()?;
         let environment = match &env_str[..] {
             "sandbox" => Ok(Environment::Sandbox),
             "production" => Ok(Environment::Production),
@@ -139,6 +142,7 @@ impl<'a> FromPyObject<'a> for NashParameters {
             ))?
             .extract()?;
         Ok(NashParameters {
+            affiliate_code,
             credentials,
             client_id,
             environment,
@@ -219,22 +223,23 @@ impl<'a> FromPyObject<'a> for Subscription {
     }
 }
 
-impl ToPyObject for OpenLimitsWebsocketMessage {
+impl ToPyObject for OpenLimitsWebSocketMessage {
     fn to_object(&self, py: Python) -> PyObject {
         match self {
-            Self::Ping => {
+            OpenLimitsWebSocketMessage::Ping => {
                 // empty dict to represent null
                 let dict = PyDict::new(py);
                 dict.set_item("ping", PyDict::new(py)).unwrap();
                 dict.into()
             }
-            Self::OrderBook(resp) => resp.to_object(py),
-            Self::Trades(resp) => resp.to_object(py),
+            OpenLimitsWebSocketMessage::OrderBook(resp) => resp.to_object(py),
+            OpenLimitsWebSocketMessage::OrderBookDiff(resp) => resp.to_object(py),
+            OpenLimitsWebSocketMessage::Trades(resp) => resp.to_object(py),
         }
     }
 }
 
-impl IntoPy<PyObject> for OpenLimitsWebsocketMessage {
+impl IntoPy<PyObject> for OpenLimitsWebSocketMessage {
     fn into_py(self, py: Python) -> PyObject {
         self.to_object(py)
     }
