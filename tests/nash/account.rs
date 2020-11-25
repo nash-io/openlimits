@@ -175,6 +175,7 @@ async fn init() -> Nash {
     dotenv().ok();
 
     let parameters = NashParameters {
+        affiliate_code: None,
         credentials: Some(NashCredentials {
             secret: env::var("NASH_API_SECRET").unwrap(),
             session: env::var("NASH_API_KEY").unwrap(),

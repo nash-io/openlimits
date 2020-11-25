@@ -39,6 +39,7 @@ pub struct NashCredentials {
 }
 
 pub struct NashParameters {
+    pub affiliate_code: Option<String>,
     pub credentials: Option<NashCredentials>,
     pub client_id: u64,
     pub environment: Environment,
@@ -48,6 +49,7 @@ pub struct NashParameters {
 impl Clone for NashParameters {
     fn clone(&self) -> Self {
         NashParameters {
+            affiliate_code: self.affiliate_code.clone(),
             credentials: self.credentials.clone(),
             client_id: self.client_id,
             environment: match self.environment {
@@ -65,7 +67,7 @@ async fn client_from_params(params: NashParameters) -> Client {
         Some(credentials) => Client::from_key_data(
             &credentials.secret,
             &credentials.session,
-            None,
+            params.affiliate_code,
             params.client_id,
             params.environment,
             params.timeout,
