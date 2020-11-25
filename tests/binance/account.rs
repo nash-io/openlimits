@@ -42,13 +42,19 @@ async fn limit_sell() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn post_only() {
     let exchange = init().await;
+    /*let req = CancelAllOrdersRequest {
+        market_pair: Some("BNBBTC".to_string()),
+    };
+    exchange.cancel_all_orders(&req).await.unwrap();*/
+
     let req = OpenLimitOrderRequest {
-        price: Decimal::new(1, 3),
+        price: Decimal::new(5, 3),
         size: Decimal::new(1, 1),
-        post_only: true,
         market_pair: String::from("BNBBTC"),
+        post_only: true,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
     let resp = exchange.limit_sell(&req).await.unwrap();

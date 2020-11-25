@@ -17,7 +17,7 @@ impl<'a> FromPyObject<'a> for TimeInForce {
         } else {
             let value: String = ob.get_item("time_in_force")?.extract()?;
             match &value[..] {
-                "good_til_caacncelled" => Ok(TimeInForce::GoodTillCancelled),
+                "good_til_cancelled" => Ok(TimeInForce::GoodTillCancelled),
                 "immediate_or_cancelled" => Ok(TimeInForce::ImmediateOrCancelled),
                 "fill_or_kill" => Ok(TimeInForce::FillOrKill),
                 _ => Err(PyException::new_err("Invalid time in force")),
@@ -129,6 +129,9 @@ impl<'a> FromPyObject<'a> for NashParameters {
             .extract()?;
         let affiliate_code: Option<String> = py_dict
             .get_item("affiliate_code")
+            .ok_or(PyException::new_err(
+                "affiliate_code not included in nash params",
+            ))?
             .extract()?;
         let environment = match &env_str[..] {
             "sandbox" => Ok(Environment::Sandbox),
@@ -213,10 +216,10 @@ impl<'a> FromPyObject<'a> for Subscription {
     fn extract(pyobj: &'a pyo3::PyAny) -> PyResult<Self> {
         // we will simulate an enum in Python via dictionary keys
         if let Ok(trade) = pyobj.get_item("trade") {
-            Ok(Subscription::Trade(trade.extract()?))
+            Ok(Subscription::Trades(trade.extract()?))
         } else if let Ok(orderbook) = pyobj.get_item("orderbook") {
             let orderbook_args: (String, i64) = orderbook.extract()?;
-            Ok(Subscription::OrderBook(orderbook_args.0, orderbook_args.1))
+            Ok(Subscription::OrderBookUpdates(orderbook_args.0))
         } else {
             Err(PyException::new_err("Not a supported input subscription"))
         }
@@ -280,7 +283,10 @@ impl ToPyObject for Ticker {
         let inner_dict = PyDict::new(py);
         // TODO: why does ticker have so few fields?
         inner_dict
-            .set_item("price", self.price.to_string())
+            .set_item(
+                "price",
+                self.price.map_or(String::from("0.0"), |f| f.to_string()),
+            )
             .unwrap();
         dict.set_item("ticker", inner_dict).unwrap();
         dict.into()

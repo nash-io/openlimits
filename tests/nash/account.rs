@@ -57,6 +57,7 @@ async fn limit_buy_fok() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn limit_buy_ggt() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
