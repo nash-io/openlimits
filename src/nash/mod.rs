@@ -180,15 +180,13 @@ impl ExchangeAccount for Nash {
 
         let mut balances = Vec::new();
         for asset in resp.state_channel.keys() {
-            let free = Decimal::from_str(&format!(
-                "{}",
-                resp.state_channel.get(asset).unwrap().amount.value
-            ))
+            let free = Decimal::from_str(
+                &resp.state_channel.get(asset).unwrap().to_string()
+            )
             .unwrap();
-            let in_orders = Decimal::from_str(&format!(
-                "{}",
-                resp.in_orders.get(asset).unwrap().amount.value
-            ))
+            let in_orders = Decimal::from_str(
+                &resp.in_orders.get(asset).unwrap().to_string()
+            )
             .unwrap();
             let total = free + in_orders;
             balances.push(Balance {
@@ -339,7 +337,7 @@ impl From<nash_protocol::protocol::orderbook::OrderbookResponse> for OrderBookRe
 impl From<nash_protocol::types::OrderbookOrder> for AskBid {
     fn from(resp: nash_protocol::types::OrderbookOrder) -> Self {
         let price = Decimal::from_str(&resp.price).unwrap();
-        let qty = Decimal::from_str(&resp.amount.amount.value.to_string()).unwrap();
+        let qty = Decimal::from_str(&resp.amount.to_string()).unwrap();
         Self { price, qty }
     }
 }
@@ -433,12 +431,12 @@ impl TryFrom<&TradeHistoryRequest>
 
 impl From<nash_protocol::types::Trade> for Trade {
     fn from(resp: nash_protocol::types::Trade) -> Self {
-        let qty = Decimal::from_str(&format!("{}", &resp.amount.amount.value)).unwrap();
-        let price = Decimal::from_str(&format!("{}", &resp.limit_price.amount.value)).unwrap();
+        let qty = Decimal::from_str(&resp.amount.to_string()).unwrap();
+        let price = Decimal::from_str(&resp.limit_price.to_string()).unwrap();
 
         let (fees, order_id) = match resp.account_side {
             nash_protocol::types::AccountTradeSide::Taker => (
-                Decimal::from_str(&format!("{}", &resp.taker_fee.amount.value)).unwrap(),
+                Decimal::from_str(&resp.taker_fee.to_string()).unwrap(),
                 resp.taker_order_id,
             ),
             _ => (Decimal::from(0), resp.maker_order_id),
@@ -449,7 +447,7 @@ impl From<nash_protocol::types::Trade> for Trade {
             created_at: resp.executed_at.timestamp_millis() as u64,
             fees: Some(fees),
             liquidity: Some(resp.account_side.into()),
-            market_pair: resp.market.market_name(),
+            market_pair: resp.market.clone(),
             order_id,
             price,
             qty,
@@ -555,11 +553,11 @@ impl TryFrom<Interval> for nash_protocol::types::CandleInterval {
 
 impl From<nash_protocol::types::Candle> for Candle {
     fn from(candle: nash_protocol::types::Candle) -> Self {
-        let close = Decimal::from_str(&format!("{}", &candle.close_price.amount.value)).unwrap();
-        let high = Decimal::from_str(&format!("{}", &candle.high_price.amount.value)).unwrap();
-        let low = Decimal::from_str(&format!("{}", &candle.low_price.amount.value)).unwrap();
-        let open = Decimal::from_str(&format!("{}", &candle.open_price.amount.value)).unwrap();
-        let volume = Decimal::from_str(&format!("{}", &candle.a_volume.amount.value)).unwrap();
+        let close = Decimal::from_str(&candle.close_price.to_string()).unwrap();
+        let high = Decimal::from_str(&candle.high_price.to_string()).unwrap();
+        let low = Decimal::from_str(&candle.low_price.to_string()).unwrap();
+        let open = Decimal::from_str(&candle.open_price.to_string()).unwrap();
+        let volume = Decimal::from_str(&candle.a_volume.to_string()).unwrap();
 
         Self {
             close,
@@ -600,16 +598,16 @@ impl TryFrom<&GetOrderHistoryRequest>
 
 impl From<nash_protocol::types::Order> for Order {
     fn from(order: nash_protocol::types::Order) -> Self {
-        let size = Decimal::from_str(&format!("{}", &order.amount_placed.amount.value)).unwrap();
+        let size = Decimal::from_str(&order.amount_placed.to_string()).unwrap();
         let price = order
             .limit_price
-            .map(|p| Decimal::from_str(&format!("{}", &p.amount.value)).unwrap());
+            .map(|p| Decimal::from_str(&p.to_string()).unwrap());
         let remaining =
-            Some(Decimal::from_str(&format!("{}", &order.amount_remaining.amount.value)).unwrap());
+            Some(Decimal::from_str(&order.amount_remaining.to_string()).unwrap());
 
         Self {
             id: order.id,
-            market_pair: order.market.market_name(),
+            market_pair: order.market.clone(),
             client_order_id: None,
             created_at: Some(order.placed_at.timestamp_millis() as u64),
             order_type: order.order_type.into(),
@@ -645,19 +643,19 @@ impl From<nash_protocol::protocol::get_ticker::TickerResponse> for Ticker {
     fn from(resp: nash_protocol::protocol::get_ticker::TickerResponse) -> Self {
         let mut price = None;
         if resp.best_ask_price.is_some() && resp.best_bid_price.is_some() {
-            let ask = Decimal::from_str(&format!("{}", &resp.best_ask_price.unwrap().amount.value))
+            let ask = Decimal::from_str(&resp.best_ask_price.unwrap().to_string())
                 .unwrap();
-            let bid = Decimal::from_str(&format!("{}", &resp.best_bid_price.unwrap().amount.value))
+            let bid = Decimal::from_str(&resp.best_bid_price.unwrap().to_string())
                 .unwrap();
             price = Some((ask + bid) / Decimal::from(2));
         }
         let mut price_24h = None;
         if resp.high_price_24h.is_some() && resp.low_price_24h.is_some() {
             let day_high =
-                Decimal::from_str(&format!("{}", &resp.high_price_24h.unwrap().amount.value))
+                Decimal::from_str(&resp.high_price_24h.unwrap().to_string())
                     .unwrap();
             let day_low =
-                Decimal::from_str(&format!("{}", &resp.low_price_24h.unwrap().amount.value))
+                Decimal::from_str(&resp.low_price_24h.unwrap().to_string())
                     .unwrap();
             price_24h = Some((day_high + day_low) / Decimal::from(2));
         }

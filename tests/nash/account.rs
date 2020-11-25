@@ -5,7 +5,7 @@ use openlimits::{
     exchange::{ExchangeAccount, OpenLimits},
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
-        TimeInForce, TradeHistoryRequest,
+        TimeInForce, TradeHistoryRequest
     },
     nash::Nash,
     nash::NashCredentials,
@@ -181,7 +181,7 @@ async fn init() -> Nash {
             secret: env::var("NASH_API_SECRET").unwrap(),
             session: env::var("NASH_API_KEY").unwrap(),
         }),
-        environment: Environment::Sandbox,
+        environment: Environment::Production,
         client_id: 1,
         timeout: 100000,
     };
