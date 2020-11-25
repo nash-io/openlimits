@@ -19,7 +19,7 @@ async fn limit_buy() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
-        price: Decimal::from_str("414.46").unwrap(),
+        price: Decimal::from_str("100.46").unwrap(),
         size: Decimal::from_str("0.10000").unwrap(),
         market_pair: String::from("eth_usdc"),
         post_only: false,
@@ -181,7 +181,7 @@ async fn init() -> Nash {
             secret: env::var("NASH_API_SECRET").unwrap(),
             session: env::var("NASH_API_KEY").unwrap(),
         }),
-        environment: Environment::Production,
+        environment: Environment::Sandbox,
         client_id: 1,
         timeout: 100000,
     };
