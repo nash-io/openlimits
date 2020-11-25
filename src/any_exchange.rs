@@ -193,9 +193,11 @@ impl ExchangeWs for AnyWsExchange {
             InitAnyExchange::Nash(params) => {
                 OpenLimitsWs::<NashStream>::instantiate(params).await.into()
             }
-            InitAnyExchange::Binance(_) => OpenLimitsWs::<BinanceWebsocket>::instantiate(())
-                .await
-                .into(),
+            InitAnyExchange::Binance(params) => {
+                OpenLimitsWs::<BinanceWebsocket>::instantiate(params)
+                    .await
+                    .into()
+            }
         }
     }
 

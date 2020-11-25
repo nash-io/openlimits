@@ -1,5 +1,8 @@
 use openlimits::{
-    binance::{client::websocket::BinanceWebsocket, model::websocket::BinanceSubscription},
+    binance::{
+        client::websocket::BinanceWebsocket, model::websocket::BinanceSubscription,
+        BinanceParameters,
+    },
     exchange_ws::ExchangeWs,
 };
 use std::sync::mpsc::sync_channel;
@@ -7,7 +10,7 @@ use std::sync::mpsc::sync_channel;
 #[tokio::test(core_threads = 2)]
 async fn aggregate_trade() {
     let (tx, rx) = sync_channel(0);
-    let websocket = BinanceWebsocket::new();
+    let websocket = init().await;
     let sub = BinanceSubscription::AggregateTrade("bnbbtc".to_string());
 
     websocket
@@ -24,7 +27,7 @@ async fn aggregate_trade() {
 #[tokio::test(core_threads = 2)]
 async fn candlestick() {
     let (tx, rx) = sync_channel(0);
-    let websocket = BinanceWebsocket::new();
+    let websocket = init().await;
     let sub = BinanceSubscription::Candlestick("bnbbtc".to_string(), "1m".to_string());
 
     websocket
@@ -41,7 +44,7 @@ async fn candlestick() {
 #[tokio::test(core_threads = 2)]
 async fn depth() {
     let (tx, rx) = sync_channel(0);
-    let websocket = BinanceWebsocket::new();
+    let websocket = init().await;
     let sub = BinanceSubscription::Depth("bnbbtc".to_string(), Some(1));
 
     websocket
@@ -58,7 +61,7 @@ async fn depth() {
 #[tokio::test(core_threads = 2)]
 async fn mini_ticker() {
     let (tx, rx) = sync_channel(0);
-    let websocket = BinanceWebsocket::new();
+    let websocket = init().await;
     let sub = BinanceSubscription::MiniTicker("bnbbtc".to_string());
 
     websocket
@@ -75,7 +78,7 @@ async fn mini_ticker() {
 #[tokio::test(core_threads = 2)]
 async fn mini_ticker_all() {
     let (tx, rx) = sync_channel(0);
-    let websocket = BinanceWebsocket::new();
+    let websocket = init().await;
     let sub = BinanceSubscription::MiniTickerAll;
 
     websocket
@@ -92,7 +95,7 @@ async fn mini_ticker_all() {
 #[tokio::test(core_threads = 2)]
 async fn order_book() {
     let (tx, rx) = sync_channel(0);
-    let websocket = BinanceWebsocket::new();
+    let websocket = init().await;
     let sub = BinanceSubscription::OrderBook("bnbbtc".to_string(), 10);
 
     websocket
@@ -109,7 +112,7 @@ async fn order_book() {
 #[tokio::test(core_threads = 2)]
 async fn ticker() {
     let (tx, rx) = sync_channel(0);
-    let websocket = BinanceWebsocket::new();
+    let websocket = init().await;
     let sub = BinanceSubscription::Ticker("bnbbtc".to_string());
 
     websocket
@@ -126,7 +129,7 @@ async fn ticker() {
 #[tokio::test(core_threads = 2)]
 async fn ticker_all() {
     let (tx, rx) = sync_channel(0);
-    let websocket = BinanceWebsocket::new();
+    let websocket = init().await;
     let sub = BinanceSubscription::TickerAll;
 
     websocket
@@ -143,7 +146,7 @@ async fn ticker_all() {
 #[tokio::test(core_threads = 2)]
 async fn trade() {
     let (tx, rx) = sync_channel(0);
-    let websocket = BinanceWebsocket::new();
+    let websocket = init().await;
     let sub = BinanceSubscription::Trade("bnbbtc".to_string());
 
     websocket
@@ -155,4 +158,8 @@ async fn trade() {
         .unwrap();
 
     rx.recv().unwrap();
+}
+
+async fn init() -> BinanceWebsocket {
+    BinanceWebsocket::new(BinanceParameters::sandbox()).await
 }
