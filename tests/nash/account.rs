@@ -5,7 +5,7 @@ use openlimits::{
     exchange::{ExchangeAccount, OpenLimits},
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
-        TimeInForce, TradeHistoryRequest
+        TimeInForce, TradeHistoryRequest,
     },
     nash::Nash,
     nash::NashCredentials,

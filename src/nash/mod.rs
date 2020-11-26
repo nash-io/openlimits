@@ -180,14 +180,10 @@ impl ExchangeAccount for Nash {
 
         let mut balances = Vec::new();
         for asset in resp.state_channel.keys() {
-            let free = Decimal::from_str(
-                &resp.state_channel.get(asset).unwrap().to_string()
-            )
-            .unwrap();
-            let in_orders = Decimal::from_str(
-                &resp.in_orders.get(asset).unwrap().to_string()
-            )
-            .unwrap();
+            let free =
+                Decimal::from_str(&resp.state_channel.get(asset).unwrap().to_string()).unwrap();
+            let in_orders =
+                Decimal::from_str(&resp.in_orders.get(asset).unwrap().to_string()).unwrap();
             let total = free + in_orders;
             balances.push(Balance {
                 asset: asset.name().to_string(),
@@ -602,8 +598,7 @@ impl From<nash_protocol::types::Order> for Order {
         let price = order
             .limit_price
             .map(|p| Decimal::from_str(&p.to_string()).unwrap());
-        let remaining =
-            Some(Decimal::from_str(&order.amount_remaining.to_string()).unwrap());
+        let remaining = Some(Decimal::from_str(&order.amount_remaining.to_string()).unwrap());
 
         Self {
             id: order.id,
@@ -643,20 +638,14 @@ impl From<nash_protocol::protocol::get_ticker::TickerResponse> for Ticker {
     fn from(resp: nash_protocol::protocol::get_ticker::TickerResponse) -> Self {
         let mut price = None;
         if resp.best_ask_price.is_some() && resp.best_bid_price.is_some() {
-            let ask = Decimal::from_str(&resp.best_ask_price.unwrap().to_string())
-                .unwrap();
-            let bid = Decimal::from_str(&resp.best_bid_price.unwrap().to_string())
-                .unwrap();
+            let ask = Decimal::from_str(&resp.best_ask_price.unwrap().to_string()).unwrap();
+            let bid = Decimal::from_str(&resp.best_bid_price.unwrap().to_string()).unwrap();
             price = Some((ask + bid) / Decimal::from(2));
         }
         let mut price_24h = None;
         if resp.high_price_24h.is_some() && resp.low_price_24h.is_some() {
-            let day_high =
-                Decimal::from_str(&resp.high_price_24h.unwrap().to_string())
-                    .unwrap();
-            let day_low =
-                Decimal::from_str(&resp.low_price_24h.unwrap().to_string())
-                    .unwrap();
+            let day_high = Decimal::from_str(&resp.high_price_24h.unwrap().to_string()).unwrap();
+            let day_low = Decimal::from_str(&resp.low_price_24h.unwrap().to_string()).unwrap();
             price_24h = Some((day_high + day_low) / Decimal::from(2));
         }
         Self { price, price_24h }
