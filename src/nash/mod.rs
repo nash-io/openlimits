@@ -1,7 +1,3 @@
-use async_trait::async_trait;
-pub use nash_native_client::ws_client::client::Client;
-use std::convert::{TryFrom, TryInto};
-
 use crate::{
     errors::{MissingImplementationContent, OpenLimitError},
     exchange::Exchange,
@@ -23,9 +19,12 @@ use crate::{
     },
     shared::{timestamp_to_utc_datetime, Result},
 };
+use async_trait::async_trait;
 use chrono::Utc;
+pub use nash_native_client::ws_client::client::Client;
 pub use nash_native_client::ws_client::client::Environment;
 use rust_decimal::prelude::*;
+use std::convert::{TryFrom, TryInto};
 
 pub struct Nash {
     transport: Client,
@@ -323,7 +322,8 @@ impl From<&OrderBookRequest> for nash_protocol::protocol::orderbook::OrderbookRe
 impl From<nash_protocol::protocol::orderbook::OrderbookResponse> for OrderBookResponse {
     fn from(book: nash_protocol::protocol::orderbook::OrderbookResponse) -> Self {
         Self {
-            last_update_id: Some(book.update_id as u64),
+            update_id: Some(book.update_id as u64),
+            last_update_id: Some(book.last_update_id as u64),
             bids: book.bids.into_iter().map(Into::into).collect(),
             asks: book.asks.into_iter().map(Into::into).collect(),
         }
@@ -809,9 +809,10 @@ impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResp
         match value.0 {
             SubscriptionResponse::Orderbook(resp) => Ok(WebSocketResponse::Generic(
                 OpenLimitsWebSocketMessage::OrderBook(OrderBookResponse {
+                    update_id: Some(resp.update_id as u64),
+                    last_update_id: Some(resp.last_update_id as u64),
                     asks: resp.asks.into_iter().map(Into::into).collect(),
                     bids: resp.bids.into_iter().map(Into::into).collect(),
-                    last_update_id: None,
                 }),
             )),
             SubscriptionResponse::Trades(resp) => {
