@@ -153,6 +153,7 @@ impl ExchangeMarketData for Coinbase {
 impl From<model::Book<model::BookRecordL2>> for OrderBookResponse {
     fn from(book: model::Book<model::BookRecordL2>) -> Self {
         Self {
+            update_id: Some(book.sequence as u64),
             last_update_id: None,
             bids: book.bids.into_iter().map(Into::into).collect(),
             asks: book.asks.into_iter().map(Into::into).collect(),
