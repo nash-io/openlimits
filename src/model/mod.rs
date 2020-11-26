@@ -342,8 +342,7 @@ mod tests {
     fn can_serialize_time_in_force() {
         let t = TimeInForce::GoodTillTime(Duration::hours(1));
         let serialized = serde_json::to_string(&t).expect("Couldn't serialize as JSON.");
-        println!("serialized = {}", serialized);
         let deserialized: TimeInForce = serde_json::from_str(&serialized).expect("Couldn't deserialize JSON.");
-        println!("deserialized = {:?}", deserialized);
+        assert_eq!(t, deserialized);
     }
 }
