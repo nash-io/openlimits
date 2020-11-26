@@ -2,7 +2,7 @@ use super::super::any_exchange::InitAnyExchange;
 use super::super::binance::{BinanceCredentials, BinanceParameters};
 use super::super::model::{Interval, Paginator, TimeInForce};
 use super::super::nash::{Environment, NashCredentials, NashParameters};
-use super::websocket::{OpenLimitsWebsocketMessage, Subscription};
+use super::websocket::{OpenLimitsWebSocketMessage, Subscription};
 use pyo3::exceptions::PyException;
 use pyo3::prelude::{FromPyObject, IntoPy, PyObject, PyResult, Python, ToPyObject};
 use pyo3::types::PyDict;
@@ -127,6 +127,12 @@ impl<'a> FromPyObject<'a> for NashParameters {
                 "session not included in nash credentials",
             ))?
             .extract()?;
+        let affiliate_code: Option<String> = py_dict
+            .get_item("affiliate_code")
+            .ok_or(PyException::new_err(
+                "affiliate_code not included in nash params",
+            ))?
+            .extract()?;
         let environment = match &env_str[..] {
             "sandbox" => Ok(Environment::Sandbox),
             "production" => Ok(Environment::Production),
@@ -139,6 +145,7 @@ impl<'a> FromPyObject<'a> for NashParameters {
             ))?
             .extract()?;
         Ok(NashParameters {
+            affiliate_code,
             credentials,
             client_id,
             environment,
@@ -209,32 +216,33 @@ impl<'a> FromPyObject<'a> for Subscription {
     fn extract(pyobj: &'a pyo3::PyAny) -> PyResult<Self> {
         // we will simulate an enum in Python via dictionary keys
         if let Ok(trade) = pyobj.get_item("trade") {
-            Ok(Subscription::Trade(trade.extract()?))
+            Ok(Subscription::Trades(trade.extract()?))
         } else if let Ok(orderbook) = pyobj.get_item("orderbook") {
             let orderbook_args: (String, i64) = orderbook.extract()?;
-            Ok(Subscription::OrderBook(orderbook_args.0, orderbook_args.1))
+            Ok(Subscription::OrderBookUpdates(orderbook_args.0))
         } else {
             Err(PyException::new_err("Not a supported input subscription"))
         }
     }
 }
 
-impl ToPyObject for OpenLimitsWebsocketMessage {
+impl ToPyObject for OpenLimitsWebSocketMessage {
     fn to_object(&self, py: Python) -> PyObject {
         match self {
-            Self::Ping => {
+            OpenLimitsWebSocketMessage::Ping => {
                 // empty dict to represent null
                 let dict = PyDict::new(py);
                 dict.set_item("ping", PyDict::new(py)).unwrap();
                 dict.into()
             }
-            Self::OrderBook(resp) => resp.to_object(py),
-            Self::Trades(resp) => resp.to_object(py),
+            OpenLimitsWebSocketMessage::OrderBook(resp) => resp.to_object(py),
+            OpenLimitsWebSocketMessage::OrderBookDiff(resp) => resp.to_object(py),
+            OpenLimitsWebSocketMessage::Trades(resp) => resp.to_object(py),
         }
     }
 }
 
-impl IntoPy<PyObject> for OpenLimitsWebsocketMessage {
+impl IntoPy<PyObject> for OpenLimitsWebSocketMessage {
     fn into_py(self, py: Python) -> PyObject {
         self.to_object(py)
     }
@@ -275,7 +283,10 @@ impl ToPyObject for Ticker {
         let inner_dict = PyDict::new(py);
         // TODO: why does ticker have so few fields?
         inner_dict
-            .set_item("price", self.price.to_string())
+            .set_item(
+                "price",
+                self.price.map_or(String::from("0.0"), |f| f.to_string()),
+            )
             .unwrap();
         dict.set_item("ticker", inner_dict).unwrap();
         dict.into()

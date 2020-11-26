@@ -1,7 +1,8 @@
 use std::sync::mpsc::sync_channel;
 
 use openlimits::{
-    binance::client::websocket::BinanceWebsocket, exchange_ws::OpenLimitsWs,
+    binance::{client::websocket::BinanceWebsocket, BinanceParameters},
+    exchange_ws::{ExchangeWs, OpenLimitsWs},
     model::websocket::Subscription,
 };
 
@@ -18,20 +19,20 @@ async fn test_subscription_callback(websocket: OpenLimitsWs<BinanceWebsocket>, s
 
 #[tokio::test(core_threads = 2)]
 async fn orderbook() {
-    let ws = init();
+    let ws = init().await;
     let sub = Subscription::OrderBookUpdates("bnbbtc".to_string());
     test_subscription_callback(ws, sub).await;
 }
 
 #[tokio::test(core_threads = 2)]
 async fn trades() {
-    let ws = init();
+    let ws = init().await;
     let sub = Subscription::Trades("btcusdt".to_string());
     test_subscription_callback(ws, sub).await;
 }
 
-fn init() -> OpenLimitsWs<BinanceWebsocket> {
+async fn init() -> OpenLimitsWs<BinanceWebsocket> {
     OpenLimitsWs {
-        websocket: BinanceWebsocket::new(),
+        websocket: BinanceWebsocket::new(BinanceParameters::prod()).await,
     }
 }

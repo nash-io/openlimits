@@ -39,6 +39,7 @@ pub struct NashCredentials {
 }
 
 pub struct NashParameters {
+    pub affiliate_code: Option<String>,
     pub credentials: Option<NashCredentials>,
     pub client_id: u64,
     pub environment: Environment,
@@ -48,6 +49,7 @@ pub struct NashParameters {
 impl Clone for NashParameters {
     fn clone(&self) -> Self {
         NashParameters {
+            affiliate_code: self.affiliate_code.clone(),
             credentials: self.credentials.clone(),
             client_id: self.client_id,
             environment: match self.environment {
@@ -65,7 +67,7 @@ async fn client_from_params(params: NashParameters) -> Client {
         Some(credentials) => Client::from_key_data(
             &credentials.secret,
             &credentials.session,
-            None,
+            params.affiliate_code,
             params.client_id,
             params.environment,
             params.timeout,
@@ -678,18 +680,18 @@ use nash_protocol::protocol::{
 };
 use std::{pin::Pin, task::Context, task::Poll};
 
-pub struct NashStream {
+pub struct NashWebsocket {
     pub client: Client,
 }
 
-impl NashStream {
+impl NashWebsocket {
     pub async fn public(client_id: u64, sandbox: bool, timeout: u64) -> Self {
         let environment = if sandbox {
             Environment::Sandbox
         } else {
             Environment::Production
         };
-        NashStream {
+        NashWebsocket {
             client: Client::new(None, client_id, None, environment, timeout)
                 .await
                 .unwrap(),
@@ -708,7 +710,7 @@ impl NashStream {
         } else {
             Environment::Production
         };
-        NashStream {
+        NashWebsocket {
             client: Client::from_key_data(secret, session, None, client_id, environment, timeout)
                 .await
                 .unwrap(),
@@ -716,7 +718,7 @@ impl NashStream {
     }
 }
 
-impl Stream for NashStream {
+impl Stream for NashWebsocket {
     type Item = std::result::Result<
         ResponseOrError<nash_protocol::protocol::subscriptions::SubscriptionResponse>,
         nash_protocol::errors::ProtocolError,
@@ -727,7 +729,7 @@ impl Stream for NashStream {
 }
 
 #[async_trait]
-impl ExchangeWs for NashStream {
+impl ExchangeWs for NashWebsocket {
     type InitParams = NashParameters;
 
     type Subscription = SubscriptionRequest;

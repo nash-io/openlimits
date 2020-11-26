@@ -6,7 +6,7 @@ use std::convert::TryFrom;
 
 use crate::exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
 use crate::exchange_ws::{ExchangeWs, OpenLimitsWs, Subscriptions};
-use crate::nash::{Nash, NashParameters, NashStream};
+use crate::nash::{Nash, NashParameters, NashWebsocket};
 use crate::{
     binance::{Binance, BinanceParameters, BinanceWebsocket},
     model::websocket::OpenLimitsWebSocketMessage,
@@ -178,7 +178,7 @@ impl ExchangeMarketData for AnyExchange {
 }
 
 pub enum AnyWsExchange {
-    Nash(OpenLimitsWs<NashStream>),
+    Nash(OpenLimitsWs<NashWebsocket>),
     Binance(OpenLimitsWs<BinanceWebsocket>),
 }
 
@@ -191,11 +191,13 @@ impl ExchangeWs for AnyWsExchange {
     async fn new(params: Self::InitParams) -> Self {
         match params {
             InitAnyExchange::Nash(params) => {
-                OpenLimitsWs::<NashStream>::instantiate(params).await.into()
+                OpenLimitsWs::<NashWebsocket>::instantiate(params).await.into()
             }
-            InitAnyExchange::Binance(_) => OpenLimitsWs::<BinanceWebsocket>::instantiate(())
-                .await
-                .into(),
+            InitAnyExchange::Binance(params) => {
+                OpenLimitsWs::<BinanceWebsocket>::instantiate(params)
+                    .await
+                    .into()
+            }
         }
     }
 
@@ -243,8 +245,8 @@ impl From<Binance> for AnyExchange {
     }
 }
 
-impl From<OpenLimitsWs<NashStream>> for AnyWsExchange {
-    fn from(nash: OpenLimitsWs<NashStream>) -> Self {
+impl From<OpenLimitsWs<NashWebsocket>> for AnyWsExchange {
+    fn from(nash: OpenLimitsWs<NashWebsocket>) -> Self {
         Self::Nash(nash)
     }
 }

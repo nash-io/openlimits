@@ -1,11 +1,13 @@
 use futures::stream::StreamExt;
 use openlimits::{
-    binance::BinanceWebsocket, exchange_ws::OpenLimitsWs, model::websocket::Subscription,
+    binance::{BinanceParameters, BinanceWebsocket},
+    exchange_ws::{ExchangeWs, OpenLimitsWs},
+    model::websocket::Subscription,
 };
 
 #[tokio::test(core_threads = 2)]
 async fn orderbook() {
-    let ws = init();
+    let ws = init().await;
     let s = ws
         .create_stream(&[Subscription::OrderBookUpdates("bnbbtc".to_string())])
         .await;
@@ -19,7 +21,7 @@ async fn orderbook() {
 
 #[tokio::test(core_threads = 2)]
 async fn trades() {
-    let ws = init();
+    let ws = init().await;
     let s = ws
         .create_stream(&[Subscription::Trades("bnbbtc".to_string())])
         .await;
@@ -31,8 +33,8 @@ async fn trades() {
     print!("{:?}", trades);
 }
 
-fn init() -> OpenLimitsWs<BinanceWebsocket> {
+async fn init() -> OpenLimitsWs<BinanceWebsocket> {
     OpenLimitsWs {
-        websocket: BinanceWebsocket::new(),
+        websocket: BinanceWebsocket::new(BinanceParameters::prod()).await,
     }
 }

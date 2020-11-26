@@ -110,7 +110,7 @@ async fn limit_buy() {
         .limit_buy(
             pair,
             Decimal::new(1, 1),
-            Decimal::new(1, 3),
+            Decimal::new(17, 4),
             TimeInForce::GTC,
             false,
         )
