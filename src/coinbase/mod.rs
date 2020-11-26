@@ -191,7 +191,7 @@ impl From<model::Order> for Order {
             size,
             price,
             remaining: Some(size - order.filled_size),
-            trades: Vec::new()
+            trades: Vec::new(),
         }
     }
 }

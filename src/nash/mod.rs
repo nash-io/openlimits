@@ -391,7 +391,7 @@ impl From<nash_protocol::protocol::place_order::LimitOrderResponse> for Order {
             size: Decimal::from(0),
             price: None,
             remaining: None,
-            trades: Vec::new()
+            trades: Vec::new(),
         }
     }
 }
@@ -612,7 +612,7 @@ impl From<nash_protocol::types::Order> for Order {
             size,
             price,
             remaining,
-            trades: order.trades.into_iter().map(Into::into).collect()
+            trades: order.trades.into_iter().map(Into::into).collect(),
         }
     }
 }

@@ -390,7 +390,7 @@ impl From<model::Order> for Order {
             size: order.orig_qty,
             price: Some(order.price),
             remaining: Some(order.orig_qty - order.executed_qty),
-            trades: Vec::new()
+            trades: Vec::new(),
         }
     }
 }
