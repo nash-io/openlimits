@@ -1,6 +1,3 @@
-use async_trait::async_trait;
-pub use nash_native_client::ws_client::client::Client;
-use std::convert::{TryFrom, TryInto};
 use crate::{
     errors::{MissingImplementationContent, OpenLimitError},
     exchange::Exchange,
@@ -22,9 +19,12 @@ use crate::{
     },
     shared::{timestamp_to_utc_datetime, Result},
 };
+use async_trait::async_trait;
 use chrono::Utc;
+pub use nash_native_client::ws_client::client::Client;
 pub use nash_native_client::ws_client::client::Environment;
 use rust_decimal::prelude::*;
+use std::convert::{TryFrom, TryInto};
 
 pub struct Nash {
     transport: Client,
