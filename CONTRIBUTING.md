@@ -11,8 +11,9 @@ Please send a [GitHub Pull Request](https://github.com/nash-io/openlimits/pull/n
 The conventions still needs to be defined, for now we rely on the rust-analyzer.
 
 ##### Unwrapping
-  * Try your best to never make use of `unwrap` and `expect` on production code. The errors must be propagated or correctly handled.
-  * When writing test codes, always make use of `expect` with a proper message instead of `unwrap`.
+  * Try your best to never make use of `unwrap` and `expect` in the library code. The errors must be propagated or correctly handled.
+  * If you really need to make use of `expect`, make sure to add a comment explaining the constraints that assure it will never fail.
+  * Always make use of `expect` with a proper message instead of `unwrap`.
 
 ##### Logging
   * It's OK to use `println!` for quick debugging on the development side, but they shouldn't be pushed to remote.
