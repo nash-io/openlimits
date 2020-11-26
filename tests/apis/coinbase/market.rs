@@ -10,7 +10,7 @@ use openlimits::{
 #[tokio::test]
 async fn products() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.inner_client().unwrap().products().await.unwrap();
+    let res = exchange.inner_client().expect("Couldn't get inner client.").products().await.expect("Couldn't get products.");
     println!("{:?}", res);
 }
 
@@ -19,10 +19,10 @@ async fn product() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .product("BTC-USD")
         .await
-        .unwrap();
+        .expect("Couldn't get product.");
     println!("{:?}", res);
 }
 
@@ -31,17 +31,17 @@ async fn trades() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .trades("BTC-USD", None)
         .await
-        .unwrap();
+        .expect("Couldn't get trades.");
     println!("{:?}", res);
 
-    let trade = res.last().unwrap();
+    let trade = res.last().expect("Couldn't get last trade.");
 
     let res = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .trades(
             "BTC-USD",
             Some(&Paginator {
@@ -51,7 +51,7 @@ async fn trades() {
             }),
         )
         .await
-        .unwrap();
+        .expect("Couldn't get trades.");
     println!("{:?}", res);
 }
 
@@ -60,10 +60,10 @@ async fn book() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .book::<BookRecordL1>("BTC-USD")
         .await
-        .unwrap();
+        .expect("Couldn't get book.");
     println!("{:?}", res);
 }
 
@@ -72,10 +72,10 @@ async fn ticker() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .ticker("BTC-USD")
         .await
-        .unwrap();
+        .expect("Couldn't get ticker.");
     println!("{:?}", res);
 }
 
@@ -84,15 +84,15 @@ async fn candles() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
     let res = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .candles("BTC-USD", None)
         .await
-        .unwrap();
+        .expect("Couldn't get candles.");
     println!("{:?}", res);
 
     let res = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .candles(
             "BTC-USD",
             Some(&CandleRequestParams {
@@ -101,15 +101,15 @@ async fn candles() {
             }),
         )
         .await
-        .unwrap();
+        .expect("Couldn't get candles.");
     println!("{:?}", res);
     let date =
         NaiveDateTime::parse_from_str("2020-08-20T00:00:00.642366Z", "%Y-%m-%dT%H:%M:%S.%fZ")
-            .unwrap();
+            .expect("Couldn't parse date from string.");
 
     let res = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .candles(
             "BTC-USD",
             Some(&CandleRequestParams {
@@ -121,6 +121,6 @@ async fn candles() {
             }),
         )
         .await
-        .unwrap();
+        .expect("Couldn't get candles.");
     println!("{:?}", res);
 }

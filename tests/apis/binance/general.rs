@@ -8,7 +8,7 @@ async fn ping() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     assert_eq!(
         "pong",
-        exchange.inner_client().unwrap().ping().await.unwrap()
+        exchange.inner_client().expect("Couldn't get inner client.").ping().await.expect("Couldn't ping.")
     );
 }
 
@@ -17,10 +17,10 @@ async fn get_server_time() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_server_time()
         .await
-        .unwrap();
+        .expect("Couldn't get server time.");
 }
 
 #[tokio::test]
@@ -28,9 +28,9 @@ async fn get_exchange_info() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_exchange_info()
         .await
-        .unwrap();
+        .expect("Couldn't get exchange info.");
     println!("{:?}", resp);
 }

@@ -31,8 +31,8 @@ async fn init() -> OpenLimitsWs<NashWebsocket> {
     dotenv().ok();
 
     let websocket = NashWebsocket::with_credential(
-        &env::var("NASH_API_SECRET").unwrap(),
-        &env::var("NASH_API_KEY").unwrap(),
+        &env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
+        &env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
         1234,
         true,
         10000,

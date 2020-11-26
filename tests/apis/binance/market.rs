@@ -8,10 +8,10 @@ async fn get_depth() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_depth("BNBBTC", 50)
         .await
-        .unwrap();
+        .expect("Couldn't get depth.");
     println!("{:?}", resp);
 }
 
@@ -20,10 +20,10 @@ async fn get_all_prices() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_all_prices()
         .await
-        .unwrap();
+        .expect("Couldn't get all prices.");
     println!("{:?}", resp);
 }
 
@@ -32,10 +32,10 @@ async fn get_price() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_price("BNBBTC")
         .await
-        .unwrap();
+        .expect("Couldn't get price.");
     println!("{:?}", resp);
 }
 
@@ -44,10 +44,10 @@ async fn get_all_book_tickers() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_all_book_tickers()
         .await
-        .unwrap();
+        .expect("Couldn't get all book tickers.");
     println!("{:?}", resp);
 }
 
@@ -56,10 +56,10 @@ async fn get_book_ticker() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_book_ticker("BNBBTC")
         .await
-        .unwrap();
+        .expect("Couldn't get book ticker.");
     println!("{:?}", resp);
 }
 
@@ -68,10 +68,10 @@ async fn get_24h_price_stats() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_24h_price_stats("BNBBTC")
         .await
-        .unwrap();
+        .expect("Couldn't get 24h price stats.");
     println!("{:?}", resp);
 }
 
@@ -85,10 +85,10 @@ async fn get_klines() {
     };
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_klines(&params)
         .await
-        .unwrap();
+        .expect("Couldn't get klines.");
     println!("{:?}", resp);
 }
 
@@ -97,9 +97,9 @@ async fn get_24h_price_stats_all() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_24h_price_stats_all()
         .await
-        .unwrap();
+        .expect("Couldn't get 24h price stats all.");
     println!("{:?}", resp);
 }

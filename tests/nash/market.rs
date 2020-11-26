@@ -79,8 +79,8 @@ async fn init() -> Nash {
     let parameters = NashParameters {
         affiliate_code: None,
         credentials: Some(NashCredentials {
-            secret: env::var("NASH_API_SECRET").unwrap(),
-            session: env::var("NASH_API_KEY").unwrap(),
+            secret: env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
+            session: env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
         }),
         environment: Environment::Sandbox,
         client_id: 1,

@@ -36,7 +36,7 @@ pub struct CoinbaseWebsocket {
 
 impl CoinbaseWebsocket {
     pub fn new(url: &str) -> Self {
-        let url = Url::parse(url).unwrap();
+        let url = Url::parse(url).expect("Couldn't parse url.");
         Self {
             subscriptions: HashMap::new(),
             url,

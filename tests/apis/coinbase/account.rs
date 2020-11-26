@@ -16,10 +16,10 @@ async fn get_account() {
     let exchange = init().await;
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_account(None)
         .await
-        .unwrap();
+        .expect("Couldn't get account.");
     println!("{:?}", resp);
 }
 
@@ -33,10 +33,10 @@ async fn get_all_open_orders() {
     };
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_orders(Some(&params))
         .await
-        .unwrap();
+        .expect("Couldn't get orders.");
     println!("{:?}", resp);
 }
 
@@ -45,10 +45,10 @@ async fn get_all_orders() {
     let exchange = init().await;
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_orders(None)
         .await
-        .unwrap();
+        .expect("Couldn't get orders.");
     println!("{:?}", resp);
 
     // let params = GetOrderRequest{
@@ -70,40 +70,40 @@ async fn get_all_orders_for_a_given_product() {
 
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_orders(Some(&params))
         .await
-        .unwrap();
+        .expect("Couldn't get orders.");
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn get_order() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
     let order = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .market_buy(pair, Decimal::new(1, 3))
         .await
-        .unwrap();
+        .expect("Couldn't market buy.");
 
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_order(order.id)
         .await
-        .unwrap();
+        .expect("Couldn't get order.");
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn limit_buy() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .limit_buy(
             pair,
             Decimal::new(1, 3),
@@ -112,17 +112,17 @@ async fn limit_buy() {
             false,
         )
         .await
-        .unwrap();
+        .expect("Couldn't limit buy.");
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn limit_sell() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .limit_sell(
             pair,
             Decimal::new(1, 3),
@@ -131,17 +131,17 @@ async fn limit_sell() {
             false,
         )
         .await
-        .unwrap();
+        .expect("Couldn't limit sell.");
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn limit_sell_fok() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .limit_sell(
             pair,
             Decimal::new(1, 3),
@@ -150,17 +150,17 @@ async fn limit_sell_fok() {
             false,
         )
         .await
-        .unwrap();
+        .expect("Couldn't limit sell.");
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn limit_sell_ioc() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .limit_sell(
             pair,
             Decimal::new(1, 3),
@@ -169,17 +169,17 @@ async fn limit_sell_ioc() {
             false,
         )
         .await
-        .unwrap();
+        .expect("Couldn't limit sell.");
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn limit_sell_gtt() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .limit_sell(
             pair,
             Decimal::new(1, 3),
@@ -190,43 +190,43 @@ async fn limit_sell_gtt() {
             false,
         )
         .await
-        .unwrap();
+        .expect("Couldn't limit sell.");
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn market_buy() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .market_buy(pair, Decimal::new(1, 3))
         .await
-        .unwrap();
+        .expect("Couldn't market buy.");
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn market_sell() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .market_sell(pair, Decimal::new(1, 3))
         .await
-        .unwrap();
+        .expect("Couldn't market sell.");
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn cancel_all_orders() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
     exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .limit_sell(
             pair.clone(),
             Decimal::new(1, 3),
@@ -235,10 +235,10 @@ async fn cancel_all_orders() {
             false,
         )
         .await
-        .unwrap();
+        .expect("Couldn't limit sell.");
     exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .limit_sell(
             pair.clone(),
             Decimal::new(1, 3),
@@ -247,11 +247,11 @@ async fn cancel_all_orders() {
             false,
         )
         .await
-        .unwrap();
+        .expect("Couldn't limit sell.");
 
     exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .limit_buy(
             pair,
             Decimal::new(2, 2),
@@ -260,23 +260,23 @@ async fn cancel_all_orders() {
             false,
         )
         .await
-        .unwrap();
+        .expect("Couldn't limit buy.");
 
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .cancel_all_orders(Some("BTC-USD"))
         .await
-        .unwrap();
+        .expect("Couldn't cancel all orders.");
 
     println!("{:?}", resp);
 
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .cancel_all_orders(None)
         .await
-        .unwrap();
+        .expect("Couldn't cancel all orders.");
 
     println!("{:?}", resp);
 }
@@ -284,10 +284,10 @@ async fn cancel_all_orders() {
 #[tokio::test]
 async fn cancel_order() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read handle.");
     let order = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .limit_sell(
             pair,
             Decimal::new(1, 3),
@@ -296,13 +296,13 @@ async fn cancel_order() {
             false,
         )
         .await
-        .unwrap();
+        .expect("Couldn't limit sell.");
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .cancel_order(order.id, Some("BTC-USD"))
         .await
-        .unwrap();
+        .expect("Couldn't cancel order.");
 
     println!("{:?}", resp);
 }
@@ -310,13 +310,13 @@ async fn cancel_order() {
 #[tokio::test]
 async fn get_fills_for_order() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.unwrap().read().unwrap();
+    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
     let order = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .market_sell(pair, Decimal::new(1, 3))
         .await
-        .unwrap();
+        .expect("Couldn't market sell.");
 
     let params = GetFillsReq {
         order_id: Some(order.id),
@@ -326,10 +326,10 @@ async fn get_fills_for_order() {
 
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_fills(Some(&params))
         .await
-        .unwrap();
+        .expect("Couldn't get fills.");
     println!("{:?}", resp);
 }
 
@@ -345,10 +345,10 @@ async fn get_fills_for_product() {
 
     let resp = exchange
         .inner_client()
-        .unwrap()
+        .expect("Couldn't get inner client.")
         .get_fills(Some(&params))
         .await
-        .unwrap();
+        .expect("Couldn't get fills.");
     println!("{:?}", resp);
 }
 
@@ -357,9 +357,9 @@ async fn init() -> Coinbase {
     Coinbase::new(CoinbaseParameters {
         sandbox: true,
         credentials: Some(CoinbaseCredentials {
-            api_key: env::var("COINBASE_API_KEY").unwrap(),
-            api_secret: env::var("COINBASE_API_SECRET").unwrap(),
-            passphrase: env::var("COINBASE_PASSPHRASE").unwrap(),
+            api_key: env::var("COINBASE_API_KEY").expect("Couldn't get environment varilable."),
+            api_secret: env::var("COINBASE_API_SECRET").expect("Couldn't get environment varilable."),
+            passphrase: env::var("COINBASE_PASSPHRASE").expect("Couldn't get environment varilable."),
         }),
     })
     .await

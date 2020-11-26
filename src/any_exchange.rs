@@ -209,7 +209,7 @@ impl ExchangeWs for AnyWsExchange {
             Self::Nash(nash) => nash
                 .create_stream_specific(subscriptions.as_slice().into())
                 .await?
-                .map(|r| WebSocketResponse::try_from(r.unwrap()))
+                .map(|r| WebSocketResponse::try_from(r.expect("Couldn't convert WebSocketResponse from SubscriptionResponseWrapper.")))
                 .map(|r| {
                     r.map(|resp| match resp {
                         WebSocketResponse::Generic(generic) => generic,
@@ -220,7 +220,7 @@ impl ExchangeWs for AnyWsExchange {
             Self::Binance(binance) => binance
                 .create_stream_specific(subscriptions.as_slice().into())
                 .await?
-                .map(|r| WebSocketResponse::try_from(r.unwrap()))
+                .map(|r| WebSocketResponse::try_from(r.expect("Couldn't convert WebSocketResponse from SubscriptionResponseWrapper.")))
                 .map(|r| {
                     r.map(|resp| match resp {
                         WebSocketResponse::Generic(generic) => generic,

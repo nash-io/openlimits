@@ -232,7 +232,7 @@ impl ToPyObject for OpenLimitsWebSocketMessage {
             OpenLimitsWebSocketMessage::Ping => {
                 // empty dict to represent null
                 let dict = PyDict::new(py);
-                dict.set_item("ping", PyDict::new(py)).unwrap();
+                dict.set_item("ping", PyDict::new(py)).expect("Couldn't set ping.");
                 dict.into()
             }
             OpenLimitsWebSocketMessage::OrderBook(resp) => resp.to_object(py),
@@ -266,7 +266,7 @@ impl ToPyObject for OrderType {
             Self::StopMarket => "stop_market",
             Self::Unknown => "unknown",
         };
-        dict.set_item("order_type", inner_str).unwrap();
+        dict.set_item("order_type", inner_str).expect("Couldn't set order_type.");
         dict.into()
     }
 }
@@ -287,8 +287,8 @@ impl ToPyObject for Ticker {
                 "price",
                 self.price.map_or(String::from("0.0"), |f| f.to_string()),
             )
-            .unwrap();
-        dict.set_item("ticker", inner_dict).unwrap();
+            .expect("Couldn't set price.");
+        dict.set_item("ticker", inner_dict).expect("Couldn't set ticker.");
         dict.into()
     }
 }
@@ -303,17 +303,17 @@ impl ToPyObject for Candle {
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
         let inner_dict = PyDict::new(py);
-        inner_dict.set_item("low", self.low.to_string()).unwrap();
-        inner_dict.set_item("high", self.high.to_string()).unwrap();
+        inner_dict.set_item("low", self.low.to_string()).expect("Couldn't set low.");
+        inner_dict.set_item("high", self.high.to_string()).expect("Couldn't set high.");
         inner_dict
             .set_item("close", self.close.to_string())
-            .unwrap();
-        inner_dict.set_item("open", self.open.to_string()).unwrap();
-        inner_dict.set_item("time", self.time).unwrap();
+            .expect("Couldn't set close.");
+        inner_dict.set_item("open", self.open.to_string()).expect("Couldn't set open.");
+        inner_dict.set_item("time", self.time).expect("Couldn't set time.");
         inner_dict
             .set_item("volume", self.volume.to_string())
-            .unwrap();
-        dict.set_item("candle", inner_dict).unwrap();
+            .expect("Couldn't set volume.");
+        dict.set_item("candle", inner_dict).expect("Couldn't set candle.");
         dict.into()
     }
 }
@@ -328,16 +328,16 @@ impl ToPyObject for MarketPair {
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
         let inner_dict = PyDict::new(py);
-        inner_dict.set_item("quote", self.quote.clone()).unwrap();
+        inner_dict.set_item("quote", self.quote.clone()).expect("Couldn't set quote.");
         inner_dict
             .set_item("quote_decimal", self.quote_increment.to_string())
-            .unwrap();
-        inner_dict.set_item("base", self.base.clone()).unwrap();
+            .expect("Couldn't set quote_decimal.");
+        inner_dict.set_item("base", self.base.clone()).expect("Couldn't set base.");
         inner_dict
             .set_item("base_increment", self.base_increment.to_string())
-            .unwrap();
-        inner_dict.set_item("symbol", self.symbol.clone()).unwrap();
-        dict.set_item("market_pair", inner_dict).unwrap();
+            .expect("Couldn't set base_increment.");
+        inner_dict.set_item("symbol", self.symbol.clone()).expect("Couldn't set symbol.");
+        dict.set_item("market_pair", inner_dict).expect("Couldn't set market_pair.");
         dict.into()
     }
 }
@@ -352,12 +352,12 @@ impl ToPyObject for Balance {
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
         let inner_dict = PyDict::new(py);
-        inner_dict.set_item("asset", self.asset.clone()).unwrap();
-        inner_dict.set_item("free", self.free.to_string()).unwrap();
+        inner_dict.set_item("asset", self.asset.clone()).expect("Couldn't set asset.");
+        inner_dict.set_item("free", self.free.to_string()).expect("Couldn't set free.");
         inner_dict
             .set_item("total", self.total.to_string())
-            .unwrap();
-        dict.set_item("balance", inner_dict).unwrap();
+            .expect("Couldn't set total.");
+        dict.set_item("balance", inner_dict).expect("Couldn't set balance.");
         dict.into()
     }
 }
@@ -371,7 +371,7 @@ impl IntoPy<PyObject> for Balance {
 impl ToPyObject for OrderCanceled {
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
-        dict.set_item("order_canceled", self.id.clone()).unwrap();
+        dict.set_item("order_canceled", self.id.clone()).expect("Couldn't set order_canceled.");
         dict.into()
     }
 }
@@ -386,29 +386,29 @@ impl ToPyObject for Order {
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
         let inner_dict = PyDict::new(py);
-        inner_dict.set_item("id", self.id.clone()).unwrap();
+        inner_dict.set_item("id", self.id.clone()).expect("Couldn't set id.");
         inner_dict
             .set_item("market_pair", self.market_pair.clone())
-            .unwrap();
+            .expect("Couldn't set market_pair.");
         inner_dict
             .set_item("price", self.price.map(|x| x.to_string()))
-            .unwrap();
+            .expect("Couldn't set price.");
         inner_dict
             .set_item("order_type", self.order_type.clone())
-            .unwrap();
+            .expect("Couldn't set order_type.");
         inner_dict
             .set_item(
                 "client_order_id",
                 self.client_order_id.clone().map(|x| x.to_string()),
             )
-            .unwrap();
+            .expect("Couldn't set client_order_id.");
         inner_dict
             .set_item("created_at", self.created_at.clone())
-            .unwrap();
-        inner_dict.set_item("side", self.side.clone()).unwrap();
-        inner_dict.set_item("size", self.size.to_string()).unwrap();
-        inner_dict.set_item("status", self.status.clone()).unwrap();
-        dict.set_item("order", inner_dict).unwrap();
+            .expect("Couldn't set created_at.");
+        inner_dict.set_item("side", self.side.clone()).expect("Couldn't set side.");
+        inner_dict.set_item("size", self.size.to_string()).expect("Couldn't set size.");
+        inner_dict.set_item("status", self.status.clone()).expect("Couldn't set status.");
+        dict.set_item("order", inner_dict).expect("Couldn't set order.");
         dict.into()
     }
 }
@@ -423,9 +423,9 @@ impl ToPyObject for OrderBookResponse {
     fn to_object(&self, py: Python) -> PyObject {
         let dict = PyDict::new(py);
         let inner_dict = PyDict::new(py);
-        inner_dict.set_item("asks", self.asks.clone()).unwrap();
-        inner_dict.set_item("bids", self.bids.clone()).unwrap();
-        dict.set_item("orderbook", inner_dict).unwrap();
+        inner_dict.set_item("asks", self.asks.clone()).expect("Couldn't set asks.");
+        inner_dict.set_item("bids", self.bids.clone()).expect("Couldn't set bids.");
+        dict.set_item("orderbook", inner_dict).expect("Couldn't set orderbook.");
         dict.into()
     }
 }
@@ -442,9 +442,9 @@ impl ToPyObject for AskBid {
         let inner_dict = PyDict::new(py);
         inner_dict
             .set_item("price", self.price.to_string())
-            .unwrap();
-        inner_dict.set_item("qty", self.qty.to_string()).unwrap();
-        dict.set_item("ask_or_bid", inner_dict).unwrap();
+            .expect("Couldn't set price.");
+        inner_dict.set_item("qty", self.qty.to_string()).expect("Couldn't set qty.");
+        dict.set_item("ask_or_bid", inner_dict).expect("Couldn't set ask_or_bid.");
         dict.into()
     }
 }
@@ -455,24 +455,24 @@ impl ToPyObject for Trade {
         let inner_dict = PyDict::new(py);
         inner_dict
             .set_item("liquidity", self.liquidity.clone())
-            .unwrap();
+            .expect("Couldn't set liquidity.");
         inner_dict
             .set_item("market_pair", self.market_pair.clone())
-            .unwrap();
+            .expect("Couldn't set maret_pair.");
         inner_dict
             .set_item("price", self.price.to_string())
-            .unwrap();
-        inner_dict.set_item("qty", self.qty.to_string()).unwrap();
+            .expect("Couldn't set price.");
+        inner_dict.set_item("qty", self.qty.to_string()).expect("Couldn't set qty.");
         inner_dict
             .set_item("order_id", self.order_id.to_string())
-            .unwrap();
-        inner_dict.set_item("side", self.side.clone()).unwrap();
-        inner_dict.set_item("created_at", self.created_at).unwrap();
+            .expect("Couldn't set order_id.");
+        inner_dict.set_item("side", self.side.clone()).expect("Couldn't set side.");
+        inner_dict.set_item("created_at", self.created_at).expect("Couldn't set created_at.");
         inner_dict
             .set_item("fees", self.fees.map(|fee| fee.to_string()))
-            .unwrap();
-        inner_dict.set_item("id", self.id.to_string()).unwrap();
-        dict.set_item("trade", inner_dict).unwrap();
+            .expect("Couldn't set fees.");
+        inner_dict.set_item("id", self.id.to_string()).expect("Couldn't set id.");
+        dict.set_item("trade", inner_dict).expect("Couldn't set trade.");
         dict.into()
     }
 }
@@ -498,7 +498,7 @@ impl ToPyObject for OrderStatus {
             Self::Pending => "pending",
             Self::Active => "active",
         };
-        dict.set_item("order_status", to_string).unwrap();
+        dict.set_item("order_status", to_string).expect("Couldn't set order_status.");
         dict.into()
     }
 }
@@ -510,7 +510,7 @@ impl ToPyObject for Side {
             Self::Buy => "buy",
             Self::Sell => "sell",
         };
-        dict.set_item("side", to_string).unwrap();
+        dict.set_item("side", to_string).expect("Couldn't set side.");
         dict.into()
     }
 }
@@ -522,7 +522,7 @@ impl ToPyObject for Liquidity {
             Self::Maker => "maker",
             Self::Taker => "taker",
         };
-        dict.set_item("liquidity", to_string).unwrap();
+        dict.set_item("liquidity", to_string).expect("Couldn't set liquidity.");
         dict.into()
     }
 }

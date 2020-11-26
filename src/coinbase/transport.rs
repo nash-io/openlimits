@@ -58,7 +58,7 @@ impl Transport {
         let mut headers = header::HeaderMap::new();
         headers.insert(
             "USER-AGENT",
-            header::HeaderValue::from_str("openlimit").unwrap(),
+            header::HeaderValue::from_str("openlimit").expect("Couldn't create USER-AGENT header from string."),
         );
 
         headers
@@ -79,17 +79,17 @@ impl Transport {
         let mut headers = header::HeaderMap::new();
         headers.insert(
             "USER-AGENT",
-            header::HeaderValue::from_str("openlimit").unwrap(),
+            header::HeaderValue::from_str("openlimit").expect("Couldn't create USER-AGENT header from string."),
         );
 
         headers.insert(
             "CB-ACCESS-KEY",
-            header::HeaderValue::from_str(api_key).unwrap(),
+            header::HeaderValue::from_str(api_key).expect("Couldn't create CB-ACCESS-KEY header from string."),
         );
 
         headers.insert(
             "CB-ACCESS-PASSPHRASE",
-            header::HeaderValue::from_str(passphrase).unwrap(),
+            header::HeaderValue::from_str(passphrase).expect("Couldn't create CB-ACCESS-PASSPHRASE header from string."),
         );
 
         headers
@@ -218,7 +218,7 @@ impl Transport {
             Some(v) => Ok(v),
         }?;
         let key = base64::decode(api_secret).expect("Failed to base64 decode Coinbase API secret");
-        let mut mac = HmacSha256::new_varkey(&key).unwrap();
+        let mut mac = HmacSha256::new_varkey(&key).expect("Couldn't create HMAC-SHA256.");
 
         let prefix: String = timestamp.to_string() + method.as_str();
 
