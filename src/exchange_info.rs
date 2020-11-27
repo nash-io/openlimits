@@ -52,7 +52,7 @@ impl<'a> serde::Serialize for MarketPairHandle {
     where
         S: serde::Serializer,
     {
-        serializer.collect_str(&self.inner.read().unwrap().symbol)
+        serializer.collect_str(&self.inner.read().expect("Couldn't read pairs.").symbol)
     }
 }
 
@@ -69,7 +69,7 @@ impl ExchangeInfo {
     }
 
     pub fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
-        let market_map = self.pairs.read().unwrap();
+        let market_map = self.pairs.read().expect("Couldn't read pairs.");
         let market_pair = market_map.get(name);
         market_pair.map_or(Err(OpenLimitError::SymbolNotFound()), |inner| {
             Ok(MarketPairHandle::new(inner.clone()))
@@ -77,7 +77,7 @@ impl ExchangeInfo {
     }
 
     pub fn list_pairs(&self) -> Vec<MarketPairHandle> {
-        let market_map = self.pairs.read().unwrap();
+        let market_map = self.pairs.read().expect("Couldn't read pairs.");
         market_map
             .iter()
             .map(|(_symbol, market)| MarketPairHandle::new(market.clone()))

@@ -87,7 +87,7 @@ pub mod naive_datetime_from_string {
         let a = NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S.%fZ");
         match a {
             Ok(t) => return Ok(t),
-            Err(e) => NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%SZ")
+            Err(_e) => NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%SZ")
                 .map_err(serde::de::Error::custom),
         }
     }

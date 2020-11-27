@@ -19,8 +19,10 @@ async fn order_book() {
     let req = OrderBookRequest {
         market_pair: "eth_btc".to_string(),
     };
-    let resp = exchange.order_book(&req).await.unwrap();
-    println!("{:?}", resp);
+    let _response = exchange
+        .order_book(&req)
+        .await
+        .expect("Couldn't get order book.");
 }
 
 #[tokio::test]
@@ -29,8 +31,10 @@ async fn get_price_ticker() {
     let req = GetPriceTickerRequest {
         market_pair: "eth_btc".to_string(),
     };
-    let resp = exchange.get_price_ticker(&req).await.unwrap();
-    println!("{:?}", resp);
+    let _response = exchange
+        .get_price_ticker(&req)
+        .await
+        .expect("Couldn't get price ticker.");
 }
 
 #[tokio::test]
@@ -41,8 +45,10 @@ async fn get_historic_rates() {
         interval: Interval::OneHour,
         paginator: None,
     };
-    let resp = exchange.get_historic_rates(&req).await.unwrap();
-    println!("{:?}", resp);
+    let _response = exchange
+        .get_historic_rates(&req)
+        .await
+        .expect("Couldn't get historic rates.");
 }
 
 #[tokio::test]
@@ -55,15 +61,19 @@ async fn get_historic_trades() {
             ..Default::default()
         }),
     };
-    let resp = exchange.get_historic_trades(&req).await.unwrap();
-    println!("{:?}", resp);
+    let _response = exchange
+        .get_historic_trades(&req)
+        .await
+        .expect("Couldn't get historic trades.");
 }
 
 #[tokio::test]
 async fn retrieve_pairs() {
     let exchange = init().await;
-    let pairs = exchange.refresh_market_info().await.unwrap();
-    println!("{:?}", pairs);
+    let _response = exchange
+        .refresh_market_info()
+        .await
+        .expect("Couldn't get pairs.");
 }
 
 // #[tokio::test]
@@ -84,8 +94,8 @@ async fn init() -> Nash {
     let parameters = NashParameters {
         affiliate_code: None,
         credentials: Some(NashCredentials {
-            secret: env::var("NASH_API_SECRET").unwrap(),
-            session: env::var("NASH_API_KEY").unwrap(),
+            secret: env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
+            session: env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
         }),
         environment: Environment::Sandbox,
         client_id: 1,

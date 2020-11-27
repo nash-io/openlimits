@@ -13,8 +13,16 @@ async fn aggregate_trade() {
         product_ids: vec!["BTC-USD".to_string()],
     };
 
-    websocket.subscribe(sub).await.unwrap();
+    websocket.subscribe(sub).await.expect("Couldn't subscribe.");
 
-    println!("{:?}", websocket.next().await);
-    println!("{:?}", websocket.next().await);
+    websocket
+        .next()
+        .await
+        .expect("Couldn't get next.")
+        .expect("Couldn't get WebSocket message.");
+    websocket
+        .next()
+        .await
+        .expect("Couldn't get next.")
+        .expect("Couldn't get WebSocket message.");
 }

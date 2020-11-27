@@ -19,12 +19,15 @@ async fn limit_buy() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
-        price: Decimal::from_str("100.46").unwrap(),
-        size: Decimal::from_str("0.10000").unwrap(),
+        price: Decimal::from_str("100.46").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
-    let resp = exchange.limit_buy(&req).await.unwrap();
+    let resp = exchange
+        .limit_buy(&req)
+        .await
+        .expect("Couldn't parse string.");
     println!("{:?}", resp);
 }
 
@@ -33,12 +36,15 @@ async fn limit_buy_ioc() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::ImmediateOrCancelled,
-        price: Decimal::from_str("414.46").unwrap(),
-        size: Decimal::from_str("0.10000").unwrap(),
+        price: Decimal::from_str("414.46").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
-    let resp = exchange.limit_buy(&req).await.unwrap();
+    let resp = exchange
+        .limit_buy(&req)
+        .await
+        .expect("Couldn't request limit buy.");
     println!("{:?}", resp);
 }
 
@@ -47,12 +53,15 @@ async fn limit_buy_fok() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::FillOrKill,
-        price: Decimal::from_str("414.46").unwrap(),
-        size: Decimal::from_str("0.10000").unwrap(),
+        price: Decimal::from_str("414.46").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
-    let resp = exchange.limit_buy(&req).await.unwrap();
+    let resp = exchange
+        .limit_buy(&req)
+        .await
+        .expect("Couldn't request limit buy.");
     println!("{:?}", resp);
 }
 
@@ -62,12 +71,15 @@ async fn limit_buy_ggt() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillTime(Duration::hours(2)),
-        price: Decimal::from_str("414.46").unwrap(),
-        size: Decimal::from_str("0.10000").unwrap(),
+        price: Decimal::from_str("414.46").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
-    let resp = exchange.limit_buy(&req).await.unwrap();
+    let resp = exchange
+        .limit_buy(&req)
+        .await
+        .expect("Couldn't request limit buy.");
     println!("{:?}", resp);
 }
 
@@ -76,12 +88,15 @@ async fn limit_sell() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
-        price: Decimal::from_str("414.46").unwrap(),
-        size: Decimal::from_str("0.10000").unwrap(),
+        price: Decimal::from_str("414.46").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
-    let resp = exchange.limit_sell(&req).await.unwrap();
+    let resp = exchange
+        .limit_sell(&req)
+        .await
+        .expect("Couldn't request limit sell.");
     println!("{:?}", resp);
 }
 
@@ -90,18 +105,24 @@ async fn cancel_order() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
-        price: Decimal::from_str("200.46").unwrap(),
-        size: Decimal::from_str("0.10000").unwrap(),
+        price: Decimal::from_str("200.46").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
-    let order = exchange.limit_buy(&req).await.unwrap();
+    let order = exchange
+        .limit_buy(&req)
+        .await
+        .expect("Couldn't request limit buy.");
 
     let req = CancelOrderRequest {
         id: order.id,
         market_pair: Some(order.market_pair),
     };
-    let resp = exchange.cancel_order(&req).await.unwrap();
+    let resp = exchange
+        .cancel_order(&req)
+        .await
+        .expect("Couldn't cancel order.");
     println!("{:?}", resp);
 }
 
@@ -110,19 +131,25 @@ async fn cancel_all_orders() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
-        price: Decimal::from_str("200.46").unwrap(),
-        size: Decimal::from_str("0.10000").unwrap(),
+        price: Decimal::from_str("200.46").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
 
-    exchange.limit_sell(&req).await.unwrap();
+    exchange
+        .limit_sell(&req)
+        .await
+        .expect("Couldn't limit sell.");
 
     let req = CancelAllOrdersRequest {
         market_pair: Some("eth_btc".to_string()),
     };
 
-    let resp = exchange.cancel_all_orders(&req).await.unwrap();
+    let resp = exchange
+        .cancel_all_orders(&req)
+        .await
+        .expect("Couldn't cancel all orders.");
     println!("{:?}", resp);
 }
 
@@ -134,7 +161,10 @@ async fn get_order_history() {
         paginator: None,
     };
 
-    let resp = exchange.get_order_history(&req).await.unwrap();
+    let resp = exchange
+        .get_order_history(&req)
+        .await
+        .expect("Couldn't get order history.");
     println!("{:?}", resp);
 }
 
@@ -147,16 +177,19 @@ async fn get_order_history() {
 //         size: Decimal::new(2, 2),
 //         market_pair: String::from("eth_btc"),
 //     };
-//     exchange.limit_sell(&req).await.unwrap();
+//     exchange.limit_sell(&req).await.expect("Couldn't limit sell.");
 
-//     let resp = exchange.get_all_open_orders().await.unwrap();
+//     let resp = exchange.get_all_open_orders().await.expect("Couldn't get all open orders.");
 //     println!("{:?}", resp);
 // }
 
 #[tokio::test]
 async fn get_account_balances() {
     let exchange = init().await;
-    let resp = exchange.get_account_balances(None).await.unwrap();
+    let resp = exchange
+        .get_account_balances(None)
+        .await
+        .expect("Couldn't get account balances.");
     println!("{:?}", resp);
 }
 
@@ -168,7 +201,10 @@ async fn get_trade_history() {
         ..Default::default()
     };
 
-    let resp = exchange.get_trade_history(&req).await.unwrap();
+    let resp = exchange
+        .get_trade_history(&req)
+        .await
+        .expect("Couldn't get trade history.");
     println!("{:?}", resp);
 }
 
@@ -178,8 +214,8 @@ async fn init() -> Nash {
     let parameters = NashParameters {
         affiliate_code: None,
         credentials: Some(NashCredentials {
-            secret: env::var("NASH_API_SECRET").unwrap(),
-            session: env::var("NASH_API_KEY").unwrap(),
+            secret: env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
+            session: env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
         }),
         environment: Environment::Sandbox,
         client_id: 1,

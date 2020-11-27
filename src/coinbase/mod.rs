@@ -75,18 +75,22 @@ impl Exchange for Coinbase {
                         &credentials.passphrase,
                         parameters.sandbox,
                     )
-                    .unwrap(),
+                    .expect("Couldn't construct transport."),
                 },
             },
             None => Coinbase {
                 exchange_info: ExchangeInfo::new(),
                 client: BaseClient {
-                    transport: Transport::new(parameters.sandbox).unwrap(),
+                    transport: Transport::new(parameters.sandbox)
+                        .expect("Couldn't construct transport."),
                 },
             },
         };
 
-        coinbase.refresh_market_info().await.unwrap();
+        coinbase
+            .refresh_market_info()
+            .await
+            .expect("Couldn't refresh market info.");
         coinbase
     }
 
@@ -404,8 +408,12 @@ impl From<&GetOrderHistoryRequest> for model::GetOrderRequest {
 impl From<Paginator> for model::Paginator {
     fn from(paginator: Paginator) -> Self {
         Self {
-            after: paginator.after.map(|s| s.parse::<u64>().unwrap()),
-            before: paginator.before.map(|s| s.parse::<u64>().unwrap()),
+            after: paginator
+                .after
+                .map(|s| s.parse::<u64>().expect("Couldn't parse paginator.")),
+            before: paginator
+                .before
+                .map(|s| s.parse::<u64>().expect("Couldn't parse paginator.")),
             limit: paginator.limit,
         }
     }

@@ -169,7 +169,7 @@ impl Ticker {
     pub fn price(&self) -> Decimal {
         match self {
             Ticker::Full { price, .. } => *price,
-            Ticker::Empty { price, .. } => price.unwrap(),
+            Ticker::Empty { price, .. } => price.expect("Couldn't get price."),
         }
     }
 
@@ -189,14 +189,14 @@ impl Ticker {
 
     pub fn bid(&self) -> Option<Decimal> {
         match self {
-            Ticker::Full { best_bid, .. } => Some(best_bid.unwrap()),
+            Ticker::Full { best_bid, .. } => Some(best_bid.expect("Couldn't get best bid.")),
             Ticker::Empty { .. } => None,
         }
     }
 
     pub fn ask(&self) -> Option<Decimal> {
         match self {
-            Ticker::Full { best_ask, .. } => Some(best_ask.unwrap()),
+            Ticker::Full { best_ask, .. } => Some(best_ask.expect("Couldn't get best ask.")),
             Ticker::Empty { .. } => None,
         }
     }

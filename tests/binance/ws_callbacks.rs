@@ -6,34 +6,32 @@ use openlimits::{
     model::websocket::Subscription,
 };
 
+async fn test_subscription_callback(websocket: OpenLimitsWs<BinanceWebsocket>, sub: Subscription) {
+    let (tx, rx) = sync_channel(0);
+
+    websocket
+        .subscribe(sub, move |m| {
+            m.as_ref().expect("Couldn't get response.");
+            tx.send(()).expect("Couldn't send sync message.");
+        })
+        .await
+        .expect("Couldn't subscribe.");
+
+    rx.recv().expect("Couldn't receive sync message.");
+}
+
 #[tokio::test(core_threads = 2)]
 async fn orderbook() {
-    let (tx, rx) = sync_channel(0);
     let ws = init().await;
     let sub = Subscription::OrderBookUpdates("bnbbtc".to_string());
-    ws.subscribe(sub, move |m| {
-        println!("{:?}", m);
-        tx.send(()).unwrap();
-    })
-    .await
-    .unwrap();
-
-    rx.recv().unwrap();
+    test_subscription_callback(ws, sub).await;
 }
 
 #[tokio::test(core_threads = 2)]
 async fn trades() {
-    let (tx, rx) = sync_channel(0);
     let ws = init().await;
     let sub = Subscription::Trades("btcusdt".to_string());
-    ws.subscribe(sub, move |m| {
-        println!("{:?}", m);
-        tx.send(()).unwrap();
-    })
-    .await
-    .unwrap();
-
-    rx.recv().unwrap();
+    test_subscription_callback(ws, sub).await;
 }
 
 async fn init() -> OpenLimitsWs<BinanceWebsocket> {

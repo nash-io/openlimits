@@ -12,9 +12,7 @@ async fn orderbook() {
         .create_stream(&[Subscription::OrderBookUpdates("bnbbtc".to_string())])
         .await;
 
-    assert!(s.is_ok());
-
-    let ob = s.unwrap().next().await;
+    let ob = s.expect("Couldn't create stream.").next().await;
 
     print!("{:?}", ob);
 }
@@ -26,9 +24,7 @@ async fn trades() {
         .create_stream(&[Subscription::Trades("bnbbtc".to_string())])
         .await;
 
-    assert!(s.is_ok());
-
-    let trades = s.unwrap().next().await;
+    let trades = s.expect("Couldn't create stream.").next().await;
 
     print!("{:?}", trades);
 }

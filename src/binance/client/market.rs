@@ -113,9 +113,12 @@ impl BaseClient {
 }
 
 fn to_i64(v: &Value) -> i64 {
-    v.as_i64().unwrap()
+    v.as_i64().expect("Couldn't get JSON Value as i64.")
 }
 
 fn to_decimal(v: &Value) -> Decimal {
-    v.as_str().unwrap().parse().unwrap()
+    v.as_str()
+        .expect("Couldn't get JSON Value as str.")
+        .parse()
+        .expect("Couldn't parse str as Decimal.")
 }

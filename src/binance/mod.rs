@@ -74,18 +74,22 @@ impl Exchange for Binance {
                         &credentials.api_secret,
                         parameters.sandbox,
                     )
-                    .unwrap(),
+                    .expect("Couldn't construct transport."),
                 },
             },
             None => Binance {
                 exchange_info: ExchangeInfo::new(),
                 client: BaseClient {
-                    transport: Transport::new(parameters.sandbox).unwrap(),
+                    transport: Transport::new(parameters.sandbox)
+                        .expect("Couldn't construct transport."),
                 },
             },
         };
 
-        binance.refresh_market_info().await.unwrap();
+        binance
+            .refresh_market_info()
+            .await
+            .expect("Couldn't refresh market info.");
         binance
     }
 
@@ -112,7 +116,7 @@ impl ExchangeInfoRetrieval for Binance {
                             } => Some(step_size),
                             _ => None,
                         })
-                        .unwrap();
+                        .expect("Couldn't find lot size.");
 
                     let tick_size = symbol
                         .filters
@@ -125,7 +129,7 @@ impl ExchangeInfoRetrieval for Binance {
                             } => Some(tick_size),
                             _ => None,
                         })
-                        .unwrap();
+                        .expect("Couldn't find tick size.");
 
                     MarketPair {
                         base: symbol.base_asset,
