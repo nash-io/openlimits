@@ -1,10 +1,5 @@
-#![deny(
-    unstable_features,
-    unused_must_use,
-    unused_mut,
-    unused_imports,
-    unused_import_braces
-)]
+#![deny(unstable_features)]
+#![warn(unused_import_braces)]
 
 extern crate chrono;
 extern crate derive_more;
