@@ -19,6 +19,10 @@ use crate::{
     errors::OpenLimitError,
     shared::Result,
 };
+use crate::exchange_ws::ExchangeWs;
+use crate::coinbase::CoinbaseParameters;
+use nash_protocol::protocol::subscriptions::SubscriptionRequest;
+use crate::nash::SubscriptionResponseWrapper;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
@@ -95,4 +99,55 @@ fn parse_message(ws_message: Message) -> Result<CoinbaseWebsocketMessage> {
         _ => return Err(OpenLimitError::SocketError()),
     };
     Ok(serde_json::from_str(&msg)?)
+}
+
+#[async_trait]
+impl ExchangeWs for CoinbaseWebsocket {
+    type InitParams = CoinbaseParameters;
+
+    type Subscription = SubscriptionRequest;
+    type Response = SubscriptionResponseWrapper;
+
+    async fn new(params: Self::InitParams) -> Self {
+
+    }
+
+    async fn create_stream_specific(
+        &self,
+        subscriptions: Subscriptions<Self::Subscription>,
+    ) -> Result<BoxStream<'static, Result<Self::Response>>> {
+        let mut streams = SelectAll::new();
+
+        for subscription in subscriptions.into_iter() {
+            let stream = Client::subscribe_protocol(&self.client, subscription.clone()).await;
+            let stream = stream.map_err(|e| Err(OpenLimitError::NashProtocolError(e)));
+
+            match stream {
+                Ok(s) => {
+                    streams.push(s);
+                }
+                Err(_) => {
+                    return stream.unwrap_err();
+                }
+            }
+        }
+
+        let s = streams.map(|message| match message {
+            Ok(msg) => match msg {
+                ResponseOrError::Response(resp) => Ok(SubscriptionResponseWrapper(resp.data)),
+                ResponseOrError::Error(resp) => {
+                    let f = resp
+                        .errors
+                        .iter()
+                        .map(|f| f.message.clone())
+                        .collect::<Vec<String>>()
+                        .join("\n");
+                    Err(OpenLimitError::NotParsableResponse(f))
+                }
+            },
+            Err(_) => Err(OpenLimitError::SocketError()),
+        });
+
+        Ok(s.boxed())
+    }
 }

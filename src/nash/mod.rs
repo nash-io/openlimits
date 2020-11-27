@@ -691,14 +691,9 @@ impl NashWebsocket {
         secret: &str,
         session: &str,
         client_id: u64,
-        sandbox: bool,
+        environment: Environment,
         timeout: u64,
     ) -> Self {
-        let environment = if sandbox {
-            Environment::Sandbox
-        } else {
-            Environment::Production
-        };
         NashWebsocket {
             client: Client::from_key_data(secret, session, None, client_id, environment, timeout)
                 .await
