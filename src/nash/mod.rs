@@ -1,7 +1,3 @@
-use async_trait::async_trait;
-pub use nash_native_client::ws_client::client::Client;
-use std::convert::{TryFrom, TryInto};
-
 use crate::{
     errors::{MissingImplementationContent, OpenLimitError},
     exchange::Exchange,
@@ -23,9 +19,12 @@ use crate::{
     },
     shared::{timestamp_to_utc_datetime, Result},
 };
+use async_trait::async_trait;
 use chrono::Utc;
+pub use nash_native_client::ws_client::client::Client;
 pub use nash_native_client::ws_client::client::Environment;
 use rust_decimal::prelude::*;
+use std::convert::{TryFrom, TryInto};
 
 pub struct Nash {
     transport: Client,
@@ -180,16 +179,10 @@ impl ExchangeAccount for Nash {
 
         let mut balances = Vec::new();
         for asset in resp.state_channel.keys() {
-            let free = Decimal::from_str(&format!(
-                "{}",
-                resp.state_channel.get(asset).expect("Couldn't get asset.").amount.value
-            ))
-            .expect("Couldn't parse Decial from string.");
-            let in_orders = Decimal::from_str(&format!(
-                "{}",
-                resp.in_orders.get(asset).expect("Couldn't get asset.").amount.value
-            ))
-            .expect("Couldn't create Decimal from string.");
+            let free =
+                Decimal::from_str(&resp.state_channel.get(asset).expect("Couldn't get asset.").to_string()).expect("Couldn't parse Decimal from string.");
+            let in_orders =
+                Decimal::from_str(&resp.in_orders.get(asset).expect("Couldn't get asset").to_string()).expect("Couldn't parse Decimal from string.");
             let total = free + in_orders;
             balances.push(Balance {
                 asset: asset.name().to_string(),
@@ -329,7 +322,8 @@ impl From<&OrderBookRequest> for nash_protocol::protocol::orderbook::OrderbookRe
 impl From<nash_protocol::protocol::orderbook::OrderbookResponse> for OrderBookResponse {
     fn from(book: nash_protocol::protocol::orderbook::OrderbookResponse) -> Self {
         Self {
-            last_update_id: Some(book.update_id as u64),
+            update_id: Some(book.update_id as u64),
+            last_update_id: Some(book.last_update_id as u64),
             bids: book.bids.into_iter().map(Into::into).collect(),
             asks: book.asks.into_iter().map(Into::into).collect(),
         }
@@ -338,8 +332,8 @@ impl From<nash_protocol::protocol::orderbook::OrderbookResponse> for OrderBookRe
 
 impl From<nash_protocol::types::OrderbookOrder> for AskBid {
     fn from(resp: nash_protocol::types::OrderbookOrder) -> Self {
-        let price = Decimal::from_str(&resp.price).expect("Couldn't create Decimal from string.");
-        let qty = Decimal::from_str(&resp.amount.amount.value.to_string()).expect("Couldn't create Decimal from string.");
+        let price = Decimal::from_str(&resp.price).expect("Couldn't parse Decimal from string.");
+        let qty = Decimal::from_str(&resp.amount.to_string()).expect("Couldn't parse Decimal from string.");
         Self { price, qty }
     }
 }
@@ -397,6 +391,7 @@ impl From<nash_protocol::protocol::place_order::LimitOrderResponse> for Order {
             size: Decimal::from(0),
             price: None,
             remaining: None,
+            trades: Vec::new(),
         }
     }
 }
@@ -433,12 +428,12 @@ impl TryFrom<&TradeHistoryRequest>
 
 impl From<nash_protocol::types::Trade> for Trade {
     fn from(resp: nash_protocol::types::Trade) -> Self {
-        let qty = Decimal::from_str(&format!("{}", &resp.amount.amount.value)).expect("Couldn't  create Decimal from string.");
-        let price = Decimal::from_str(&format!("{}", &resp.limit_price.amount.value)).expect("Couldn't  create Decimal from string.");
+        let qty = Decimal::from_str(&resp.amount.to_string()).expect("Couldn't parse Decimal from string.");
+        let price = Decimal::from_str(&resp.limit_price.to_string()).expect("Couldn't parse Decimal from string.");
 
         let (fees, order_id) = match resp.account_side {
             nash_protocol::types::AccountTradeSide::Taker => (
-                Decimal::from_str(&format!("{}", &resp.taker_fee.amount.value)).expect("Couldn't  create Decimal from string."),
+                Decimal::from_str(&resp.taker_fee.to_string()).expect("Couldn't parse Decimal from string."),
                 resp.taker_order_id,
             ),
             _ => (Decimal::from(0), resp.maker_order_id),
@@ -449,7 +444,7 @@ impl From<nash_protocol::types::Trade> for Trade {
             created_at: resp.executed_at.timestamp_millis() as u64,
             fees: Some(fees),
             liquidity: Some(resp.account_side.into()),
-            market_pair: resp.market.market_name(),
+            market_pair: resp.market.clone(),
             order_id,
             price,
             qty,
@@ -555,11 +550,11 @@ impl TryFrom<Interval> for nash_protocol::types::CandleInterval {
 
 impl From<nash_protocol::types::Candle> for Candle {
     fn from(candle: nash_protocol::types::Candle) -> Self {
-        let close = Decimal::from_str(&format!("{}", &candle.close_price.amount.value)).expect("Couldn't create Decimal from string.");
-        let high = Decimal::from_str(&format!("{}", &candle.high_price.amount.value)).expect("Couldn't create Decimal from string.");
-        let low = Decimal::from_str(&format!("{}", &candle.low_price.amount.value)).expect("Couldn't create Decimal from string.");
-        let open = Decimal::from_str(&format!("{}", &candle.open_price.amount.value)).expect("Couldn't create Decimal from string.");
-        let volume = Decimal::from_str(&format!("{}", &candle.a_volume.amount.value)).expect("Couldn't create Decimal from string.");
+        let close = Decimal::from_str(&candle.close_price.to_string()).expect("Couldn't parse Decimal from string.");
+        let high = Decimal::from_str(&candle.high_price.to_string()).expect("Couldn't parse Decimal from string.");
+        let low = Decimal::from_str(&candle.low_price.to_string()).expect("Couldn't parse Decimal from string.");
+        let open = Decimal::from_str(&candle.open_price.to_string()).expect("Couldn't parse Decimal from string.");
+        let volume = Decimal::from_str(&candle.a_volume.to_string()).expect("Couldn't parse Decimal from string.");
 
         Self {
             close,
@@ -600,16 +595,15 @@ impl TryFrom<&GetOrderHistoryRequest>
 
 impl From<nash_protocol::types::Order> for Order {
     fn from(order: nash_protocol::types::Order) -> Self {
-        let size = Decimal::from_str(&format!("{}", &order.amount_placed.amount.value)).expect("Couldn't create Decimal from string.");
+        let size = Decimal::from_str(&order.amount_placed.to_string()).expect("Couldn't parse Decimal from string.");
         let price = order
             .limit_price
-            .map(|p| Decimal::from_str(&format!("{}", &p.amount.value)).expect("Couldn't create Decimal from string."));
-        let remaining =
-            Some(Decimal::from_str(&format!("{}", &order.amount_remaining.amount.value)).expect("Couldn't create Decimal from string."));
+            .map(|p| Decimal::from_str(&p.to_string()).unwrap());
+        let remaining = Some(Decimal::from_str(&order.amount_remaining.to_string()).expect("Couldn't parse Decimal from string."));
 
         Self {
             id: order.id,
-            market_pair: order.market.market_name(),
+            market_pair: order.market.clone(),
             client_order_id: None,
             created_at: Some(order.placed_at.timestamp_millis() as u64),
             order_type: order.order_type.into(),
@@ -618,6 +612,7 @@ impl From<nash_protocol::types::Order> for Order {
             size,
             price,
             remaining,
+            trades: order.trades.into_iter().map(Into::into).collect(),
         }
     }
 }
@@ -645,20 +640,14 @@ impl From<nash_protocol::protocol::get_ticker::TickerResponse> for Ticker {
     fn from(resp: nash_protocol::protocol::get_ticker::TickerResponse) -> Self {
         let mut price = None;
         if resp.best_ask_price.is_some() && resp.best_bid_price.is_some() {
-            let ask = Decimal::from_str(&format!("{}", &resp.best_ask_price.expect("Couldn't get best ask price.").amount.value))
-                .expect("Couldn't create Decimal from string.");
-            let bid = Decimal::from_str(&format!("{}", &resp.best_bid_price.expect("Couldn't get best bid price.").amount.value))
-                .expect("Couldn't create Decimal from string.");
+            let ask = Decimal::from_str(&resp.best_ask_price.unwrap().to_string()).expect("Couldn't parse Decimal from string.");
+            let bid = Decimal::from_str(&resp.best_bid_price.unwrap().to_string()).expect("Couldn't parse Decimal from string.");
             price = Some((ask + bid) / Decimal::from(2));
         }
         let mut price_24h = None;
         if resp.high_price_24h.is_some() && resp.low_price_24h.is_some() {
-            let day_high =
-                Decimal::from_str(&format!("{}", &resp.high_price_24h.expect("Couldn't get high price 24h.").amount.value))
-                    .expect("Couldn't create Decimal from string.");
-            let day_low =
-                Decimal::from_str(&format!("{}", &resp.low_price_24h.expect("Couldn't get low price 24h.").amount.value))
-                    .expect("Couldn't create Decimal from string.");
+            let day_high = Decimal::from_str(&resp.high_price_24h.expect("Couldn't get high price 24h.").to_string()).expect("Couldn't parse Decimal from string.");
+            let day_low = Decimal::from_str(&resp.low_price_24h.expect("Couldn't get low price 24h.").to_string()).expect("Couldn't parse Decimal from string.");
             price_24h = Some((day_high + day_low) / Decimal::from(2));
         }
         Self { price, price_24h }
@@ -820,9 +809,10 @@ impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResp
         match value.0 {
             SubscriptionResponse::Orderbook(resp) => Ok(WebSocketResponse::Generic(
                 OpenLimitsWebSocketMessage::OrderBook(OrderBookResponse {
+                    update_id: Some(resp.update_id as u64),
+                    last_update_id: Some(resp.last_update_id as u64),
                     asks: resp.asks.into_iter().map(Into::into).collect(),
                     bids: resp.bids.into_iter().map(Into::into).collect(),
-                    last_update_id: None,
                 }),
             )),
             SubscriptionResponse::Trades(resp) => {

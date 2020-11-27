@@ -19,6 +19,7 @@ pub struct OrderBookRequest {
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct OrderBookResponse {
+    pub update_id: Option<u64>,
     pub last_update_id: Option<u64>,
     pub bids: Vec<AskBid>,
     pub asks: Vec<AskBid>,
@@ -125,6 +126,7 @@ pub struct Order {
     pub size: Decimal,
     pub price: Option<Decimal>,
     pub remaining: Option<Decimal>,
+    pub trades: Vec<Trade>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]

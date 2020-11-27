@@ -295,7 +295,8 @@ impl ExchangeAccount for Binance {
 impl From<model::OrderBook> for OrderBookResponse {
     fn from(book: model::OrderBook) -> Self {
         Self {
-            last_update_id: Some(book.last_update_id),
+            last_update_id: None,
+            update_id: Some(book.last_update_id),
             bids: book.bids.into_iter().map(Into::into).collect(),
             asks: book.asks.into_iter().map(Into::into).collect(),
         }
@@ -305,7 +306,8 @@ impl From<model::OrderBook> for OrderBookResponse {
 impl From<model::websocket::Depth> for OrderBookResponse {
     fn from(depth: model::websocket::Depth) -> Self {
         Self {
-            last_update_id: Some(depth.final_update_id),
+            last_update_id: Some(depth.first_update_id),
+            update_id: Some(depth.final_update_id),
             bids: depth.bids.into_iter().map(Into::into).collect(),
             asks: depth.asks.into_iter().map(Into::into).collect(),
         }
@@ -390,6 +392,7 @@ impl From<model::Order> for Order {
             size: order.orig_qty,
             price: Some(order.price),
             remaining: Some(order.orig_qty - order.executed_qty),
+            trades: Vec::new(),
         }
     }
 }

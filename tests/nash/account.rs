@@ -19,7 +19,7 @@ async fn limit_buy() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
-        price: Decimal::from_str("414.46").expect("Couldn't parse string."),
+        price: Decimal::from_str("100.46").expect("Couldn't parse string."),
         size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
         post_only: false,
