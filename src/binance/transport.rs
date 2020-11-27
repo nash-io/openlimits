@@ -75,7 +75,10 @@ impl Transport {
         );
 
         if let Some(key) = api_key {
-            headers.insert("X-MBX-APIKEY", header::HeaderValue::from_str(key).expect("Couldn't parse API key from string."));
+            headers.insert(
+                "X-MBX-APIKEY",
+                header::HeaderValue::from_str(key).expect("Couldn't parse API key from string."),
+            );
         };
 
         headers
@@ -223,7 +226,8 @@ impl Transport {
         D: Serialize,
     {
         let (key, secret) = self.check_key()?;
-        let mut mac = HmacSha256::new_varkey(secret.as_bytes()).expect("Couldn't construct hmac from bytes.");
+        let mut mac =
+            HmacSha256::new_varkey(secret.as_bytes()).expect("Couldn't construct hmac from bytes.");
         let body = if body.is_some() {
             serde_urlencoded::to_string(body)?
         } else {

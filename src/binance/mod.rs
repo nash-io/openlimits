@@ -80,12 +80,16 @@ impl Exchange for Binance {
             None => Binance {
                 exchange_info: ExchangeInfo::new(),
                 client: BaseClient {
-                    transport: Transport::new(parameters.sandbox).expect("Couldn't construct transport."),
+                    transport: Transport::new(parameters.sandbox)
+                        .expect("Couldn't construct transport."),
                 },
             },
         };
 
-        binance.refresh_market_info().await.expect("Couldn't refresh market info.");
+        binance
+            .refresh_market_info()
+            .await
+            .expect("Couldn't refresh market info.");
         binance
     }
 

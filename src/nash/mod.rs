@@ -179,10 +179,22 @@ impl ExchangeAccount for Nash {
 
         let mut balances = Vec::new();
         for asset in resp.state_channel.keys() {
-            let free =
-                Decimal::from_str(&resp.state_channel.get(asset).expect("Couldn't get asset.").to_string()).expect("Couldn't parse Decimal from string.");
-            let in_orders =
-                Decimal::from_str(&resp.in_orders.get(asset).expect("Couldn't get asset").to_string()).expect("Couldn't parse Decimal from string.");
+            let free = Decimal::from_str(
+                &resp
+                    .state_channel
+                    .get(asset)
+                    .expect("Couldn't get asset.")
+                    .to_string(),
+            )
+            .expect("Couldn't parse Decimal from string.");
+            let in_orders = Decimal::from_str(
+                &resp
+                    .in_orders
+                    .get(asset)
+                    .expect("Couldn't get asset")
+                    .to_string(),
+            )
+            .expect("Couldn't parse Decimal from string.");
             let total = free + in_orders;
             balances.push(Balance {
                 asset: asset.name().to_string(),
@@ -333,7 +345,8 @@ impl From<nash_protocol::protocol::orderbook::OrderbookResponse> for OrderBookRe
 impl From<nash_protocol::types::OrderbookOrder> for AskBid {
     fn from(resp: nash_protocol::types::OrderbookOrder) -> Self {
         let price = Decimal::from_str(&resp.price).expect("Couldn't parse Decimal from string.");
-        let qty = Decimal::from_str(&resp.amount.to_string()).expect("Couldn't parse Decimal from string.");
+        let qty = Decimal::from_str(&resp.amount.to_string())
+            .expect("Couldn't parse Decimal from string.");
         Self { price, qty }
     }
 }
@@ -404,7 +417,9 @@ impl TryFrom<&TradeHistoryRequest>
         let (before, limit) = match req.paginator.clone() {
             Some(paginator) => (
                 paginator.before,
-                paginator.limit.map(|v| i64::try_from(v).expect("Couldn't convert i64 from u64.")),
+                paginator
+                    .limit
+                    .map(|v| i64::try_from(v).expect("Couldn't convert i64 from u64.")),
             ),
             None => (None, None),
         };
@@ -428,12 +443,15 @@ impl TryFrom<&TradeHistoryRequest>
 
 impl From<nash_protocol::types::Trade> for Trade {
     fn from(resp: nash_protocol::types::Trade) -> Self {
-        let qty = Decimal::from_str(&resp.amount.to_string()).expect("Couldn't parse Decimal from string.");
-        let price = Decimal::from_str(&resp.limit_price.to_string()).expect("Couldn't parse Decimal from string.");
+        let qty = Decimal::from_str(&resp.amount.to_string())
+            .expect("Couldn't parse Decimal from string.");
+        let price = Decimal::from_str(&resp.limit_price.to_string())
+            .expect("Couldn't parse Decimal from string.");
 
         let (fees, order_id) = match resp.account_side {
             nash_protocol::types::AccountTradeSide::Taker => (
-                Decimal::from_str(&resp.taker_fee.to_string()).expect("Couldn't parse Decimal from string."),
+                Decimal::from_str(&resp.taker_fee.to_string())
+                    .expect("Couldn't parse Decimal from string."),
                 resp.taker_order_id,
             ),
             _ => (Decimal::from(0), resp.maker_order_id),
@@ -465,8 +483,14 @@ impl From<nash_protocol::types::BuyOrSell> for Side {
 impl From<Paginator> for nash_protocol::types::DateTimeRange {
     fn from(paginator: Paginator) -> Self {
         Self {
-            start: paginator.start_time.map(timestamp_to_utc_datetime).expect("Couldn't get paginator start_time."),
-            stop: paginator.end_time.map(timestamp_to_utc_datetime).expect("Couldn't get paginator end_time."),
+            start: paginator
+                .start_time
+                .map(timestamp_to_utc_datetime)
+                .expect("Couldn't get paginator start_time."),
+            stop: paginator
+                .end_time
+                .map(timestamp_to_utc_datetime)
+                .expect("Couldn't get paginator end_time."),
         }
     }
 }
@@ -485,7 +509,11 @@ impl From<&GetHistoricRatesRequest> for nash_protocol::protocol::list_candles::L
         let market = req.market_pair.clone();
 
         let (before, limit) = match req.paginator.clone() {
-            Some(p) => (p.before, p.limit.map(|v| i64::try_from(v).expect("Couldn't convert u64 to i64."))),
+            Some(p) => (
+                p.before,
+                p.limit
+                    .map(|v| i64::try_from(v).expect("Couldn't convert u64 to i64.")),
+            ),
             _ => (None, None),
         };
 
@@ -493,7 +521,11 @@ impl From<&GetHistoricRatesRequest> for nash_protocol::protocol::list_candles::L
             market,
             chronological: None,
             before,
-            interval: Some(req.interval.try_into().expect("Couldn't convert Interval to CandleInterval.")),
+            interval: Some(
+                req.interval
+                    .try_into()
+                    .expect("Couldn't convert Interval to CandleInterval."),
+            ),
             limit,
             range: req.paginator.clone().map(Into::into),
         }
@@ -504,7 +536,9 @@ fn try_split_paginator(paginator: Option<Paginator>) -> (Option<String>, Option<
     match paginator {
         Some(paginator) => (
             paginator.before,
-            paginator.limit.map(|v| i64::try_from(v).expect("Couldn't convert u64 to i64.")),
+            paginator
+                .limit
+                .map(|v| i64::try_from(v).expect("Couldn't convert u64 to i64.")),
         ),
         None => (None, None),
     }
@@ -550,11 +584,16 @@ impl TryFrom<Interval> for nash_protocol::types::CandleInterval {
 
 impl From<nash_protocol::types::Candle> for Candle {
     fn from(candle: nash_protocol::types::Candle) -> Self {
-        let close = Decimal::from_str(&candle.close_price.to_string()).expect("Couldn't parse Decimal from string.");
-        let high = Decimal::from_str(&candle.high_price.to_string()).expect("Couldn't parse Decimal from string.");
-        let low = Decimal::from_str(&candle.low_price.to_string()).expect("Couldn't parse Decimal from string.");
-        let open = Decimal::from_str(&candle.open_price.to_string()).expect("Couldn't parse Decimal from string.");
-        let volume = Decimal::from_str(&candle.a_volume.to_string()).expect("Couldn't parse Decimal from string.");
+        let close = Decimal::from_str(&candle.close_price.to_string())
+            .expect("Couldn't parse Decimal from string.");
+        let high = Decimal::from_str(&candle.high_price.to_string())
+            .expect("Couldn't parse Decimal from string.");
+        let low = Decimal::from_str(&candle.low_price.to_string())
+            .expect("Couldn't parse Decimal from string.");
+        let open = Decimal::from_str(&candle.open_price.to_string())
+            .expect("Couldn't parse Decimal from string.");
+        let volume = Decimal::from_str(&candle.a_volume.to_string())
+            .expect("Couldn't parse Decimal from string.");
 
         Self {
             close,
@@ -595,11 +634,15 @@ impl TryFrom<&GetOrderHistoryRequest>
 
 impl From<nash_protocol::types::Order> for Order {
     fn from(order: nash_protocol::types::Order) -> Self {
-        let size = Decimal::from_str(&order.amount_placed.to_string()).expect("Couldn't parse Decimal from string.");
+        let size = Decimal::from_str(&order.amount_placed.to_string())
+            .expect("Couldn't parse Decimal from string.");
         let price = order
             .limit_price
             .map(|p| Decimal::from_str(&p.to_string()).unwrap());
-        let remaining = Some(Decimal::from_str(&order.amount_remaining.to_string()).expect("Couldn't parse Decimal from string."));
+        let remaining = Some(
+            Decimal::from_str(&order.amount_remaining.to_string())
+                .expect("Couldn't parse Decimal from string."),
+        );
 
         Self {
             id: order.id,
@@ -640,14 +683,28 @@ impl From<nash_protocol::protocol::get_ticker::TickerResponse> for Ticker {
     fn from(resp: nash_protocol::protocol::get_ticker::TickerResponse) -> Self {
         let mut price = None;
         if resp.best_ask_price.is_some() && resp.best_bid_price.is_some() {
-            let ask = Decimal::from_str(&resp.best_ask_price.unwrap().to_string()).expect("Couldn't parse Decimal from string.");
-            let bid = Decimal::from_str(&resp.best_bid_price.unwrap().to_string()).expect("Couldn't parse Decimal from string.");
+            let ask = Decimal::from_str(&resp.best_ask_price.unwrap().to_string())
+                .expect("Couldn't parse Decimal from string.");
+            let bid = Decimal::from_str(&resp.best_bid_price.unwrap().to_string())
+                .expect("Couldn't parse Decimal from string.");
             price = Some((ask + bid) / Decimal::from(2));
         }
         let mut price_24h = None;
         if resp.high_price_24h.is_some() && resp.low_price_24h.is_some() {
-            let day_high = Decimal::from_str(&resp.high_price_24h.expect("Couldn't get high price 24h.").to_string()).expect("Couldn't parse Decimal from string.");
-            let day_low = Decimal::from_str(&resp.low_price_24h.expect("Couldn't get low price 24h.").to_string()).expect("Couldn't parse Decimal from string.");
+            let day_high = Decimal::from_str(
+                &resp
+                    .high_price_24h
+                    .expect("Couldn't get high price 24h.")
+                    .to_string(),
+            )
+            .expect("Couldn't parse Decimal from string.");
+            let day_low = Decimal::from_str(
+                &resp
+                    .low_price_24h
+                    .expect("Couldn't get low price 24h.")
+                    .to_string(),
+            )
+            .expect("Couldn't parse Decimal from string.");
             price_24h = Some((day_high + day_low) / Decimal::from(2));
         }
         Self { price, price_24h }
@@ -860,7 +917,9 @@ impl Nash {
                 )),
             ))
         } else {
-            Ok(response.consume_response().expect("Couldn't consume response.")) // safe unwrap
+            Ok(response
+                .consume_response()
+                .expect("Couldn't consume response.")) // safe unwrap
         }
     }
 }
@@ -880,10 +939,12 @@ impl ExchangeInfoRetrieval for Nash {
                 base_increment: Decimal::new(1, v.asset_a.precision),
                 quote_increment: Decimal::new(1, v.asset_b.precision),
                 min_base_trade_size: Some(
-                    Decimal::from_str(&format!("{}", &v.min_trade_size_a.amount.value)).expect("Couldn't create Decimal from string."),
+                    Decimal::from_str(&format!("{}", &v.min_trade_size_a.amount.value))
+                        .expect("Couldn't create Decimal from string."),
                 ),
                 min_quote_trade_size: Some(
-                    Decimal::from_str(&format!("{}", &v.min_trade_size_b.amount.value)).expect("Couldn't create Decimal from string."),
+                    Decimal::from_str(&format!("{}", &v.min_trade_size_b.amount.value))
+                        .expect("Couldn't create Decimal from string."),
                 ),
             })
             .collect())

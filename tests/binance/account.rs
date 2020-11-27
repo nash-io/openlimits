@@ -37,7 +37,10 @@ async fn limit_sell() {
         market_pair: String::from("BNBBTC"),
         time_in_force: TimeInForce::GoodTillCancelled,
     };
-    let resp = exchange.limit_sell(&req).await.expect("Couldn't limit sell.");
+    let resp = exchange
+        .limit_sell(&req)
+        .await
+        .expect("Couldn't limit sell.");
     println!("{:?}", resp);
 }
 
@@ -57,7 +60,10 @@ async fn post_only() {
         post_only: true,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
-    let resp = exchange.limit_sell(&req).await.expect("Couldn't limit sell.");
+    let resp = exchange
+        .limit_sell(&req)
+        .await
+        .expect("Couldn't limit sell.");
     println!("{:?}", resp);
 }
 
@@ -68,7 +74,10 @@ async fn market_buy() {
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
     };
-    let resp = exchange.market_buy(&req).await.expect("Couldn't market buy.");
+    let resp = exchange
+        .market_buy(&req)
+        .await
+        .expect("Couldn't market buy.");
     println!("{:?}", resp);
 }
 
@@ -79,7 +88,10 @@ async fn market_sell() {
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
     };
-    let resp = exchange.market_sell(&req).await.expect("Couldn't market sell.");
+    let resp = exchange
+        .market_sell(&req)
+        .await
+        .expect("Couldn't market sell.");
     println!("{:?}", resp);
 }
 
@@ -94,14 +106,20 @@ async fn cancel_order() {
         post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
-    let order = exchange.limit_sell(&req).await.expect("Couldn't limit sell.");
+    let order = exchange
+        .limit_sell(&req)
+        .await
+        .expect("Couldn't limit sell.");
 
     let req = CancelOrderRequest {
         id: order.id,
         market_pair: Some(order.market_pair),
     };
 
-    let resp = exchange.cancel_order(&req).await.expect("Couldn't cancel order.");
+    let resp = exchange
+        .cancel_order(&req)
+        .await
+        .expect("Couldn't cancel order.");
     println!("{:?}", resp);
 }
 
@@ -116,15 +134,24 @@ async fn cancel_all_orders() {
         post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
-    exchange.limit_sell(&req).await.expect("Couldn't limit sell.");
+    exchange
+        .limit_sell(&req)
+        .await
+        .expect("Couldn't limit sell.");
 
-    exchange.limit_sell(&req).await.expect("Couldn't limit sell.");
+    exchange
+        .limit_sell(&req)
+        .await
+        .expect("Couldn't limit sell.");
 
     let req = CancelAllOrdersRequest {
         market_pair: Some("BNBBTC".to_string()),
     };
 
-    let resp = exchange.cancel_all_orders(&req).await.expect("Couldn't cancel all orders.");
+    let resp = exchange
+        .cancel_all_orders(&req)
+        .await
+        .expect("Couldn't cancel all orders.");
     println!("{:?}", resp);
 }
 
@@ -136,7 +163,10 @@ async fn get_order_history() {
         paginator: None,
     };
 
-    let resp = exchange.get_order_history(&req).await.expect("Couldn't get order history.");
+    let resp = exchange
+        .get_order_history(&req)
+        .await
+        .expect("Couldn't get order history.");
     println!("{:?}", resp);
 }
 
@@ -151,9 +181,15 @@ async fn get_all_open_orders() {
         post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
-    exchange.limit_sell(&req).await.expect("Couldn't limit sell.");
+    exchange
+        .limit_sell(&req)
+        .await
+        .expect("Couldn't limit sell.");
 
-    let resp = exchange.get_all_open_orders().await.expect("Couldn't get all open orders.");
+    let resp = exchange
+        .get_all_open_orders()
+        .await
+        .expect("Couldn't get all open orders.");
     println!("{:?}", resp);
 }
 
@@ -161,7 +197,10 @@ async fn get_all_open_orders() {
 async fn get_account_balances() {
     let exchange = init().await;
 
-    let resp = exchange.get_account_balances(None).await.expect("Couldn't get acount balances.");
+    let resp = exchange
+        .get_account_balances(None)
+        .await
+        .expect("Couldn't get acount balances.");
     println!("{:?}", resp);
 }
 
@@ -173,7 +212,10 @@ async fn get_trade_history() {
         ..Default::default()
     };
 
-    let resp = exchange.get_trade_history(&req).await.expect("Couldn't get trade history.");
+    let resp = exchange
+        .get_trade_history(&req)
+        .await
+        .expect("Couldn't get trade history.");
     println!("{:?}", resp);
 }
 

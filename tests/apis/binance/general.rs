@@ -8,7 +8,12 @@ async fn ping() {
     let exchange = Binance::new(BinanceParameters::sandbox()).await;
     assert_eq!(
         "pong",
-        exchange.inner_client().expect("Couldn't get inner client.").ping().await.expect("Couldn't ping.")
+        exchange
+            .inner_client()
+            .expect("Couldn't get inner client.")
+            .ping()
+            .await
+            .expect("Couldn't ping.")
     );
 }
 

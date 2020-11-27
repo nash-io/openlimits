@@ -117,5 +117,8 @@ fn to_i64(v: &Value) -> i64 {
 }
 
 fn to_decimal(v: &Value) -> Decimal {
-    v.as_str().expect("Couldn't get JSON Value as str.").parse().expect("Couldn't parse str as Decimal.")
+    v.as_str()
+        .expect("Couldn't get JSON Value as str.")
+        .parse()
+        .expect("Couldn't parse str as Decimal.")
 }
