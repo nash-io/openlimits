@@ -13,7 +13,7 @@ use crate::{
         websocket::{Subscription, WebSocketResponse},
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
-        GetPriceTickerRequest, Interval, Liquidity, OpenMarketOrderRequest, OpenLimitOrderRequest,
+        GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
@@ -269,8 +269,9 @@ impl ExchangeAccount for Nash {
     }
 
     async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
-        let req: nash_protocol::protocol::place_order::MarketOrderRequest = Nash::convert_market_request(req);
-    
+        let req: nash_protocol::protocol::place_order::MarketOrderRequest =
+            Nash::convert_market_request(req);
+
         let resp = self.transport.run(req).await;
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::place_order::PlaceOrderResponse>(
@@ -328,7 +329,6 @@ impl Nash {
     pub fn convert_market_request(
         req: &OpenMarketOrderRequest,
     ) -> nash_protocol::protocol::place_order::MarketOrderRequest {
-
         nash_protocol::protocol::place_order::MarketOrderRequest {
             market: req.market_pair.clone(),
             amount: format!("{}", req.size),

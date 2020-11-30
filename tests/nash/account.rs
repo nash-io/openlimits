@@ -1,10 +1,17 @@
 use chrono::Duration;
 use dotenv::dotenv;
 use nash_native_client::ws_client::client::Environment;
-use openlimits::{exchange::{ExchangeAccount, OpenLimits}, model::{
+use openlimits::{
+    exchange::{ExchangeAccount, OpenLimits},
+    model::OpenMarketOrderRequest,
+    model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         TimeInForce, TradeHistoryRequest,
-    }, nash::Nash, nash::NashCredentials, nash::NashParameters, model::OpenMarketOrderRequest};
+    },
+    nash::Nash,
+    nash::NashCredentials,
+    nash::NashParameters,
+};
 use rust_decimal::prelude::{Decimal, FromStr};
 use std::env;
 
