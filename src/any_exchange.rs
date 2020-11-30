@@ -15,7 +15,7 @@ use crate::exchange_ws::{
     OpenLimitsWs,
     // Subscriptions
 };
-use crate::nash::{NashParameters, NashStream, Nash};
+use crate::nash::{NashParameters, Nash, NashWebsocket};
 use crate::{
     binance::{
         // Binance,

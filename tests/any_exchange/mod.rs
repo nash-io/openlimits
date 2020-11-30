@@ -1,5 +1,5 @@
 use openlimits::any_exchange::{AnyExchange, AnyExchangeWs};
-use openlimits::nash::{Nash, NashParameters, NashCredentials, NashStream};
+use openlimits::nash::{Nash, NashParameters, NashCredentials, NashWebsocket};
 use openlimits::exchange::OpenLimits;
 use std::env;
 use dotenv::dotenv;
@@ -56,14 +56,14 @@ async fn init() -> impl AnyExchange {
     coinbase().await
 }
 
-async fn init_ws() -> OpenLimitsWs<CoinbaseWebsocket> {
+async fn init_ws() -> OpenLimitsWs<NashWebsocket> {
     dotenv().ok();
 
-    let websocket = NashStream::with_credential(
+    let websocket = NashWebsocket::with_credential(
         &env::var("NASH_API_SECRET").unwrap(),
         &env::var("NASH_API_KEY").unwrap(),
         1234,
-        true,
+        Environment::Sandbox,
         10000,
     ).await;
 
