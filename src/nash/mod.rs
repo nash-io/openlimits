@@ -13,7 +13,7 @@ use crate::{
         websocket::{Subscription, WebSocketResponse},
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
-        GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
+        GetPriceTickerRequest, Interval, Liquidity, OpenMarketOrderRequest, OpenLimitOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
@@ -248,7 +248,7 @@ impl ExchangeAccount for Nash {
         let resp = self.transport.run(req).await;
 
         Ok(
-            Nash::unwrap_response::<nash_protocol::protocol::place_order::LimitOrderResponse>(
+            Nash::unwrap_response::<nash_protocol::protocol::place_order::PlaceOrderResponse>(
                 resp,
             )?
             .into(),
@@ -261,25 +261,37 @@ impl ExchangeAccount for Nash {
         let resp = self.transport.run(req).await;
 
         Ok(
-            Nash::unwrap_response::<nash_protocol::protocol::place_order::LimitOrderResponse>(
+            Nash::unwrap_response::<nash_protocol::protocol::place_order::PlaceOrderResponse>(
                 resp,
             )?
             .into(),
         )
     }
 
-    async fn market_sell(&self, _req: &OpenMarketOrderRequest) -> Result<Order> {
-        let err = MissingImplementationContent {
-            message: String::from("Not supported order type"),
-        };
-        Err(OpenLimitError::MissingImplementation(err))
+    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
+        let req: nash_protocol::protocol::place_order::MarketOrderRequest =
+        Nash::convert_market_request(req, nash_protocol::types::BuyOrSell::Sell);
+    
+        let resp = self.transport.run(req).await;
+        Ok(
+            Nash::unwrap_response::<nash_protocol::protocol::place_order::PlaceOrderResponse>(
+                resp,
+            )?
+            .into(),
+        )
     }
 
-    async fn market_buy(&self, _req: &OpenMarketOrderRequest) -> Result<Order> {
-        let err = MissingImplementationContent {
-            message: String::from("Not supported order type"),
-        };
-        Err(OpenLimitError::MissingImplementation(err))
+    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
+        let req: nash_protocol::protocol::place_order::MarketOrderRequest =
+            Nash::convert_market_request(req, nash_protocol::types::BuyOrSell::Buy);
+        
+        let resp = self.transport.run(req).await;
+        Ok(
+            Nash::unwrap_response::<nash_protocol::protocol::place_order::PlaceOrderResponse>(
+                resp,
+            )?
+            .into(),
+        )
     }
 
     async fn get_order(&self, req: &GetOrderRequest) -> Result<Order> {
@@ -320,6 +332,18 @@ impl Nash {
             buy_or_sell,
             amount: format!("{}", req.size),
             price: format!("{}", req.price),
+        }
+    }
+
+    pub fn convert_market_request(
+        req: &OpenMarketOrderRequest,
+        buy_or_sell: nash_protocol::types::BuyOrSell,
+    ) -> nash_protocol::protocol::place_order::MarketOrderRequest {
+
+        nash_protocol::protocol::place_order::MarketOrderRequest {
+            market: req.market_pair.clone(),
+            buy_or_sell,
+            amount: format!("{}", req.size),
         }
     }
 }
@@ -391,8 +415,8 @@ impl From<nash_protocol::types::OrderType> for OrderType {
     }
 }
 
-impl From<nash_protocol::protocol::place_order::LimitOrderResponse> for Order {
-    fn from(resp: nash_protocol::protocol::place_order::LimitOrderResponse) -> Self {
+impl From<nash_protocol::protocol::place_order::PlaceOrderResponse> for Order {
+    fn from(resp: nash_protocol::protocol::place_order::PlaceOrderResponse) -> Self {
         Self {
             id: resp.order_id,
             market_pair: resp.market_name,
