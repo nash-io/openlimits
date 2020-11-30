@@ -81,11 +81,11 @@ async fn limit_buy_ggt() {
 async fn market_buy() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
-        size: Decimal::from_str("10.000").expect("Couldn't parse string."),
-        market_pair: String::from("eth_usdc"),
+        size: Decimal::from_str("10.0").expect("Couldn't parse string."),
+        market_pair: String::from("usdc_eth"),
     };
     let resp = exchange
-        .market_buy(&req)
+        .market_sell(&req)
         .await
         .expect("Couldn't request market buy.");
     println!("{:?}", resp);
@@ -95,7 +95,7 @@ async fn market_buy() {
 async fn market_sell() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
-        size: Decimal::from_str("0.100").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.1").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
     };
     let resp = exchange

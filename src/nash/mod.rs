@@ -269,8 +269,7 @@ impl ExchangeAccount for Nash {
     }
 
     async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
-        let req: nash_protocol::protocol::place_order::MarketOrderRequest =
-        Nash::convert_market_request(req, nash_protocol::types::BuyOrSell::Sell);
+        let req: nash_protocol::protocol::place_order::MarketOrderRequest = Nash::convert_market_request(req);
     
         let resp = self.transport.run(req).await;
         Ok(
@@ -281,17 +280,8 @@ impl ExchangeAccount for Nash {
         )
     }
 
-    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
-        let req: nash_protocol::protocol::place_order::MarketOrderRequest =
-            Nash::convert_market_request(req, nash_protocol::types::BuyOrSell::Buy);
-        
-        let resp = self.transport.run(req).await;
-        Ok(
-            Nash::unwrap_response::<nash_protocol::protocol::place_order::PlaceOrderResponse>(
-                resp,
-            )?
-            .into(),
-        )
+    async fn market_buy(&self, _: &OpenMarketOrderRequest) -> Result<Order> {
+        unimplemented!("Market buys are not supported by nash. A market buy can be simulated by placing a market sell in the inverse market. Market buy in btc_usdc should be translated to a market sell in usdc_btc.")
     }
 
     async fn get_order(&self, req: &GetOrderRequest) -> Result<Order> {
@@ -337,12 +327,10 @@ impl Nash {
 
     pub fn convert_market_request(
         req: &OpenMarketOrderRequest,
-        buy_or_sell: nash_protocol::types::BuyOrSell,
     ) -> nash_protocol::protocol::place_order::MarketOrderRequest {
 
         nash_protocol::protocol::place_order::MarketOrderRequest {
             market: req.market_pair.clone(),
-            buy_or_sell,
             amount: format!("{}", req.size),
         }
     }
