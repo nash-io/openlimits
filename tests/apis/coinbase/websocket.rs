@@ -15,6 +15,14 @@ async fn aggregate_trade() {
 
     websocket.subscribe(sub).await.expect("Couldn't subscribe.");
 
-    websocket.next().await.expect("Couldn't get next.").expect("Couldn't get WebSocket message.");
-    websocket.next().await.expect("Couldn't get next.").expect("Couldn't get WebSocket message.");
+    websocket
+        .next()
+        .await
+        .expect("Couldn't get next.")
+        .expect("Couldn't get WebSocket message.");
+    websocket
+        .next()
+        .await
+        .expect("Couldn't get next.")
+        .expect("Couldn't get WebSocket message.");
 }

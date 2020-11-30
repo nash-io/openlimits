@@ -10,7 +10,12 @@ use openlimits::{
 #[tokio::test]
 async fn products() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
-    let res = exchange.inner_client().expect("Couldn't get inner client.").products().await.expect("Couldn't get products.");
+    let res = exchange
+        .inner_client()
+        .expect("Couldn't get inner client.")
+        .products()
+        .await
+        .expect("Couldn't get products.");
     println!("{:?}", res);
 }
 

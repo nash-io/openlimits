@@ -78,7 +78,12 @@ async fn get_all_orders() {
 #[tokio::test]
 async fn get_order() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BNBBTC").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BNBBTC")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let transaction = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
@@ -103,7 +108,12 @@ async fn get_order() {
 #[tokio::test]
 async fn limit_buy() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BNBBTC").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BNBBTC")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
@@ -122,7 +132,12 @@ async fn limit_buy() {
 #[tokio::test]
 async fn rounded_limit_buy() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BNBBTC").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BNBBTC")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
@@ -141,7 +156,12 @@ async fn rounded_limit_buy() {
 #[tokio::test]
 async fn limit_sell() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BNBBTC").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BNBBTC")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
@@ -160,7 +180,12 @@ async fn limit_sell() {
 #[tokio::test]
 async fn limit_sell_fok() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BNBBTC").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BNBBTC")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
@@ -179,7 +204,12 @@ async fn limit_sell_fok() {
 #[tokio::test]
 async fn limit_sell_ioc() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BNBBTC").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BNBBTC")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
@@ -198,7 +228,12 @@ async fn limit_sell_ioc() {
 #[tokio::test]
 async fn market_buy() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BNBBTC").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BNBBTC")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
@@ -211,7 +246,12 @@ async fn market_buy() {
 #[tokio::test]
 async fn market_sell() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BNBBTC").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BNBBTC")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
@@ -225,7 +265,12 @@ async fn market_sell() {
 #[tokio::test]
 async fn cancel_order() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BNBBTC").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BNBBTC")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let transaction = exchange
         .inner_client()
         .expect("Couldn't get inner time.")

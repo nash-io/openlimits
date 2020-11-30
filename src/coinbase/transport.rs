@@ -58,7 +58,8 @@ impl Transport {
         let mut headers = header::HeaderMap::new();
         headers.insert(
             "USER-AGENT",
-            header::HeaderValue::from_str("openlimit").expect("Couldn't create USER-AGENT header from string."),
+            header::HeaderValue::from_str("openlimit")
+                .expect("Couldn't create USER-AGENT header from string."),
         );
 
         headers
@@ -79,17 +80,20 @@ impl Transport {
         let mut headers = header::HeaderMap::new();
         headers.insert(
             "USER-AGENT",
-            header::HeaderValue::from_str("openlimit").expect("Couldn't create USER-AGENT header from string."),
+            header::HeaderValue::from_str("openlimit")
+                .expect("Couldn't create USER-AGENT header from string."),
         );
 
         headers.insert(
             "CB-ACCESS-KEY",
-            header::HeaderValue::from_str(api_key).expect("Couldn't create CB-ACCESS-KEY header from string."),
+            header::HeaderValue::from_str(api_key)
+                .expect("Couldn't create CB-ACCESS-KEY header from string."),
         );
 
         headers.insert(
             "CB-ACCESS-PASSPHRASE",
-            header::HeaderValue::from_str(passphrase).expect("Couldn't create CB-ACCESS-PASSPHRASE header from string."),
+            header::HeaderValue::from_str(passphrase)
+                .expect("Couldn't create CB-ACCESS-PASSPHRASE header from string."),
         );
 
         headers

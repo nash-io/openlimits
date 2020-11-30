@@ -24,7 +24,10 @@ async fn limit_buy() {
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
-    let resp = exchange.limit_buy(&req).await.expect("Couldn't parse string.");
+    let resp = exchange
+        .limit_buy(&req)
+        .await
+        .expect("Couldn't parse string.");
     println!("{:?}", resp);
 }
 
@@ -38,7 +41,10 @@ async fn limit_buy_ioc() {
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
-    let resp = exchange.limit_buy(&req).await.expect("Couldn't request limit buy.");
+    let resp = exchange
+        .limit_buy(&req)
+        .await
+        .expect("Couldn't request limit buy.");
     println!("{:?}", resp);
 }
 
@@ -52,7 +58,10 @@ async fn limit_buy_fok() {
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
-    let resp = exchange.limit_buy(&req).await.expect("Couldn't request limit buy.");
+    let resp = exchange
+        .limit_buy(&req)
+        .await
+        .expect("Couldn't request limit buy.");
     println!("{:?}", resp);
 }
 
@@ -67,7 +76,10 @@ async fn limit_buy_ggt() {
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
-    let resp = exchange.limit_buy(&req).await.expect("Couldn't request limit buy.");
+    let resp = exchange
+        .limit_buy(&req)
+        .await
+        .expect("Couldn't request limit buy.");
     println!("{:?}", resp);
 }
 
@@ -81,7 +93,10 @@ async fn limit_sell() {
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
-    let resp = exchange.limit_sell(&req).await.expect("Couldn't request limit sell.");
+    let resp = exchange
+        .limit_sell(&req)
+        .await
+        .expect("Couldn't request limit sell.");
     println!("{:?}", resp);
 }
 
@@ -95,13 +110,19 @@ async fn cancel_order() {
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
-    let order = exchange.limit_buy(&req).await.expect("Couldn't request limit buy.");
+    let order = exchange
+        .limit_buy(&req)
+        .await
+        .expect("Couldn't request limit buy.");
 
     let req = CancelOrderRequest {
         id: order.id,
         market_pair: Some(order.market_pair),
     };
-    let resp = exchange.cancel_order(&req).await.expect("Couldn't cancel order.");
+    let resp = exchange
+        .cancel_order(&req)
+        .await
+        .expect("Couldn't cancel order.");
     println!("{:?}", resp);
 }
 
@@ -116,13 +137,19 @@ async fn cancel_all_orders() {
         post_only: false,
     };
 
-    exchange.limit_sell(&req).await.expect("Couldn't limit sell.");
+    exchange
+        .limit_sell(&req)
+        .await
+        .expect("Couldn't limit sell.");
 
     let req = CancelAllOrdersRequest {
         market_pair: Some("eth_btc".to_string()),
     };
 
-    let resp = exchange.cancel_all_orders(&req).await.expect("Couldn't cancel all orders.");
+    let resp = exchange
+        .cancel_all_orders(&req)
+        .await
+        .expect("Couldn't cancel all orders.");
     println!("{:?}", resp);
 }
 
@@ -134,7 +161,10 @@ async fn get_order_history() {
         paginator: None,
     };
 
-    let resp = exchange.get_order_history(&req).await.expect("Couldn't get order history.");
+    let resp = exchange
+        .get_order_history(&req)
+        .await
+        .expect("Couldn't get order history.");
     println!("{:?}", resp);
 }
 
@@ -156,7 +186,10 @@ async fn get_order_history() {
 #[tokio::test]
 async fn get_account_balances() {
     let exchange = init().await;
-    let resp = exchange.get_account_balances(None).await.expect("Couldn't get account balances.");
+    let resp = exchange
+        .get_account_balances(None)
+        .await
+        .expect("Couldn't get account balances.");
     println!("{:?}", resp);
 }
 
@@ -168,7 +201,10 @@ async fn get_trade_history() {
         ..Default::default()
     };
 
-    let resp = exchange.get_trade_history(&req).await.expect("Couldn't get trade history.");
+    let resp = exchange
+        .get_trade_history(&req)
+        .await
+        .expect("Couldn't get trade history.");
     println!("{:?}", resp);
 }
 

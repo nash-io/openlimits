@@ -80,7 +80,12 @@ async fn get_all_orders_for_a_given_product() {
 #[tokio::test]
 async fn get_order() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BTC-USD")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let order = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -100,7 +105,12 @@ async fn get_order() {
 #[tokio::test]
 async fn limit_buy() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BTC-USD")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -119,7 +129,12 @@ async fn limit_buy() {
 #[tokio::test]
 async fn limit_sell() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BTC-USD")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -138,7 +153,12 @@ async fn limit_sell() {
 #[tokio::test]
 async fn limit_sell_fok() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BTC-USD")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -157,7 +177,12 @@ async fn limit_sell_fok() {
 #[tokio::test]
 async fn limit_sell_ioc() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BTC-USD")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -176,7 +201,12 @@ async fn limit_sell_ioc() {
 #[tokio::test]
 async fn limit_sell_gtt() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BTC-USD")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -197,7 +227,12 @@ async fn limit_sell_gtt() {
 #[tokio::test]
 async fn market_buy() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BTC-USD")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -210,7 +245,12 @@ async fn market_buy() {
 #[tokio::test]
 async fn market_sell() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BTC-USD")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -223,7 +263,12 @@ async fn market_sell() {
 #[tokio::test]
 async fn cancel_all_orders() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BTC-USD")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -284,7 +329,12 @@ async fn cancel_all_orders() {
 #[tokio::test]
 async fn cancel_order() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read handle.");
+    let pair = exchange
+        .get_pair("BTC-USD")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read handle.");
     let order = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -310,7 +360,12 @@ async fn cancel_order() {
 #[tokio::test]
 async fn get_fills_for_order() {
     let exchange = init().await;
-    let pair = exchange.get_pair("BTC-USD").await.expect("Couldn't get pair handle.").read().expect("Couldn't read pair.");
+    let pair = exchange
+        .get_pair("BTC-USD")
+        .await
+        .expect("Couldn't get pair handle.")
+        .read()
+        .expect("Couldn't read pair.");
     let order = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -358,8 +413,10 @@ async fn init() -> Coinbase {
         sandbox: true,
         credentials: Some(CoinbaseCredentials {
             api_key: env::var("COINBASE_API_KEY").expect("Couldn't get environment varilable."),
-            api_secret: env::var("COINBASE_API_SECRET").expect("Couldn't get environment varilable."),
-            passphrase: env::var("COINBASE_PASSPHRASE").expect("Couldn't get environment varilable."),
+            api_secret: env::var("COINBASE_API_SECRET")
+                .expect("Couldn't get environment varilable."),
+            passphrase: env::var("COINBASE_PASSPHRASE")
+                .expect("Couldn't get environment varilable."),
         }),
     })
     .await
