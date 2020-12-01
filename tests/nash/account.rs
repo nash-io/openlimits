@@ -102,7 +102,7 @@ async fn market_buy() {
 async fn market_sell() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
-        size: Decimal::from_str("0.1").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.02").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
     };
     let resp = exchange
@@ -246,7 +246,7 @@ async fn init() -> Nash {
             secret: env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
             session: env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
         }),
-        environment: Environment::Sandbox,
+        environment: Environment::Sandox,
         client_id: 1,
         timeout: 100000,
     };
