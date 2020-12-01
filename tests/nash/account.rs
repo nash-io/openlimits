@@ -246,7 +246,7 @@ async fn init() -> Nash {
             secret: env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
             session: env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
         }),
-        environment: Environment::Sandox,
+        environment: Environment::Sandbox,
         client_id: 1,
         timeout: 100000,
     };
