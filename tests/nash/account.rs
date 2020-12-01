@@ -3,6 +3,7 @@ use dotenv::dotenv;
 use nash_native_client::ws_client::client::Environment;
 use openlimits::{
     exchange::{ExchangeAccount, OpenLimits},
+    model::OpenMarketOrderRequest,
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         TimeInForce, TradeHistoryRequest,
@@ -80,6 +81,34 @@ async fn limit_buy_ggt() {
         .limit_buy(&req)
         .await
         .expect("Couldn't request limit buy.");
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn market_buy() {
+    let exchange = init().await;
+    let req = OpenMarketOrderRequest {
+        size: Decimal::from_str("10.0").expect("Couldn't parse string."),
+        market_pair: String::from("usdc_eth"),
+    };
+    let resp = exchange
+        .market_sell(&req)
+        .await
+        .expect("Couldn't request market buy.");
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn market_sell() {
+    let exchange = init().await;
+    let req = OpenMarketOrderRequest {
+        size: Decimal::from_str("0.02").expect("Couldn't parse string."),
+        market_pair: String::from("eth_usdc"),
+    };
+    let resp = exchange
+        .market_sell(&req)
+        .await
+        .expect("Couldn't request market buy.");
     println!("{:?}", resp);
 }
 
