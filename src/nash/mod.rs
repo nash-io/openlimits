@@ -207,10 +207,24 @@ impl ExchangeAccount for Nash {
     }
 
     async fn get_all_open_orders(&self) -> Result<Vec<Order>> {
-        let err = MissingImplementationContent {
-            message: String::from("Not supported yet, market paramater is mandatory."),
+        let req = nash_protocol::protocol::list_account_orders::ListAccountOrdersRequest {
+            market: None,
+            before: None,
+            buy_or_sell: None,
+            limit: Some(100),
+            status: Some(vec![ nash_protocol::types::OrderStatus::Open ]),
+            order_type: None,
+            range: None
         };
-        Err(OpenLimitError::MissingImplementation(err))
+
+        let resp = self.transport.run(req).await;
+
+        let resp: nash_protocol::protocol::list_account_orders::ListAccountOrdersResponse =
+            Nash::unwrap_response::<
+                nash_protocol::protocol::list_account_orders::ListAccountOrdersResponse,
+            >(resp)?;
+
+        Ok(resp.orders.into_iter().map(Into::into).collect())
     }
 
     async fn get_order_history(&self, req: &GetOrderHistoryRequest) -> Result<Vec<Order>> {
@@ -623,17 +637,12 @@ impl TryFrom<&GetOrderHistoryRequest>
 {
     type Error = OpenLimitError;
     fn try_from(req: &GetOrderHistoryRequest) -> crate::shared::Result<Self> {
-        // TODO: why is this required for Nash
-        let market = req
-            .market_pair
-            .clone()
-            .expect("Market pair required for Nash");
         let (before, limit) = try_split_paginator(req.paginator.clone());
         let range: Option<nash_protocol::types::DateTimeRange> =
             req.paginator.clone().map(Into::into);
 
         Ok(Self {
-            market,
+            market: req.market_pair.clone(),
             before,
             limit,
             range,
