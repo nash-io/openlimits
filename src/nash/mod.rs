@@ -440,26 +440,10 @@ impl TryFrom<&TradeHistoryRequest>
 {
     type Error = OpenLimitError;
     fn try_from(req: &TradeHistoryRequest) -> crate::shared::Result<Self> {
-        let (before, limit) = match req.paginator.clone() {
-            Some(paginator) => (
-                paginator.before,
-                paginator
-                    .limit
-                    .map(|v| i64::try_from(v).expect("Couldn't convert i64 from u64.")),
-            ),
-            None => (None, None),
-        };
-
-        // TODO: why is this required for Nash?
-        let market = req
-            .market_pair
-            .clone()
-            .expect("Market pair is required for Nash");
-        let range: Option<nash_protocol::types::DateTimeRange> =
-            req.paginator.clone().map(|paginator| paginator.into());
+        let (before, limit, range) = try_split_paginator(req.paginator.clone());
 
         Ok(Self {
-            market,
+            market: req.market_pair.clone(),
             before,
             limit,
             range,
@@ -506,21 +490,6 @@ impl From<nash_protocol::types::BuyOrSell> for Side {
     }
 }
 
-impl From<Paginator> for nash_protocol::types::DateTimeRange {
-    fn from(paginator: Paginator) -> Self {
-        Self {
-            start: paginator
-                .start_time
-                .map(timestamp_to_utc_datetime)
-                .expect("Couldn't get paginator start_time."),
-            stop: paginator
-                .end_time
-                .map(timestamp_to_utc_datetime)
-                .expect("Couldn't get paginator end_time."),
-        }
-    }
-}
-
 impl From<nash_protocol::types::AccountTradeSide> for Liquidity {
     fn from(side: nash_protocol::types::AccountTradeSide) -> Self {
         match side {
@@ -532,19 +501,10 @@ impl From<nash_protocol::types::AccountTradeSide> for Liquidity {
 
 impl From<&GetHistoricRatesRequest> for nash_protocol::protocol::list_candles::ListCandlesRequest {
     fn from(req: &GetHistoricRatesRequest) -> Self {
-        let market = req.market_pair.clone();
-
-        let (before, limit) = match req.paginator.clone() {
-            Some(p) => (
-                p.before,
-                p.limit
-                    .map(|v| i64::try_from(v).expect("Couldn't convert u64 to i64.")),
-            ),
-            _ => (None, None),
-        };
+        let (before, limit, range) = try_split_paginator(req.paginator.clone());
 
         Self {
-            market,
+            market: req.market_pair.clone(),
             chronological: None,
             before,
             interval: Some(
@@ -553,20 +513,36 @@ impl From<&GetHistoricRatesRequest> for nash_protocol::protocol::list_candles::L
                     .expect("Couldn't convert Interval to CandleInterval."),
             ),
             limit,
-            range: req.paginator.clone().map(Into::into),
+            range,
         }
     }
 }
 
-fn try_split_paginator(paginator: Option<Paginator>) -> (Option<String>, Option<i64>) {
+fn try_split_paginator(
+    paginator: Option<Paginator>
+) -> (Option<String>, Option<i64>, Option<nash_protocol::types::DateTimeRange>) {
     match paginator {
         Some(paginator) => (
             paginator.before,
             paginator
                 .limit
                 .map(|v| i64::try_from(v).expect("Couldn't convert u64 to i64.")),
+            if paginator.start_time.is_some() && paginator.end_time.is_some() {
+                Some(DateTimeRange {
+                    start: paginator
+                        .start_time
+                        .map(timestamp_to_utc_datetime)
+                        .unwrap(),
+                    stop: paginator
+                        .end_time
+                        .map(timestamp_to_utc_datetime)
+                        .unwrap(),
+                })
+            } else {
+                None
+            }
         ),
-        None => (None, None),
+        None => (None, None, None),
     }
 }
 
@@ -576,7 +552,7 @@ impl TryFrom<&GetHistoricTradesRequest>
     type Error = OpenLimitError;
     fn try_from(req: &GetHistoricTradesRequest) -> crate::shared::Result<Self> {
         let market = req.market_pair.clone();
-        let (before, limit) = try_split_paginator(req.paginator.clone());
+        let (before, limit, _) = try_split_paginator(req.paginator.clone());
         //FIXME: Some issues with the graphql protocol for the market to be non nil
         Ok(Self {
             market,
@@ -637,9 +613,7 @@ impl TryFrom<&GetOrderHistoryRequest>
 {
     type Error = OpenLimitError;
     fn try_from(req: &GetOrderHistoryRequest) -> crate::shared::Result<Self> {
-        let (before, limit) = try_split_paginator(req.paginator.clone());
-        let range: Option<nash_protocol::types::DateTimeRange> =
-            req.paginator.clone().map(Into::into);
+        let (before, limit, range) = try_split_paginator(req.paginator.clone());
 
         Ok(Self {
             market: req.market_pair.clone(),
@@ -746,6 +720,7 @@ use nash_protocol::protocol::{
     ResponseOrError,
 };
 use std::{pin::Pin, task::Context, task::Poll};
+use nash_protocol::types::DateTimeRange;
 
 pub struct NashWebsocket {
     pub client: Client,
