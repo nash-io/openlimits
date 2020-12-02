@@ -110,7 +110,7 @@ pub trait BookLevel {
     fn level() -> u8;
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BookRecordL1 {
     #[serde(with = "string_to_decimal")]
     pub price: Decimal,
@@ -125,7 +125,7 @@ impl BookLevel for BookRecordL1 {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BookRecordL2 {
     #[serde(with = "string_to_decimal")]
     pub price: Decimal,
@@ -140,7 +140,7 @@ impl BookLevel for BookRecordL2 {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BookRecordL3 {
     #[serde(with = "string_to_decimal")]
     pub price: Decimal,
@@ -155,14 +155,14 @@ impl BookLevel for BookRecordL3 {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderSide {
     Buy,
     Sell,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Order {
     pub id: String,
     pub product_id: String,
@@ -185,7 +185,7 @@ pub struct Order {
     pub stop: Option<OrderStop>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct OrderRequest {
     pub side: OrderSide,
     pub client_oid: Option<String>,
@@ -196,23 +196,23 @@ pub struct OrderRequest {
     pub stop: Option<OrderStop>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CandleRequestParams {
     #[serde(flatten)]
     pub daterange: Option<DateRange>,
     pub granularity: Option<u32>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CancelAllOrders {
     pub product_id: Option<String>,
 }
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CancelOrder {
     pub product_id: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "type")]
 pub enum OrderType {
@@ -234,7 +234,7 @@ pub enum OrderType {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "type")]
 pub enum OrderRequestType {
@@ -251,7 +251,7 @@ pub enum OrderRequestType {
     },
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum OrderRequestMarketType {
@@ -259,7 +259,7 @@ pub enum OrderRequestMarketType {
     Funds { funds: Decimal },
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct GetOrderRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<String>,
@@ -269,7 +269,7 @@ pub struct GetOrderRequest {
     pub paginator: Option<Paginator>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct GetFillsReq {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub order_id: Option<String>,
@@ -279,7 +279,7 @@ pub struct GetFillsReq {
     pub paginator: Option<Paginator>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "time_in_force")]
 pub enum OrderTimeInForce {
     GTC,
@@ -288,7 +288,7 @@ pub enum OrderTimeInForce {
     FOK,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "time_in_force")]
 pub enum OrderTimeInForceResponse {
     GTC,
@@ -300,7 +300,7 @@ pub enum OrderTimeInForceResponse {
     FOK,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum CancelAfter {
     Min,
@@ -308,7 +308,7 @@ pub enum CancelAfter {
     Day,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderStatus {
     Open,
@@ -318,21 +318,21 @@ pub enum OrderStatus {
     Rejected,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct OrderStop {
     stop_price: Decimal,
     #[serde(rename = "stop")]
     _type: OrderStopType,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderStopType {
     Loss,
     Entry,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Paginator {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub before: Option<u64>,

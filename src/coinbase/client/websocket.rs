@@ -1,6 +1,7 @@
 use url::Url;
 
 use std::{collections::HashMap, pin::Pin, task::Poll};
+use async_trait::async_trait;
 
 use futures::{
     stream::{SplitStream, Stream},
@@ -14,15 +15,19 @@ use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 
 use crate::{
     coinbase::model::websocket::{
-        Channel, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd, Subscription,
+        Channel, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd, CoinbaseSubscription,
     },
     errors::OpenLimitError,
     shared::Result,
 };
-use crate::exchange_ws::ExchangeWs;
+
+use crate::exchange_ws::{ExchangeWs, Subscriptions};
 use crate::coinbase::CoinbaseParameters;
-use nash_protocol::protocol::subscriptions::SubscriptionRequest;
-use crate::nash::SubscriptionResponseWrapper;
+use futures::stream::BoxStream;
+use crate::coinbase::model::websocket::ChannelType;
+
+const WS_URL_PROD: &str = "wss://ws-feed.pro.coinbase.com";
+const WS_URL_SANDBOX: &str = "wss://ws-feed-public.sandbox.pro.coinbase.com";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
@@ -34,30 +39,33 @@ enum Either<L, R> {
 type WSStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
 
 pub struct CoinbaseWebsocket {
-    pub subscriptions: HashMap<Subscription, SplitStream<WSStream>>,
-    pub url: Url,
+    pub subscriptions: HashMap<CoinbaseSubscription, SplitStream<WSStream>>,
+    pub parameters: CoinbaseParameters
 }
 
 impl CoinbaseWebsocket {
-    pub fn new(url: &str) -> Self {
-        let url = Url::parse(url).expect("Couldn't parse url.");
+    pub fn new(parameters: CoinbaseParameters) -> Self {
         Self {
             subscriptions: HashMap::new(),
-            url,
+            parameters,
         }
     }
 
-    pub async fn subscribe(&mut self, subscription: Subscription) -> Result<()> {
+    pub async fn subscribe_(&mut self, subscription: CoinbaseSubscription) -> Result<()> {
+        let (channels, product_ids) = match &subscription {
+            CoinbaseSubscription::Level2(product_id) => {
+                (vec![Channel::Name(ChannelType::Level2)], vec![product_id.clone()])
+            },
+            CoinbaseSubscription::Heartbeat(product_id) => {
+                (vec![Channel::Name(ChannelType::Heartbeat)], vec![product_id.clone()])
+            },
+            _ => panic!("Not implemented")
+        };
         let subscribe = Subscribe {
             _type: SubscribeCmd::Subscribe,
             auth: None,
-            channels: subscription
-                .channels
-                .to_vec()
-                .into_iter()
-                .map(Channel::Name)
-                .collect::<Vec<_>>(),
-            product_ids: subscription.product_ids.clone(),
+            channels,
+            product_ids
         };
 
         let stream = self.connect(subscribe).await?;
@@ -66,7 +74,13 @@ impl CoinbaseWebsocket {
     }
 
     pub async fn connect(&self, subscribe: Subscribe) -> Result<SplitStream<WSStream>> {
-        let (ws_stream, _) = connect_async(&self.url).await?;
+        let ws_url = if self.parameters.sandbox {
+            WS_URL_SANDBOX
+        } else {
+            WS_URL_PROD
+        };
+        let url = url::Url::parse(ws_url).expect("Couldn't parse url.");
+        let (ws_stream, _) = connect_async(&url).await?;
         let (mut sink, stream) = ws_stream.split();
         let subscribe = serde_json::to_string(&subscribe)?;
 
@@ -104,49 +118,44 @@ fn parse_message(ws_message: Message) -> Result<CoinbaseWebsocketMessage> {
 #[async_trait]
 impl ExchangeWs for CoinbaseWebsocket {
     type InitParams = CoinbaseParameters;
+    type Subscription = CoinbaseSubscription;
+    type Response = CoinbaseWebsocketMessage;
 
-    type Subscription = SubscriptionRequest;
-    type Response = SubscriptionResponseWrapper;
-
-    async fn new(params: Self::InitParams) -> Self {
-
+    async fn new(parameters: Self::InitParams) -> Self {
+        CoinbaseWebsocket::new(parameters)
     }
 
     async fn create_stream_specific(
         &self,
-        subscriptions: Subscriptions<Self::Subscription>,
+        subscription: Subscriptions<Self::Subscription>,
     ) -> Result<BoxStream<'static, Result<Self::Response>>> {
-        let mut streams = SelectAll::new();
+        let ws_url = if self.parameters.sandbox {
+            WS_URL_SANDBOX
+        } else {
+            WS_URL_PROD
+        };
+        let endpoint = url::Url::parse(ws_url).expect("Couldn't parse url.");
+        let (mut ws_stream, _) = connect_async(endpoint).await?;
 
-        for subscription in subscriptions.into_iter() {
-            let stream = Client::subscribe_protocol(&self.client, subscription.clone()).await;
-            let stream = stream.map_err(|e| Err(OpenLimitError::NashProtocolError(e)));
-
-            match stream {
-                Ok(s) => {
-                    streams.push(s);
-                }
-                Err(_) => {
-                    return stream.unwrap_err();
-                }
-            }
-        }
-
-        let s = streams.map(|message| match message {
-            Ok(msg) => match msg {
-                ResponseOrError::Response(resp) => Ok(SubscriptionResponseWrapper(resp.data)),
-                ResponseOrError::Error(resp) => {
-                    let f = resp
-                        .errors
-                        .iter()
-                        .map(|f| f.message.clone())
-                        .collect::<Vec<String>>()
-                        .join("\n");
-                    Err(OpenLimitError::NotParsableResponse(f))
-                }
+        let (channels, product_ids) = match &subscription.as_slice()[0] {
+            CoinbaseSubscription::Level2(product_id) => {
+                (vec![Channel::Name(ChannelType::Level2)], vec![product_id.clone()])
             },
-            Err(_) => Err(OpenLimitError::SocketError()),
-        });
+            CoinbaseSubscription::Heartbeat(product_id) => {
+                (vec![Channel::Name(ChannelType::Heartbeat)], vec![product_id.clone()])
+            },
+            _ => panic!("Not implemented")
+        };
+        let subscribe = Subscribe {
+            _type: SubscribeCmd::Subscribe,
+            auth: None,
+            channels,
+            product_ids
+        };
+        let subscribe = serde_json::to_string(&subscribe)?;
+        ws_stream.send(Message::Text(subscribe)).await?;
+
+        let s = ws_stream.map(|message| parse_message(message?));
 
         Ok(s.boxed())
     }
