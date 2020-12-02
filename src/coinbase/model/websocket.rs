@@ -1,12 +1,12 @@
+use crate::coinbase::model::OrderSide;
+use crate::errors::{MissingImplementationContent, OpenLimitError};
+use crate::model::websocket::{OpenLimitsWebSocketMessage, Subscription, WebSocketResponse};
+use crate::model::{AskBid, OrderBookResponse};
+use crate::shared::Result;
 use crate::shared::{string_to_decimal, string_to_opt_decimal};
 use rust_decimal::prelude::Decimal;
 use serde::{Deserialize, Deserializer, Serialize};
-use crate::model::websocket::{Subscription, WebSocketResponse, OpenLimitsWebSocketMessage};
 use std::convert::{TryFrom, TryInto};
-use crate::errors::{OpenLimitError, MissingImplementationContent};
-use crate::shared::Result;
-use crate::model::{OrderBookResponse, AskBid};
-use crate::coinbase::model::OrderSide;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum CoinbaseSubscription {
@@ -99,7 +99,7 @@ pub(crate) enum InputMessage {
     },
 }
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub enum CoinbaseWebsocketMessage {
     Subscriptions {
         channels: Vec<Channel>,
@@ -126,10 +126,12 @@ impl TryFrom<CoinbaseWebsocketMessage> for WebSocketResponse<CoinbaseWebsocketMe
         match value {
             CoinbaseWebsocketMessage::Level2(level2) => {
                 Ok(WebSocketResponse::Generic(level2.try_into()?))
-            },
-            _ => Err(OpenLimitError::MissingImplementation(MissingImplementationContent {
-                message: "Message not implemented.".into()
-            })),
+            }
+            _ => Err(OpenLimitError::MissingImplementation(
+                MissingImplementationContent {
+                    message: "Message not implemented.".into(),
+                },
+            )),
         }
     }
 }
@@ -154,32 +156,38 @@ impl TryFrom<Level2> for OpenLimitsWebSocketMessage {
         // FIXME: How can we get the update id?
         let last_update_id = None;
         let update_id = None;
-        Ok(
-            match level2 {
-                Level2::Snapshot { asks, bids, .. } => {
-                    let bids = bids.iter().map(|bid| bid.into()).collect();
-                    let asks = asks.iter().map(|ask| ask.into()).collect();
-                    let order_book_response = OrderBookResponse {
-                        bids,
-                        asks,
-                        update_id,
-                        last_update_id
-                    };
-                    OpenLimitsWebSocketMessage::OrderBook(order_book_response)
-                },
-                Level2::L2update { changes, .. } => {
-                    let bids = changes.iter().filter(|change| change.side == OrderSide::Buy).map(|change| change.into()).collect();
-                    let asks = changes.iter().filter(|change| change.side == OrderSide::Sell).map(|change| change.into()).collect();
-                    let order_book_response = OrderBookResponse {
-                        bids,
-                        asks,
-                        update_id,
-                        last_update_id
-                    };
-                    OpenLimitsWebSocketMessage::OrderBookDiff(order_book_response)
-                }
+        Ok(match level2 {
+            Level2::Snapshot { asks, bids, .. } => {
+                let bids = bids.iter().map(|bid| bid.into()).collect();
+                let asks = asks.iter().map(|ask| ask.into()).collect();
+                let order_book_response = OrderBookResponse {
+                    bids,
+                    asks,
+                    update_id,
+                    last_update_id,
+                };
+                OpenLimitsWebSocketMessage::OrderBook(order_book_response)
             }
-        )
+            Level2::L2update { changes, .. } => {
+                let bids = changes
+                    .iter()
+                    .filter(|change| change.side == OrderSide::Buy)
+                    .map(|change| change.into())
+                    .collect();
+                let asks = changes
+                    .iter()
+                    .filter(|change| change.side == OrderSide::Sell)
+                    .map(|change| change.into())
+                    .collect();
+                let order_book_response = OrderBookResponse {
+                    bids,
+                    asks,
+                    update_id,
+                    last_update_id,
+                };
+                OpenLimitsWebSocketMessage::OrderBookDiff(order_book_response)
+            }
+        })
     }
 }
 
@@ -211,7 +219,7 @@ pub struct Level2UpdateRecord {
 impl From<&Level2UpdateRecord> for AskBid {
     fn from(record: &Level2UpdateRecord) -> Self {
         let price = record.price;
-        let qty   = record.size;
+        let qty = record.size;
         Self { price, qty }
     }
 }

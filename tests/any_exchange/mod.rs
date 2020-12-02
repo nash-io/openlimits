@@ -1,18 +1,16 @@
-use openlimits::any_exchange::{AnyExchange, AnyExchangeWs};
-use openlimits::nash::{Nash, NashParameters, NashCredentials, NashWebsocket};
-use openlimits::exchange::OpenLimits;
-use std::env;
 use dotenv::dotenv;
 use nash_native_client::ws_client::client::Environment;
-use openlimits::binance::{Binance, BinanceParameters, BinanceCredentials};
-use openlimits::coinbase::{CoinbaseParameters, Coinbase, CoinbaseCredentials};
-use openlimits::exchange_ws::OpenLimitsWs;
+use openlimits::any_exchange::{AnyExchange, AnyExchangeWs};
+use openlimits::binance::{Binance, BinanceCredentials, BinanceParameters};
 use openlimits::coinbase::client::websocket::CoinbaseWebsocket;
+use openlimits::coinbase::{Coinbase, CoinbaseCredentials, CoinbaseParameters};
+use openlimits::exchange::OpenLimits;
+use openlimits::exchange_ws::OpenLimitsWs;
+use openlimits::nash::{Nash, NashCredentials, NashParameters, NashWebsocket};
+use std::env;
 
 #[tokio::test]
-async fn account_test() {
-
-}
+async fn account_test() {}
 
 async fn nash() -> Nash {
     let parameters = NashParameters {
@@ -34,7 +32,7 @@ async fn binance() -> Binance {
             api_key: env::var("BINANCE_API_KEY").expect("Couldn't get environment variable."),
             api_secret: env::var("BINANCE_API_SECRET").expect("Couldn't get environment variable."),
         }),
-        sandbox: true
+        sandbox: true,
     };
     OpenLimits::instantiate(parameters).await
 }
@@ -65,7 +63,8 @@ async fn init_ws() -> OpenLimitsWs<NashWebsocket> {
         1234,
         Environment::Sandbox,
         10000,
-    ).await;
+    )
+    .await;
 
     OpenLimitsWs { websocket }
 }
