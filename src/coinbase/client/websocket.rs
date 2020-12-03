@@ -1,7 +1,7 @@
 use url::Url;
 
-use std::{collections::HashMap, pin::Pin, task::Poll};
 use async_trait::async_trait;
+use std::{collections::HashMap, pin::Pin, task::Poll};
 
 use futures::{
     stream::{SplitStream, Stream},
@@ -15,16 +15,16 @@ use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 
 use crate::{
     coinbase::model::websocket::{
-        Channel, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd, CoinbaseSubscription,
+        Channel, CoinbaseSubscription, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd,
     },
     errors::OpenLimitError,
     shared::Result,
 };
 
-use crate::exchange_ws::{ExchangeWs, Subscriptions};
-use crate::coinbase::CoinbaseParameters;
-use futures::stream::BoxStream;
 use crate::coinbase::model::websocket::ChannelType;
+use crate::coinbase::CoinbaseParameters;
+use crate::exchange_ws::{ExchangeWs, Subscriptions};
+use futures::stream::BoxStream;
 
 const WS_URL_PROD: &str = "wss://ws-feed.pro.coinbase.com";
 const WS_URL_SANDBOX: &str = "wss://ws-feed-public.sandbox.pro.coinbase.com";
@@ -40,7 +40,7 @@ type WSStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
 
 pub struct CoinbaseWebsocket {
     pub subscriptions: HashMap<CoinbaseSubscription, SplitStream<WSStream>>,
-    pub parameters: CoinbaseParameters
+    pub parameters: CoinbaseParameters,
 }
 
 impl CoinbaseWebsocket {
@@ -53,19 +53,21 @@ impl CoinbaseWebsocket {
 
     pub async fn subscribe_(&mut self, subscription: CoinbaseSubscription) -> Result<()> {
         let (channels, product_ids) = match &subscription {
-            CoinbaseSubscription::Level2(product_id) => {
-                (vec![Channel::Name(ChannelType::Level2)], vec![product_id.clone()])
-            },
-            CoinbaseSubscription::Heartbeat(product_id) => {
-                (vec![Channel::Name(ChannelType::Heartbeat)], vec![product_id.clone()])
-            },
-            _ => panic!("Not implemented")
+            CoinbaseSubscription::Level2(product_id) => (
+                vec![Channel::Name(ChannelType::Level2)],
+                vec![product_id.clone()],
+            ),
+            CoinbaseSubscription::Heartbeat(product_id) => (
+                vec![Channel::Name(ChannelType::Heartbeat)],
+                vec![product_id.clone()],
+            ),
+            _ => panic!("Not implemented"),
         };
         let subscribe = Subscribe {
             _type: SubscribeCmd::Subscribe,
             auth: None,
             channels,
-            product_ids
+            product_ids,
         };
 
         let stream = self.connect(subscribe).await?;
@@ -138,19 +140,21 @@ impl ExchangeWs for CoinbaseWebsocket {
         let (mut ws_stream, _) = connect_async(endpoint).await?;
 
         let (channels, product_ids) = match &subscription.as_slice()[0] {
-            CoinbaseSubscription::Level2(product_id) => {
-                (vec![Channel::Name(ChannelType::Level2)], vec![product_id.clone()])
-            },
-            CoinbaseSubscription::Heartbeat(product_id) => {
-                (vec![Channel::Name(ChannelType::Heartbeat)], vec![product_id.clone()])
-            },
-            _ => panic!("Not implemented")
+            CoinbaseSubscription::Level2(product_id) => (
+                vec![Channel::Name(ChannelType::Level2)],
+                vec![product_id.clone()],
+            ),
+            CoinbaseSubscription::Heartbeat(product_id) => (
+                vec![Channel::Name(ChannelType::Heartbeat)],
+                vec![product_id.clone()],
+            ),
+            _ => panic!("Not implemented"),
         };
         let subscribe = Subscribe {
             _type: SubscribeCmd::Subscribe,
             auth: None,
             channels,
-            product_ids
+            product_ids,
         };
         let subscribe = serde_json::to_string(&subscribe)?;
         ws_stream.send(Message::Text(subscribe)).await?;

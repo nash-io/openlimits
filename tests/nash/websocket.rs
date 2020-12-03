@@ -1,7 +1,7 @@
 use dotenv::dotenv;
+use nash_native_client::ws_client::client::Environment;
 use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::NashWebsocket};
 use std::{env, sync::mpsc::sync_channel};
-use nash_native_client::ws_client::client::Environment;
 
 async fn test_subscription_callback(websocket: OpenLimitsWs<NashWebsocket>, sub: Subscription) {
     let (tx, rx) = sync_channel(0);

@@ -10,26 +10,20 @@ use crate::exchange_info::ExchangeInfoRetrieval;
 //     MarketPair,
 //     MarketPairHandle
 // };
+use crate::binance::Binance;
+use crate::binance::{
+    // Binance,
+    BinanceParameters,
+    BinanceWebsocket,
+};
+use crate::coinbase::Coinbase;
+use crate::exchange::{Exchange, ExchangeAccount, ExchangeMarketData};
 use crate::exchange_ws::{
     ExchangeWs,
     OpenLimitsWs,
     // Subscriptions
 };
-use crate::nash::{NashParameters, Nash, NashWebsocket};
-use crate::{
-    binance::{
-        // Binance,
-        BinanceParameters,
-        BinanceWebsocket
-    },
-    // model::websocket::OpenLimitsWebSocketMessage,
-};
-use crate::{
-    exchange::{Exchange, ExchangeAccount, ExchangeMarketData},
-    // model::websocket::WebSocketResponse,
-};
-use crate::binance::Binance;
-use crate::coinbase::Coinbase;
+use crate::nash::{Nash, NashParameters, NashWebsocket};
 // use crate::{
 //     model::{
 //         websocket::Subscription, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
@@ -197,7 +191,10 @@ pub enum AnyWsExchange {
     Binance(OpenLimitsWs<BinanceWebsocket>),
 }
 
-pub trait AnyExchange: Exchange + ExchangeInfoRetrieval + ExchangeAccount + ExchangeMarketData {}
+pub trait AnyExchange:
+    Exchange + ExchangeInfoRetrieval + ExchangeAccount + ExchangeMarketData
+{
+}
 pub trait AnyExchangeWs: ExchangeWs {}
 
 impl AnyExchange for Nash {}
