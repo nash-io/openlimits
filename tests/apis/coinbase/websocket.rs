@@ -1,34 +1,47 @@
 use futures::StreamExt;
-use openlimits::coinbase::{client::websocket::CoinbaseWebsocket, model::websocket::{ChannelType, CoinbaseSubscription}, CoinbaseParameters};
-use std::sync::mpsc::sync_channel;
 use openlimits::coinbase::model::websocket::CoinbaseWebsocketMessage;
 use openlimits::coinbase::model::websocket::Level2;
+use openlimits::coinbase::{
+    client::websocket::CoinbaseWebsocket,
+    model::websocket::{ChannelType, CoinbaseSubscription},
+    CoinbaseParameters,
+};
 use openlimits::exchange_ws::ExchangeWs;
-use openlimits::model::websocket::{WebSocketResponse, OpenLimitsWebSocketMessage, Subscription};
+use openlimits::model::websocket::{OpenLimitsWebSocketMessage, Subscription, WebSocketResponse};
 use openlimits::model::OrderBookResponse;
+use std::sync::mpsc::sync_channel;
 
-async fn test_subscription_callback(websocket: CoinbaseWebsocket, sub: CoinbaseSubscription, expected_messages: Vec<OpenLimitsWebSocketMessage>) {
+async fn test_subscription_callback(
+    websocket: CoinbaseWebsocket,
+    sub: CoinbaseSubscription,
+    expected_messages: Vec<OpenLimitsWebSocketMessage>,
+) {
     let (tx, rx) = sync_channel(0);
 
     let mut received_messages: Vec<bool> = expected_messages.iter().map(|_| false).collect();
 
-    websocket.subscribe(sub, move |message| {
-        if let Ok(message) = message.as_ref() {
-            if let WebSocketResponse::Generic(message) = message {
-                let expected_iter = expected_messages.iter().map(|expected| {
-                    std::mem::discriminant(expected) == std::mem::discriminant(&message)
-                });
-                for (already_received, currently_received) in received_messages.iter_mut().zip(expected_iter) {
-                    if !*already_received {
-                        *already_received = currently_received;
+    websocket
+        .subscribe(sub, move |message| {
+            if let Ok(message) = message.as_ref() {
+                if let WebSocketResponse::Generic(message) = message {
+                    let expected_iter = expected_messages.iter().map(|expected| {
+                        std::mem::discriminant(expected) == std::mem::discriminant(&message)
+                    });
+                    for (already_received, currently_received) in
+                        received_messages.iter_mut().zip(expected_iter)
+                    {
+                        if !*already_received {
+                            *already_received = currently_received;
+                        }
+                    }
+                    if received_messages.iter().all(|received| *received) {
+                        tx.send(()).expect("Couldn't send sync message.");
                     }
                 }
-                if received_messages.iter().all(|received| *received) {
-                    tx.send(()).expect("Couldn't send sync message.");
-                }
             }
-        }
-    }).await.expect("Couldn't subscribe.");
+        })
+        .await
+        .expect("Couldn't subscribe.");
     rx.recv().expect("Couldn't receive sync message.");
 }
 
@@ -38,7 +51,7 @@ async fn order_book() {
     let sub = CoinbaseSubscription::Level2("BTC-USD".to_string());
     let expected = vec![
         OpenLimitsWebSocketMessage::OrderBook(Default::default()),
-        OpenLimitsWebSocketMessage::OrderBookDiff(Default::default())
+        OpenLimitsWebSocketMessage::OrderBookDiff(Default::default()),
     ];
     test_subscription_callback(websocket, sub, expected).await;
 }
@@ -46,6 +59,6 @@ async fn order_book() {
 async fn init() -> CoinbaseWebsocket {
     CoinbaseWebsocket::new(CoinbaseParameters {
         sandbox: true,
-        credentials: None
+        credentials: None,
     })
 }
