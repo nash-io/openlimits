@@ -1,5 +1,3 @@
-use url::Url;
-
 use async_trait::async_trait;
 use std::{collections::HashMap, pin::Pin, task::Poll};
 

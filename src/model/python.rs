@@ -1,7 +1,8 @@
-use super::super::any_exchange::InitAnyExchange;
-use super::super::binance::{BinanceCredentials, BinanceParameters};
-use super::super::model::{Interval, Paginator, TimeInForce};
-use super::super::nash::{Environment, NashCredentials, NashParameters};
+use crate::any_exchange::InitAnyExchange;
+use crate::binance::{BinanceCredentials, BinanceParameters};
+use crate::model::{Interval, Paginator, TimeInForce};
+use crate::nash::{Environment, NashCredentials, NashParameters};
+use crate::coinbase::{CoinbaseCredentials, CoinbaseParameters};
 use super::websocket::{OpenLimitsWebSocketMessage, Subscription};
 use pyo3::exceptions::PyException;
 use pyo3::prelude::{FromPyObject, IntoPy, PyObject, PyResult, Python, ToPyObject};
@@ -29,13 +30,16 @@ impl<'a> FromPyObject<'a> for TimeInForce {
 impl<'a> FromPyObject<'a> for InitAnyExchange {
     fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
         // unfortunately can't do the if let on the extract() since it needs type annotations
-        let maybe_nash: PyResult<NashParameters> = ob.extract();
-        if let Ok(nash) = maybe_nash {
+        if let Ok(nash) = ob.extract() {
             return Ok(InitAnyExchange::Nash(nash));
         }
         let maybe_binance: PyResult<BinanceParameters> = ob.extract();
         if let Ok(binance) = maybe_binance {
             return Ok(InitAnyExchange::Binance(binance));
+        }
+        let maybe_coinbase: PyResult<CoinbaseParameters> = ob.extract();
+        if let Ok(coinbase) = maybe_coinbase {
+            return Ok(InitAnyExchange::Coinbase(coinbase));
         }
         Err(PyException::new_err(
             "invalid exchange initialization params",
@@ -81,6 +85,57 @@ impl<'a> FromPyObject<'a> for BinanceParameters {
             ))?
             .extract()?;
         Ok(BinanceParameters {
+            sandbox,
+            credentials,
+        })
+    }
+}
+
+impl<'a> FromPyObject<'a> for CoinbaseCredentials {
+    fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
+        let py_dict = ob.get_item("coinbase_credentials")?.downcast::<PyDict>()?;
+        let api_key: String = py_dict
+            .get_item("api_key")
+            .ok_or(PyException::new_err(
+                "secret not included in coinbase credentials",
+            ))?
+            .extract()?;
+        let api_secret: String = py_dict
+            .get_item("api_secret")
+            .ok_or(PyException::new_err(
+                "session not included in coinbase credentials",
+            ))?
+            .extract()?;
+        let passphrase: String = py_dict
+            .get_item("passphrase")
+            .ok_or(PyException::new_err(
+                "passphrase not included in coinbase credentials",
+            ))?
+            .extract()?;
+        Ok(CoinbaseCredentials {
+            api_key,
+            api_secret,
+            passphrase
+        })
+    }
+}
+
+impl<'a> FromPyObject<'a> for CoinbaseParameters {
+    fn extract(ob: &'a pyo3::PyAny) -> PyResult<Self> {
+        let py_dict = ob.get_item("coinbase")?.downcast::<PyDict>()?;
+        let credentials: Option<CoinbaseCredentials> = py_dict
+            .get_item("credentials")
+            .ok_or(PyException::new_err(
+                "credentials not included in coinbase params",
+            ))?
+            .extract()?;
+        let sandbox: bool = py_dict
+            .get_item("sandbox")
+            .ok_or(PyException::new_err(
+                "session not included in coinbase credentials",
+            ))?
+            .extract()?;
+        Ok(CoinbaseParameters {
             sandbox,
             credentials,
         })
