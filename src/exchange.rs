@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 
+use crate::exchange_info::ExchangeInfoRetrieval;
 use crate::{
     model::{
         Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
@@ -9,7 +10,6 @@ use crate::{
     },
     shared::Result,
 };
-use crate::exchange_info::ExchangeInfoRetrieval;
 
 pub struct OpenLimits {}
 

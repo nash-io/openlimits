@@ -75,7 +75,7 @@ async fn _nash_websocket() -> OpenLimitsWs<NashWebsocket> {
         Environment::Sandbox,
         10000,
     )
-        .await;
+    .await;
 
     OpenLimitsWs { websocket }
 }
@@ -88,8 +88,8 @@ async fn coinbase_websocket() -> OpenLimitsWs<CoinbaseWebsocket> {
         credentials: Some(CoinbaseCredentials {
             api_secret: env::var("COINBASE_API_SECRET").unwrap(),
             api_key: env::var("COINBASE_API_KEY").unwrap(),
-            passphrase: env::var("COINBASE_PASSPHRASE").unwrap()
-        })
+            passphrase: env::var("COINBASE_PASSPHRASE").unwrap(),
+        }),
     });
     OpenLimitsWs { websocket }
 }

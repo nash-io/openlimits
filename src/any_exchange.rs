@@ -4,6 +4,8 @@
 
 use std::convert::TryFrom;
 
+use crate::coinbase::client::websocket::CoinbaseWebsocket;
+use crate::coinbase::{Coinbase, CoinbaseParameters};
 use crate::exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
 use crate::exchange_ws::{ExchangeWs, OpenLimitsWs, Subscriptions};
 use crate::nash::{Nash, NashParameters, NashWebsocket};
@@ -27,20 +29,18 @@ use crate::{
 };
 use async_trait::async_trait;
 use futures::stream::{BoxStream, StreamExt};
-use crate::coinbase::{CoinbaseParameters, Coinbase};
-use crate::coinbase::client::websocket::CoinbaseWebsocket;
 
 #[derive(Clone)]
 pub enum InitAnyExchange {
     Nash(NashParameters),
     Binance(BinanceParameters),
-    Coinbase(CoinbaseParameters)
+    Coinbase(CoinbaseParameters),
 }
 
 pub enum AnyExchange {
     Nash(Nash),
     Binance(Binance),
-    Coinbase(Coinbase)
+    Coinbase(Coinbase),
 }
 
 #[async_trait]
@@ -51,7 +51,7 @@ impl Exchange for AnyExchange {
         match params {
             InitAnyExchange::Nash(params) => Nash::new(params).await.into(),
             InitAnyExchange::Binance(params) => Binance::new(params).await.into(),
-            InitAnyExchange::Coinbase(params) => Coinbase::new(params).await.into()
+            InitAnyExchange::Coinbase(params) => Coinbase::new(params).await.into(),
         }
     }
     // not particularly useful to access the inner client with this type. could wrap the inner
@@ -68,14 +68,14 @@ impl ExchangeInfoRetrieval for AnyExchange {
         match self {
             Self::Nash(nash) => nash.get_pair(name).await,
             Self::Binance(binance) => binance.get_pair(name).await,
-            Self::Coinbase(coinbase) => coinbase.get_pair(name).await
+            Self::Coinbase(coinbase) => coinbase.get_pair(name).await,
         }
     }
     async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
         match self {
             Self::Nash(nash) => nash.retrieve_pairs().await,
             Self::Binance(binance) => binance.retrieve_pairs().await,
-            Self::Coinbase(coinbase) => coinbase.retrieve_pairs().await
+            Self::Coinbase(coinbase) => coinbase.retrieve_pairs().await,
         }
     }
     async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
@@ -142,7 +142,7 @@ impl ExchangeAccount for AnyExchange {
         match self {
             Self::Nash(nash) => nash.get_order_history(req).await,
             Self::Binance(binance) => binance.get_order_history(req).await,
-            Self::Coinbase(coinbase) => coinbase.get_order_history(req).await
+            Self::Coinbase(coinbase) => coinbase.get_order_history(req).await,
         }
     }
     async fn get_trade_history(&self, req: &TradeHistoryRequest) -> Result<Vec<Trade>> {
@@ -217,14 +217,16 @@ impl ExchangeWs for AnyWsExchange {
             InitAnyExchange::Nash(params) => OpenLimitsWs::<NashWebsocket>::instantiate(params)
                 .await
                 .into(),
-            InitAnyExchange::Binance(params) => OpenLimitsWs::<BinanceWebsocket>::instantiate(params)
-                .await
-                .into()
-            ,
-            InitAnyExchange::Coinbase(params) => OpenLimitsWs::<CoinbaseWebsocket>::instantiate(params)
-                .await
-                .into(),
-
+            InitAnyExchange::Binance(params) => {
+                OpenLimitsWs::<BinanceWebsocket>::instantiate(params)
+                    .await
+                    .into()
+            }
+            InitAnyExchange::Coinbase(params) => {
+                OpenLimitsWs::<CoinbaseWebsocket>::instantiate(params)
+                    .await
+                    .into()
+            }
         }
     }
 
@@ -268,7 +270,7 @@ impl ExchangeWs for AnyWsExchange {
                 .await?
                 .map(|r| {
                     WebSocketResponse::try_from(r.expect(
-                        "Couldn't convert WebSocketResponse from SubscriptionResponseWrapper."
+                        "Couldn't convert WebSocketResponse from SubscriptionResponseWrapper.",
                     ))
                 })
                 .map(|r| {
@@ -277,7 +279,7 @@ impl ExchangeWs for AnyWsExchange {
                         WebSocketResponse::Raw(_) => panic!("Should never happen"),
                     })
                 })
-                .boxed()
+                .boxed(),
         };
         Ok(s)
     }
