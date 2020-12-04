@@ -1,6 +1,10 @@
+// FIXME: These test cases aren't implemented.
+// The purpose of this module is to be sure we have the same functionalities across all the
+// supported exchanges.
+
 use dotenv::dotenv;
 use nash_native_client::ws_client::client::Environment;
-use openlimits::any_exchange::{AnyExchange, AnyExchangeWs};
+use openlimits::any_exchange::{AnyExchange, AnyWsExchange};
 use openlimits::binance::{Binance, BinanceCredentials, BinanceParameters};
 use openlimits::coinbase::client::websocket::CoinbaseWebsocket;
 use openlimits::coinbase::{Coinbase, CoinbaseCredentials, CoinbaseParameters};
@@ -10,9 +14,16 @@ use openlimits::nash::{Nash, NashCredentials, NashParameters, NashWebsocket};
 use std::env;
 
 #[tokio::test]
-async fn account_test() {}
+async fn account_test() {
+    let _exchange = init().await;
+}
 
-async fn nash() -> Nash {
+#[tokio::test]
+async fn ws_test() {
+    let _websocket = init_ws().await;
+}
+
+async fn _nash() -> Nash {
     let parameters = NashParameters {
         affiliate_code: None,
         credentials: Some(NashCredentials {
@@ -26,7 +37,7 @@ async fn nash() -> Nash {
     OpenLimits::instantiate(parameters).await
 }
 
-async fn binance() -> Binance {
+async fn _binance() -> Binance {
     let parameters = BinanceParameters {
         credentials: Some(BinanceCredentials {
             api_key: env::var("BINANCE_API_KEY").expect("Couldn't get environment variable."),
@@ -49,12 +60,12 @@ async fn coinbase() -> Coinbase {
     OpenLimits::instantiate(parameters).await
 }
 
-async fn init() -> impl AnyExchange {
+async fn init() -> AnyExchange {
     dotenv().ok();
-    coinbase().await
+    coinbase().await.into()
 }
 
-async fn init_ws() -> OpenLimitsWs<NashWebsocket> {
+async fn _nash_websocket() -> OpenLimitsWs<NashWebsocket> {
     dotenv().ok();
 
     let websocket = NashWebsocket::with_credential(
@@ -64,7 +75,25 @@ async fn init_ws() -> OpenLimitsWs<NashWebsocket> {
         Environment::Sandbox,
         10000,
     )
-    .await;
+        .await;
 
     OpenLimitsWs { websocket }
+}
+
+async fn coinbase_websocket() -> OpenLimitsWs<CoinbaseWebsocket> {
+    dotenv().ok();
+
+    let websocket = CoinbaseWebsocket::new(CoinbaseParameters {
+        sandbox: false,
+        credentials: Some(CoinbaseCredentials {
+            api_secret: env::var("COINBASE_API_SECRET").unwrap(),
+            api_key: env::var("COINBASE_API_KEY").unwrap(),
+            passphrase: env::var("COINBASE_PASSPHRASE").unwrap()
+        })
+    });
+    OpenLimitsWs { websocket }
+}
+
+async fn init_ws() -> AnyWsExchange {
+    coinbase_websocket().await.into()
 }

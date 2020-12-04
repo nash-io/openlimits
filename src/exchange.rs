@@ -1,5 +1,3 @@
-// use std::fmt::Debug;
-
 use async_trait::async_trait;
 
 use crate::{
@@ -11,6 +9,7 @@ use crate::{
     },
     shared::Result,
 };
+use crate::exchange_info::ExchangeInfoRetrieval;
 
 pub struct OpenLimits {}
 
@@ -21,7 +20,7 @@ impl OpenLimits {
 }
 
 #[async_trait]
-pub trait Exchange {
+pub trait Exchange: ExchangeInfoRetrieval + ExchangeAccount + ExchangeMarketData {
     type InitParams;
     type InnerClient;
     async fn new(params: Self::InitParams) -> Self;
