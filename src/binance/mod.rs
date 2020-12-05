@@ -322,7 +322,8 @@ impl From<model::websocket::TradeMessage> for Vec<Trade> {
     fn from(trade_message: model::websocket::TradeMessage) -> Self {
         vec![Trade {
             id: trade_message.trade_id.to_string(),
-            order_id: trade_message.buyer_order_id.to_string(),
+            buyer_order_id: Some(trade_message.buyer_order_id.to_string()),
+            seller_order_id: Some(trade_message.buyer_order_id.to_string()),
             market_pair: trade_message.symbol,
             price: trade_message.price,
             qty: trade_message.qty,
@@ -341,7 +342,8 @@ impl From<TradeMessage> for Trade {
     fn from(trade: TradeMessage) -> Self {
         Self {
             id: trade.trade_id.to_string(),
-            order_id: trade.buyer_order_id.to_string(),
+            buyer_order_id: Some(trade.buyer_order_id.to_string()),
+            seller_order_id: Some(trade.seller_order_id.to_string()),
             market_pair: trade.symbol,
             price: trade.price,
             qty: trade.qty,
@@ -421,9 +423,14 @@ impl From<model::Balance> for Balance {
 
 impl From<model::TradeHistory> for Trade {
     fn from(trade_history: model::TradeHistory) -> Self {
+        let (buyer_order_id, seller_order_id) = match trade_history.is_buyer {
+            true => (Some(trade_history.order_id.to_string()), None),
+            false => (None, Some(trade_history.order_id.to_string())),
+        };
         Self {
             id: trade_history.id.to_string(),
-            order_id: trade_history.order_id.to_string(),
+            buyer_order_id: buyer_order_id,
+            seller_order_id: seller_order_id,
             market_pair: trade_history.symbol,
             price: trade_history.price,
             qty: trade_history.qty,
