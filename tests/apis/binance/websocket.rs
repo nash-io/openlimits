@@ -85,5 +85,7 @@ async fn trade() {
 }
 
 async fn init() -> BinanceWebsocket {
-    BinanceWebsocket::new(BinanceParameters::sandbox()).await.expect("Failed to create Client")
+    BinanceWebsocket::new(BinanceParameters::sandbox())
+        .await
+        .expect("Failed to create Client")
 }

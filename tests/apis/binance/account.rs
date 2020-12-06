@@ -318,5 +318,6 @@ async fn init() -> Binance {
             api_secret: env::var("BINANCE_API_SECRET").expect("Couldn't get environment variable"),
         }),
     })
-    .await.expect("Failed to create Client")
+    .await
+    .expect("Failed to create Client")
 }

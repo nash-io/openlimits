@@ -419,5 +419,6 @@ async fn init() -> Coinbase {
                 .expect("Couldn't get environment varilable."),
         }),
     })
-    .await.expect("Failed to create Client")
+    .await
+    .expect("Failed to create Client")
 }

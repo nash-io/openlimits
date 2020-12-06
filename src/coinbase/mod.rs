@@ -74,20 +74,18 @@ impl Exchange for Coinbase {
                         &credentials.api_secret,
                         &credentials.passphrase,
                         parameters.sandbox,
-                    )?
+                    )?,
                 },
             },
             None => Coinbase {
                 exchange_info: ExchangeInfo::new(),
                 client: BaseClient {
-                    transport: Transport::new(parameters.sandbox)?
+                    transport: Transport::new(parameters.sandbox)?,
                 },
             },
         };
 
-        coinbase
-            .refresh_market_info()
-            .await?;
+        coinbase.refresh_market_info().await?;
         Ok(coinbase)
     }
 

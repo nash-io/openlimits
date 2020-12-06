@@ -36,6 +36,8 @@ async fn trades() {
 
 async fn init() -> OpenLimitsWs<BinanceWebsocket> {
     OpenLimitsWs {
-        websocket: BinanceWebsocket::new(BinanceParameters::prod()).await.expect("Failed to create Client"),
+        websocket: BinanceWebsocket::new(BinanceParameters::prod())
+            .await
+            .expect("Failed to create Client"),
     }
 }

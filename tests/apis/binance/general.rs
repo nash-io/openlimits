@@ -5,7 +5,9 @@ use openlimits::{
 
 #[tokio::test]
 async fn ping() {
-    let exchange = Binance::new(BinanceParameters::sandbox()).await.expect("Failed to create Client");
+    let exchange = Binance::new(BinanceParameters::sandbox())
+        .await
+        .expect("Failed to create Client");
     assert_eq!(
         "pong",
         exchange
@@ -19,7 +21,9 @@ async fn ping() {
 
 #[tokio::test]
 async fn get_server_time() {
-    let exchange = Binance::new(BinanceParameters::sandbox()).await.expect("Failed to create Client");
+    let exchange = Binance::new(BinanceParameters::sandbox())
+        .await
+        .expect("Failed to create Client");
     exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -30,7 +34,9 @@ async fn get_server_time() {
 
 #[tokio::test]
 async fn get_exchange_info() {
-    let exchange = Binance::new(BinanceParameters::sandbox()).await.expect("Failed to create Client");
+    let exchange = Binance::new(BinanceParameters::sandbox())
+        .await
+        .expect("Failed to create Client");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")

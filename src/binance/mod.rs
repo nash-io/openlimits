@@ -84,9 +84,7 @@ impl Exchange for Binance {
             },
         };
 
-        binance
-            .refresh_market_info()
-            .await?;
+        binance.refresh_market_info().await?;
         Ok(binance)
     }
 

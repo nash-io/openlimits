@@ -9,7 +9,9 @@ use openlimits::{
 
 #[tokio::test]
 async fn products() {
-    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await.expect("Failed to create Client");
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox())
+        .await
+        .expect("Failed to create Client");
     let res = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -21,7 +23,9 @@ async fn products() {
 
 #[tokio::test]
 async fn product() {
-    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await.expect("Failed to create Client");
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox())
+        .await
+        .expect("Failed to create Client");
     let res = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -33,7 +37,9 @@ async fn product() {
 
 #[tokio::test]
 async fn trades() {
-    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await.expect("Failed to create Client");
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox())
+        .await
+        .expect("Failed to create Client");
     let res = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -62,7 +68,9 @@ async fn trades() {
 
 #[tokio::test]
 async fn book() {
-    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await.expect("Failed to create Client");
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox())
+        .await
+        .expect("Failed to create Client");
     let res = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -74,7 +82,9 @@ async fn book() {
 
 #[tokio::test]
 async fn ticker() {
-    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await.expect("Failed to create Client");
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox())
+        .await
+        .expect("Failed to create Client");
     let res = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -86,7 +96,9 @@ async fn ticker() {
 
 #[tokio::test]
 async fn candles() {
-    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await.expect("Failed to create Client");
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox())
+        .await
+        .expect("Failed to create Client");
     let res = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
