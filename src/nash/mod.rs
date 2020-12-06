@@ -61,30 +61,6 @@ impl Clone for NashParameters {
     }
 }
 
-async fn client_from_params(params: NashParameters) -> Client {
-    match params.credentials {
-        Some(credentials) => Client::from_key_data(
-            &credentials.secret,
-            &credentials.session,
-            params.affiliate_code,
-            params.client_id,
-            params.environment,
-            params.timeout,
-        )
-        .await
-        .expect("Couldn't create client."),
-        None => Client::new(
-            None,
-            params.client_id,
-            None,
-            params.environment,
-            params.timeout,
-        )
-        .await
-        .expect("Couldn't create client."),
-    }
-}
-
 async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
     let out = match params.credentials {
         Some(credentials) => Client::from_key_data(
