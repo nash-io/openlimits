@@ -5,7 +5,7 @@ use openlimits::{
 
 #[tokio::test]
 async fn get_depth() {
-    let exchange = Binance::new(BinanceParameters::sandbox()).await;
+    let exchange = Binance::new(BinanceParameters::sandbox()).await.expect("Failed to create Client");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -17,7 +17,7 @@ async fn get_depth() {
 
 #[tokio::test]
 async fn get_all_prices() {
-    let exchange = Binance::new(BinanceParameters::sandbox()).await;
+    let exchange = Binance::new(BinanceParameters::sandbox()).await.expect("Failed to create Client");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -29,7 +29,7 @@ async fn get_all_prices() {
 
 #[tokio::test]
 async fn get_price() {
-    let exchange = Binance::new(BinanceParameters::sandbox()).await;
+    let exchange = Binance::new(BinanceParameters::sandbox()).await.expect("Failed to create Client");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -41,7 +41,7 @@ async fn get_price() {
 
 #[tokio::test]
 async fn get_all_book_tickers() {
-    let exchange = Binance::new(BinanceParameters::sandbox()).await;
+    let exchange = Binance::new(BinanceParameters::sandbox()).await.expect("Failed to create Client");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -53,7 +53,7 @@ async fn get_all_book_tickers() {
 
 #[tokio::test]
 async fn get_book_ticker() {
-    let exchange = Binance::new(BinanceParameters::sandbox()).await;
+    let exchange = Binance::new(BinanceParameters::sandbox()).await.expect("Failed to create Client");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -65,7 +65,7 @@ async fn get_book_ticker() {
 
 #[tokio::test]
 async fn get_24h_price_stats() {
-    let exchange = Binance::new(BinanceParameters::sandbox()).await;
+    let exchange = Binance::new(BinanceParameters::sandbox()).await.expect("Failed to create Client");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")
@@ -77,7 +77,7 @@ async fn get_24h_price_stats() {
 
 #[tokio::test]
 async fn get_klines() {
-    let exchange = Binance::new(BinanceParameters::sandbox()).await;
+    let exchange = Binance::new(BinanceParameters::sandbox()).await.expect("Failed to create Client");
     let params = KlineParams {
         symbol: String::from("BNBBTC"),
         interval: String::from("5m"),
@@ -94,7 +94,7 @@ async fn get_klines() {
 
 #[tokio::test]
 async fn get_24h_price_stats_all() {
-    let exchange = Binance::new(BinanceParameters::sandbox()).await;
+    let exchange = Binance::new(BinanceParameters::sandbox()).await.expect("Failed to create Client");
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner client.")

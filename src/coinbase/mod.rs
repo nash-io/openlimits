@@ -64,7 +64,7 @@ impl Exchange for Coinbase {
     type InitParams = CoinbaseParameters;
     type InnerClient = BaseClient;
 
-    async fn new(parameters: Self::InitParams) -> Self {
+    async fn new(parameters: Self::InitParams) -> Result<Self> {
         let coinbase = match parameters.credentials {
             Some(credentials) => Coinbase {
                 exchange_info: ExchangeInfo::new(),
@@ -74,24 +74,21 @@ impl Exchange for Coinbase {
                         &credentials.api_secret,
                         &credentials.passphrase,
                         parameters.sandbox,
-                    )
-                    .expect("Couldn't construct transport."),
+                    )?
                 },
             },
             None => Coinbase {
                 exchange_info: ExchangeInfo::new(),
                 client: BaseClient {
-                    transport: Transport::new(parameters.sandbox)
-                        .expect("Couldn't construct transport."),
+                    transport: Transport::new(parameters.sandbox)?
                 },
             },
         };
 
         coinbase
             .refresh_market_info()
-            .await
-            .expect("Couldn't refresh market info.");
-        coinbase
+            .await?;
+        Ok(coinbase)
     }
 
     fn inner_client(&self) -> Option<&Self::InnerClient> {

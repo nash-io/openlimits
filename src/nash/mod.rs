@@ -85,16 +85,42 @@ async fn client_from_params(params: NashParameters) -> Client {
     }
 }
 
+async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
+    let out = match params.credentials {
+        Some(credentials) => Client::from_key_data(
+            &credentials.secret,
+            &credentials.session,
+            params.affiliate_code,
+            params.client_id,
+            params.environment,
+            params.timeout,
+        )
+        .await,
+        None => Client::new(
+            None,
+            params.client_id,
+            None,
+            params.environment,
+            params.timeout,
+        )
+        .await,
+    };
+
+    Ok(out.map_err(|e| OpenLimitError::NashProtocolError(e))?)
+}
+
 #[async_trait]
 impl Exchange for Nash {
     type InitParams = NashParameters;
     type InnerClient = Client;
 
-    async fn new(params: Self::InitParams) -> Self {
-        Self {
-            exchange_info: ExchangeInfo::new(),
-            transport: client_from_params(params).await,
-        }
+    async fn new(params: Self::InitParams) -> Result<Self> {
+        Ok(
+            Self {
+                exchange_info: ExchangeInfo::new(),
+                transport: client_from_params_failable(params).await?
+            }
+        )
     }
 
     fn inner_client(&self) -> Option<&Self::InnerClient> {
@@ -793,10 +819,10 @@ impl ExchangeWs for NashWebsocket {
     type Subscription = SubscriptionRequest;
     type Response = SubscriptionResponseWrapper;
 
-    async fn new(params: Self::InitParams) -> Self {
-        Self {
-            client: client_from_params(params).await,
-        }
+    async fn new(params: Self::InitParams) -> Result<Self> {
+        Ok(Self {
+            client: client_from_params_failable(params).await?,
+        })
     }
 
     async fn create_stream_specific(

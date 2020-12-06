@@ -224,5 +224,5 @@ async fn init() -> Coinbase {
         sandbox: true,
     };
 
-    OpenLimits::instantiate(parameters).await
+    OpenLimits::instantiate(parameters).await.expect("Failed to create Client")
 }

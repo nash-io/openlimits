@@ -102,5 +102,5 @@ async fn init() -> Nash {
         timeout: 1000,
     };
 
-    OpenLimits::instantiate(parameters).await
+    OpenLimits::instantiate(parameters).await.expect("Failed to create Client")
 }

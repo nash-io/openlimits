@@ -1,6 +1,6 @@
 use crate::{
     binance::{
-        model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
+        model::websocket::{BinanceSubscription,  BinanceWebsocketMessage},
         BinanceParameters,
     },
     errors::OpenLimitError,
@@ -39,8 +39,8 @@ impl ExchangeWs for BinanceWebsocket {
     type Subscription = BinanceSubscription;
     type Response = BinanceWebsocketMessage;
 
-    async fn new(parameters: Self::InitParams) -> Self {
-        BinanceWebsocket { parameters }
+    async fn new(parameters: Self::InitParams) -> Result<Self> {
+        Ok(BinanceWebsocket { parameters })
     }
 
     async fn create_stream_specific(
@@ -57,11 +57,15 @@ impl ExchangeWs for BinanceWebsocket {
             true => WS_URL_SANDBOX,
             false => WS_URL_PROD,
         };
-        let endpoint = url::Url::parse(&format!("{}?streams={}", ws_url, streams))
-            .expect("Couldn't parse url.");
+        let endpoint = url::Url::parse(&format!("{}?streams={}", ws_url, streams)).map_err(|e|OpenLimitError::UrlParserError(e))?;
         let (ws_stream, _) = connect_async(endpoint).await?;
 
-        let s = ws_stream.map(|message| parse_message(message.expect("Couldn't get message.")));
+        let s = ws_stream.map(|message|
+            match message {
+                Ok(msg) => parse_message(msg),
+                Err(_) => Err(OpenLimitError::SocketError())
+            }
+        );
 
         Ok(s.boxed())
     }
