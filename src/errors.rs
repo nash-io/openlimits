@@ -97,4 +97,6 @@ pub enum OpenLimitsError {
     NotParsableResponse(String),
     #[error("")]
     MissingParameter(String),
+    #[error("")]
+    InvalidParameter(String),
 }

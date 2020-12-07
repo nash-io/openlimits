@@ -157,6 +157,7 @@ pub struct CancelAllOrdersRequest {
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
 pub struct GetOrderHistoryRequest {
     pub market_pair: Option<String>,
+    pub order_status: Option<Vec<OrderStatus>>,
     pub paginator: Option<Paginator>,
 }
 
