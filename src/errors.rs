@@ -43,6 +43,8 @@ impl fmt::Display for MissingImplementationContent {
 
 #[derive(Error, Debug)]
 pub enum OpenLimitError {
+    #[error("")]
+    NoMarketPair,
     #[error(transparent)]
     BinanceError(#[from] BinanceContentError),
     #[error(transparent)]
