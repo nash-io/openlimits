@@ -1,9 +1,9 @@
+use super::websocket::{OpenLimitsWebSocketMessage, Subscription};
 use crate::any_exchange::InitAnyExchange;
 use crate::binance::{BinanceCredentials, BinanceParameters};
+use crate::coinbase::{CoinbaseCredentials, CoinbaseParameters};
 use crate::model::{Interval, Paginator, TimeInForce};
 use crate::nash::{Environment, NashCredentials, NashParameters};
-use crate::coinbase::{CoinbaseCredentials, CoinbaseParameters};
-use super::websocket::{OpenLimitsWebSocketMessage, Subscription};
 use pyo3::exceptions::PyException;
 use pyo3::prelude::{FromPyObject, IntoPy, PyObject, PyResult, Python, ToPyObject};
 use pyo3::types::PyDict;
@@ -115,7 +115,7 @@ impl<'a> FromPyObject<'a> for CoinbaseCredentials {
         Ok(CoinbaseCredentials {
             api_key,
             api_secret,
-            passphrase
+            passphrase,
         })
     }
 }
