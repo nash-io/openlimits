@@ -508,8 +508,17 @@ impl ToPyObject for Trade {
             .set_item("qty", self.qty.to_string())
             .expect("Couldn't set qty.");
         inner_dict
-            .set_item("order_id", self.order_id.to_string())
-            .expect("Couldn't set order_id.");
+            .set_item(
+                "buyer_order_id",
+                self.buyer_order_id.clone().map(|id| id.to_string()),
+            )
+            .expect("Couldn't set buyer_order_id.");
+        inner_dict
+            .set_item(
+                "seller_order_id",
+                self.seller_order_id.clone().map(|id| id.to_string()),
+            )
+            .expect("Couldn't set seller_order_id.");
         inner_dict
             .set_item("side", self.side.clone())
             .expect("Couldn't set side.");
