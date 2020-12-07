@@ -216,9 +216,9 @@ impl ExchangeAccount for Nash {
             before: None,
             buy_or_sell: None,
             limit: Some(100),
-            status: Some(vec![ nash_protocol::types::OrderStatus::Open ]),
+            status: Some(vec![nash_protocol::types::OrderStatus::Open]),
             order_type: None,
-            range: None
+            range: None,
         };
 
         let resp = self.transport.run(req).await;
@@ -523,8 +523,12 @@ impl From<&GetHistoricRatesRequest> for nash_protocol::protocol::list_candles::L
 }
 
 fn try_split_paginator(
-    paginator: Option<Paginator>
-) -> (Option<String>, Option<i64>, Option<nash_protocol::types::DateTimeRange>) {
+    paginator: Option<Paginator>,
+) -> (
+    Option<String>,
+    Option<i64>,
+    Option<nash_protocol::types::DateTimeRange>,
+) {
     match paginator {
         Some(paginator) => (
             paginator.before,
@@ -533,18 +537,12 @@ fn try_split_paginator(
                 .map(|v| i64::try_from(v).expect("Couldn't convert u64 to i64.")),
             if paginator.start_time.is_some() && paginator.end_time.is_some() {
                 Some(DateTimeRange {
-                    start: paginator
-                        .start_time
-                        .map(timestamp_to_utc_datetime)
-                        .unwrap(),
-                    stop: paginator
-                        .end_time
-                        .map(timestamp_to_utc_datetime)
-                        .unwrap(),
+                    start: paginator.start_time.map(timestamp_to_utc_datetime).unwrap(),
+                    stop: paginator.end_time.map(timestamp_to_utc_datetime).unwrap(),
                 })
             } else {
                 None
-            }
+            },
         ),
         None => (None, None, None),
     }
@@ -723,8 +721,8 @@ use nash_protocol::protocol::{
     subscriptions::{SubscriptionRequest, SubscriptionResponse},
     ResponseOrError,
 };
-use std::{pin::Pin, task::Context, task::Poll};
 use nash_protocol::types::DateTimeRange;
+use std::{pin::Pin, task::Context, task::Poll};
 
 pub struct NashWebsocket {
     pub client: Client,
