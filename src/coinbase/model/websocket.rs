@@ -1,11 +1,22 @@
+use crate::coinbase::model::OrderSide;
+use crate::errors::{MissingImplementationContent, OpenLimitError};
+use crate::model::websocket::{OpenLimitsWebSocketMessage, Subscription, WebSocketResponse};
+use crate::model::{AskBid, OrderBookResponse};
+use crate::shared::Result;
 use crate::shared::{string_to_decimal, string_to_opt_decimal};
 use rust_decimal::prelude::Decimal;
 use serde::{Deserialize, Deserializer, Serialize};
+use std::convert::{TryFrom, TryInto};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Subscription {
-    pub product_ids: Vec<String>,
-    pub channels: Vec<ChannelType>,
+pub enum CoinbaseSubscription {
+    Heartbeat(String),
+    Status,
+    // Ticker(String),
+    Level2(String),
+    // User,
+    // Matches,
+    // FullChannel
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -88,7 +99,7 @@ pub(crate) enum InputMessage {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum CoinbaseWebsocketMessage {
     Subscriptions {
         channels: Vec<Channel>,
@@ -108,7 +119,24 @@ pub enum CoinbaseWebsocketMessage {
     },
 }
 
-#[derive(Deserialize, Debug)]
+impl TryFrom<CoinbaseWebsocketMessage> for WebSocketResponse<CoinbaseWebsocketMessage> {
+    type Error = OpenLimitError;
+
+    fn try_from(value: CoinbaseWebsocketMessage) -> Result<Self> {
+        match value {
+            CoinbaseWebsocketMessage::Level2(level2) => {
+                Ok(WebSocketResponse::Generic(level2.try_into()?))
+            }
+            _ => Err(OpenLimitError::MissingImplementation(
+                MissingImplementationContent {
+                    message: "Message not implemented.".into(),
+                },
+            )),
+        }
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub enum Level2 {
     Snapshot {
         product_id: String,
@@ -121,7 +149,49 @@ pub enum Level2 {
     },
 }
 
-#[derive(Deserialize, Debug)]
+impl TryFrom<Level2> for OpenLimitsWebSocketMessage {
+    type Error = OpenLimitError;
+
+    fn try_from(level2: Level2) -> std::result::Result<Self, Self::Error> {
+        // FIXME: How can we get the update id?
+        let last_update_id = None;
+        let update_id = None;
+        Ok(match level2 {
+            Level2::Snapshot { asks, bids, .. } => {
+                let bids = bids.iter().map(|bid| bid.into()).collect();
+                let asks = asks.iter().map(|ask| ask.into()).collect();
+                let order_book_response = OrderBookResponse {
+                    bids,
+                    asks,
+                    update_id,
+                    last_update_id,
+                };
+                OpenLimitsWebSocketMessage::OrderBook(order_book_response)
+            }
+            Level2::L2update { changes, .. } => {
+                let bids = changes
+                    .iter()
+                    .filter(|change| change.side == OrderSide::Buy)
+                    .map(|change| change.into())
+                    .collect();
+                let asks = changes
+                    .iter()
+                    .filter(|change| change.side == OrderSide::Sell)
+                    .map(|change| change.into())
+                    .collect();
+                let order_book_response = OrderBookResponse {
+                    bids,
+                    asks,
+                    update_id,
+                    last_update_id,
+                };
+                OpenLimitsWebSocketMessage::OrderBookDiff(order_book_response)
+            }
+        })
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct Level2SnapshotRecord {
     #[serde(with = "string_to_decimal")]
     pub price: Decimal,
@@ -129,7 +199,15 @@ pub struct Level2SnapshotRecord {
     pub size: Decimal,
 }
 
-#[derive(Deserialize, Debug)]
+impl From<&Level2SnapshotRecord> for AskBid {
+    fn from(record: &Level2SnapshotRecord) -> Self {
+        let price = record.price;
+        let qty = record.size;
+        Self { price, qty }
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct Level2UpdateRecord {
     pub side: super::OrderSide,
     #[serde(with = "string_to_decimal")]
@@ -138,7 +216,15 @@ pub struct Level2UpdateRecord {
     pub size: Decimal,
 }
 
-#[derive(Deserialize, Debug)]
+impl From<&Level2UpdateRecord> for AskBid {
+    fn from(record: &Level2UpdateRecord) -> Self {
+        let price = record.price;
+        let qty = record.size;
+        Self { price, qty }
+    }
+}
+
+#[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
 #[serde(rename_all = "camelCase")]
 pub enum Ticker {
@@ -202,7 +288,7 @@ impl Ticker {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub enum Full {
     Received(Received),
     Open(Open),
@@ -253,7 +339,7 @@ impl Full {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "order_type")]
 #[serde(rename_all = "camelCase")]
 pub enum Received {
@@ -285,7 +371,7 @@ pub enum Received {
     },
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Open {
     pub time: String,
     pub product_id: String,
@@ -301,7 +387,7 @@ pub struct Open {
     pub profile_id: Option<String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
 pub enum Done {
     Limit {
@@ -329,14 +415,14 @@ pub enum Done {
     },
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum Reason {
     Filled,
     Canceled,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Match {
     pub trade_id: usize,
     pub sequence: usize,
@@ -358,7 +444,7 @@ pub struct Match {
     pub profile_id: Option<String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Change {
     pub time: String,
     pub sequence: usize,
@@ -383,7 +469,7 @@ pub struct Change {
     pub profile_id: Option<String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Activate {
     pub product_id: String,
     #[serde(with = "string_to_decimal")]
@@ -402,11 +488,20 @@ pub struct Activate {
     pub profile_id: Option<String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub enum StopType {
     Entry,
     Exit,
+}
+
+impl From<Subscription> for CoinbaseSubscription {
+    fn from(subscription: Subscription) -> Self {
+        match subscription {
+            Subscription::OrderBookUpdates(symbol) => CoinbaseSubscription::Level2(symbol),
+            _ => unimplemented!(),
+        }
+    }
 }
 
 impl From<InputMessage> for CoinbaseWebsocketMessage {
@@ -460,7 +555,7 @@ impl From<InputMessage> for CoinbaseWebsocketMessage {
 }
 
 impl<'de> Deserialize<'de> for CoinbaseWebsocketMessage {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {

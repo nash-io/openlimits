@@ -70,11 +70,11 @@ pub trait ExchangeWs: Send + Sync + Sized {
 
     async fn subscribe<
         S: Into<Self::Subscription> + Sync + Send + Clone,
-        F: Fn(&Result<WebSocketResponse<Self::Response>>) + Send + 'static,
+        F: FnMut(&Result<WebSocketResponse<Self::Response>>) + Send + 'static,
     >(
         &self,
         subscription: S,
-        callback: F,
+        mut callback: F,
     ) -> Result<CallbackHandle> {
         let s = slice::from_ref(&subscription);
         let stream = self.create_stream_specific(s.into()).await?;

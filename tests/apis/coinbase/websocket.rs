@@ -1,28 +1,61 @@
-use futures::StreamExt;
 use openlimits::coinbase::{
-    client::websocket::CoinbaseWebsocket,
-    model::websocket::{ChannelType, Subscription},
+    client::websocket::CoinbaseWebsocket, model::websocket::CoinbaseSubscription,
+    CoinbaseParameters,
 };
+use openlimits::exchange_ws::ExchangeWs;
+use openlimits::model::websocket::{OpenLimitsWebSocketMessage, WebSocketResponse};
+use std::sync::mpsc::sync_channel;
+use std::time::Duration;
 
-#[tokio::test]
-async fn aggregate_trade() {
-    let mut websocket = CoinbaseWebsocket::new("wss://ws-feed.pro.coinbase.com");
+async fn test_subscription_callback(
+    websocket: CoinbaseWebsocket,
+    sub: CoinbaseSubscription,
+    expected_messages: Vec<OpenLimitsWebSocketMessage>,
+) {
+    let (tx, rx) = sync_channel(0);
 
-    let sub = Subscription {
-        channels: vec![ChannelType::Level2],
-        product_ids: vec!["BTC-USD".to_string()],
-    };
-
-    websocket.subscribe(sub).await.expect("Couldn't subscribe.");
+    let mut received_messages: Vec<bool> = expected_messages.iter().map(|_| false).collect();
 
     websocket
-        .next()
+        .subscribe(sub, move |message| {
+            if let Ok(message) = message.as_ref() {
+                if let WebSocketResponse::Generic(message) = message {
+                    let expected_iter = expected_messages.iter().map(|expected| {
+                        std::mem::discriminant(expected) == std::mem::discriminant(&message)
+                    });
+                    for (already_received, currently_received) in
+                        received_messages.iter_mut().zip(expected_iter)
+                    {
+                        if !*already_received {
+                            *already_received = currently_received;
+                        }
+                    }
+                    if received_messages.iter().all(|received| *received) {
+                        tx.send(()).expect("Couldn't send sync message.");
+                    }
+                }
+            }
+        })
         .await
-        .expect("Couldn't get next.")
-        .expect("Couldn't get WebSocket message.");
-    websocket
-        .next()
-        .await
-        .expect("Couldn't get next.")
-        .expect("Couldn't get WebSocket message.");
+        .expect("Couldn't subscribe.");
+    rx.recv_timeout(Duration::from_secs(3))
+        .expect("Couldn't receive sync message.");
+}
+
+#[tokio::test(core_threads = 2)]
+async fn order_book() {
+    let websocket = init().await;
+    let sub = CoinbaseSubscription::Level2("BTC-USD".to_string());
+    let expected = vec![
+        OpenLimitsWebSocketMessage::OrderBook(Default::default()),
+        OpenLimitsWebSocketMessage::OrderBookDiff(Default::default()),
+    ];
+    test_subscription_callback(websocket, sub, expected).await;
+}
+
+async fn init() -> CoinbaseWebsocket {
+    CoinbaseWebsocket::new(CoinbaseParameters {
+        sandbox: true,
+        credentials: None,
+    })
 }

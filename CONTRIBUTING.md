@@ -10,6 +10,14 @@ Please send a [GitHub Pull Request](https://github.com/nash-io/openlimits/pull/n
 
 The conventions still needs to be defined, for now we rely on the rust-analyzer.
 
+##### Commenting
+
+Notes should be in the format `// TYPE:`, where `TYPE` is:
+
+  * `FIXME` - for parts of the code that needs to be fixed,
+  * `TODO` - for incomplete code, or code that needs to be improved in some way or
+  * `REVIEW` - for starting a discussion with the code reviewers. This should never be merged into the main branch.
+
 ##### Unwrapping
   * Try your best to never make use of `unwrap` and `expect` in the library code. The errors must be propagated or correctly handled.
   * If you really need to make use of `expect`, make sure to add a comment explaining the constraints that assure it will never fail.

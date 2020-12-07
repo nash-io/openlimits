@@ -4,6 +4,8 @@
 
 use std::convert::TryFrom;
 
+use crate::coinbase::client::websocket::CoinbaseWebsocket;
+use crate::coinbase::{Coinbase, CoinbaseParameters};
 use crate::exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
 use crate::exchange_ws::{ExchangeWs, OpenLimitsWs, Subscriptions};
 use crate::nash::{Nash, NashParameters, NashWebsocket};
@@ -32,11 +34,13 @@ use futures::stream::{BoxStream, StreamExt};
 pub enum InitAnyExchange {
     Nash(NashParameters),
     Binance(BinanceParameters),
+    Coinbase(CoinbaseParameters),
 }
 
 pub enum AnyExchange {
     Nash(Nash),
     Binance(Binance),
+    Coinbase(Coinbase),
 }
 
 #[async_trait]
@@ -44,11 +48,17 @@ impl Exchange for AnyExchange {
     type InitParams = InitAnyExchange;
     type InnerClient = ();
     async fn new(params: InitAnyExchange) -> Result<Self> {
-        let r = match params {
-            InitAnyExchange::Nash(params) => Nash::new(params).await?.into(),
-            InitAnyExchange::Binance(params) => Binance::new(params).await?.into(),
-        };
-        Ok(r)
+        match params {
+            InitAnyExchange::Nash(params) => {
+                Nash::new(params).await.map(|exchange| exchange.into())
+            }
+            InitAnyExchange::Binance(params) => {
+                Binance::new(params).await.map(|exchange| exchange.into())
+            }
+            InitAnyExchange::Coinbase(params) => {
+                Coinbase::new(params).await.map(|exchange| exchange.into())
+            }
+        }
     }
     // not particularly useful to access the inner client with this type. could wrap the inner
     // client reference in an enum, but that would introduce lifetimes all the way down due to
@@ -64,18 +74,21 @@ impl ExchangeInfoRetrieval for AnyExchange {
         match self {
             Self::Nash(nash) => nash.get_pair(name).await,
             Self::Binance(binance) => binance.get_pair(name).await,
+            Self::Coinbase(coinbase) => coinbase.get_pair(name).await,
         }
     }
     async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
         match self {
             Self::Nash(nash) => nash.retrieve_pairs().await,
             Self::Binance(binance) => binance.retrieve_pairs().await,
+            Self::Coinbase(coinbase) => coinbase.retrieve_pairs().await,
         }
     }
     async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
         match self {
             Self::Nash(nash) => nash.refresh_market_info().await,
             Self::Binance(binance) => binance.refresh_market_info().await,
+            Self::Coinbase(coinbase) => coinbase.refresh_market_info().await,
         }
     }
 }
@@ -86,66 +99,77 @@ impl ExchangeAccount for AnyExchange {
         match self {
             Self::Nash(nash) => nash.limit_buy(req).await,
             Self::Binance(binance) => binance.limit_buy(req).await,
+            Self::Coinbase(coinbase) => coinbase.limit_buy(req).await,
         }
     }
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         match self {
             Self::Nash(nash) => nash.limit_sell(req).await,
             Self::Binance(binance) => binance.limit_sell(req).await,
+            Self::Coinbase(coinbase) => coinbase.limit_sell(req).await,
         }
     }
     async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
         match self {
             Self::Nash(nash) => nash.market_buy(req).await,
             Self::Binance(binance) => binance.market_buy(req).await,
+            Self::Coinbase(coinbase) => coinbase.market_buy(req).await,
         }
     }
     async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
         match self {
             Self::Nash(nash) => nash.market_sell(req).await,
             Self::Binance(binance) => binance.market_sell(req).await,
+            Self::Coinbase(coinbase) => coinbase.market_sell(req).await,
         }
     }
     async fn cancel_order(&self, req: &CancelOrderRequest) -> Result<OrderCanceled> {
         match self {
             Self::Nash(nash) => nash.cancel_order(req).await,
             Self::Binance(binance) => binance.cancel_order(req).await,
+            Self::Coinbase(coinbase) => coinbase.cancel_order(req).await,
         }
     }
     async fn cancel_all_orders(&self, req: &CancelAllOrdersRequest) -> Result<Vec<OrderCanceled>> {
         match self {
             Self::Nash(nash) => nash.cancel_all_orders(req).await,
             Self::Binance(binance) => binance.cancel_all_orders(req).await,
+            Self::Coinbase(coinbase) => coinbase.cancel_all_orders(req).await,
         }
     }
     async fn get_all_open_orders(&self) -> Result<Vec<Order>> {
         match self {
             Self::Nash(nash) => nash.get_all_open_orders().await,
             Self::Binance(binance) => binance.get_all_open_orders().await,
+            Self::Coinbase(coinbase) => coinbase.get_all_open_orders().await,
         }
     }
     async fn get_order_history(&self, req: &GetOrderHistoryRequest) -> Result<Vec<Order>> {
         match self {
             Self::Nash(nash) => nash.get_order_history(req).await,
             Self::Binance(binance) => binance.get_order_history(req).await,
+            Self::Coinbase(coinbase) => coinbase.get_order_history(req).await,
         }
     }
     async fn get_trade_history(&self, req: &TradeHistoryRequest) -> Result<Vec<Trade>> {
         match self {
             Self::Nash(nash) => nash.get_trade_history(req).await,
             Self::Binance(binance) => binance.get_trade_history(req).await,
+            Self::Coinbase(coinbase) => coinbase.get_trade_history(req).await,
         }
     }
     async fn get_account_balances(&self, paginator: Option<Paginator>) -> Result<Vec<Balance>> {
         match self {
             Self::Nash(nash) => nash.get_account_balances(paginator).await,
             Self::Binance(binance) => binance.get_account_balances(paginator).await,
+            Self::Coinbase(coinbase) => coinbase.get_account_balances(paginator).await,
         }
     }
     async fn get_order(&self, req: &GetOrderRequest) -> Result<Order> {
         match self {
             Self::Nash(nash) => nash.get_order(req).await,
             Self::Binance(binance) => binance.get_order(req).await,
+            Self::Coinbase(coinbase) => coinbase.get_order(req).await,
         }
     }
 }
@@ -156,24 +180,28 @@ impl ExchangeMarketData for AnyExchange {
         match self {
             Self::Nash(nash) => nash.order_book(req).await,
             Self::Binance(binance) => binance.order_book(req).await,
+            Self::Coinbase(coinbase) => coinbase.order_book(req).await,
         }
     }
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         match self {
             Self::Nash(nash) => nash.get_price_ticker(req).await,
             Self::Binance(binance) => binance.get_price_ticker(req).await,
+            Self::Coinbase(coinbase) => coinbase.get_price_ticker(req).await,
         }
     }
     async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>> {
         match self {
             Self::Nash(nash) => nash.get_historic_rates(req).await,
             Self::Binance(binance) => binance.get_historic_rates(req).await,
+            Self::Coinbase(coinbase) => coinbase.get_historic_rates(req).await,
         }
     }
     async fn get_historic_trades(&self, req: &GetHistoricTradesRequest) -> Result<Vec<Trade>> {
         match self {
             Self::Nash(nash) => nash.get_historic_trades(req).await,
             Self::Binance(binance) => binance.get_historic_trades(req).await,
+            Self::Coinbase(coinbase) => coinbase.get_historic_trades(req).await,
         }
     }
 }
@@ -181,6 +209,7 @@ impl ExchangeMarketData for AnyExchange {
 pub enum AnyWsExchange {
     Nash(OpenLimitsWs<NashWebsocket>),
     Binance(OpenLimitsWs<BinanceWebsocket>),
+    Coinbase(OpenLimitsWs<CoinbaseWebsocket>),
 }
 
 #[async_trait]
@@ -190,17 +219,21 @@ impl ExchangeWs for AnyWsExchange {
     type Response = OpenLimitsWebSocketMessage;
 
     async fn new(params: Self::InitParams) -> Result<Self> {
-        let o = match params {
+        match params {
             InitAnyExchange::Nash(params) => OpenLimitsWs::<NashWebsocket>::instantiate(params)
-                .await?
-                .into(),
+                .await
+                .map(|exchange| exchange.into()),
             InitAnyExchange::Binance(params) => {
                 OpenLimitsWs::<BinanceWebsocket>::instantiate(params)
-                    .await?
-                    .into()
+                    .await
+                    .map(|exchange| exchange.into())
             }
-        };
-        Ok(o)
+            InitAnyExchange::Coinbase(params) => {
+                OpenLimitsWs::<CoinbaseWebsocket>::instantiate(params)
+                    .await
+                    .map(|exchange| exchange.into())
+            }
+        }
     }
 
     async fn create_stream_specific(
@@ -238,8 +271,29 @@ impl ExchangeWs for AnyWsExchange {
                     })
                 })
                 .boxed(),
+            Self::Coinbase(coinbase) => coinbase
+                .create_stream_specific(subscriptions.as_slice().into())
+                .await?
+                .map(|r| {
+                    WebSocketResponse::try_from(r.expect(
+                        "Couldn't convert WebSocketResponse from SubscriptionResponseWrapper.",
+                    ))
+                })
+                .map(|r| {
+                    r.map(|resp| match resp {
+                        WebSocketResponse::Generic(generic) => generic,
+                        WebSocketResponse::Raw(_) => panic!("Should never happen"),
+                    })
+                })
+                .boxed(),
         };
         Ok(s)
+    }
+}
+
+impl From<Coinbase> for AnyExchange {
+    fn from(coinbase: Coinbase) -> Self {
+        Self::Coinbase(coinbase)
     }
 }
 
@@ -264,5 +318,11 @@ impl From<OpenLimitsWs<NashWebsocket>> for AnyWsExchange {
 impl From<OpenLimitsWs<BinanceWebsocket>> for AnyWsExchange {
     fn from(binance: OpenLimitsWs<BinanceWebsocket>) -> Self {
         Self::Binance(binance)
+    }
+}
+
+impl From<OpenLimitsWs<CoinbaseWebsocket>> for AnyWsExchange {
+    fn from(coinbase: OpenLimitsWs<CoinbaseWebsocket>) -> Self {
+        Self::Coinbase(coinbase)
     }
 }

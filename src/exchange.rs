@@ -1,7 +1,6 @@
-// use std::fmt::Debug;
-
 use async_trait::async_trait;
 
+use crate::exchange_info::ExchangeInfoRetrieval;
 use crate::{
     model::{
         Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
@@ -21,7 +20,7 @@ impl OpenLimits {
 }
 
 #[async_trait]
-pub trait Exchange: Sized {
+pub trait Exchange: ExchangeInfoRetrieval + ExchangeAccount + ExchangeMarketData + Sized {
     type InitParams;
     type InnerClient;
     async fn new(params: Self::InitParams) -> Result<Self>;
