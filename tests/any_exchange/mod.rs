@@ -11,6 +11,7 @@ use openlimits::coinbase::{Coinbase, CoinbaseCredentials, CoinbaseParameters};
 use openlimits::exchange::OpenLimits;
 use openlimits::exchange_ws::OpenLimitsWs;
 use openlimits::nash::{Nash, NashCredentials, NashParameters, NashWebsocket};
+use openlimits::shared::Result;
 use std::env;
 
 #[tokio::test]
@@ -23,7 +24,7 @@ async fn ws_test() {
     let _websocket = init_ws().await;
 }
 
-async fn _nash() -> Nash {
+async fn _nash() -> Result<Nash> {
     let parameters = NashParameters {
         affiliate_code: None,
         credentials: Some(NashCredentials {
@@ -37,7 +38,7 @@ async fn _nash() -> Nash {
     OpenLimits::instantiate(parameters).await
 }
 
-async fn _binance() -> Binance {
+async fn _binance() -> Result<Binance> {
     let parameters = BinanceParameters {
         credentials: Some(BinanceCredentials {
             api_key: env::var("BINANCE_API_KEY").expect("Couldn't get environment variable."),
@@ -48,7 +49,7 @@ async fn _binance() -> Binance {
     OpenLimits::instantiate(parameters).await
 }
 
-async fn coinbase() -> Coinbase {
+async fn coinbase() -> Result<Coinbase> {
     let parameters = CoinbaseParameters {
         sandbox: true,
         credentials: Some(CoinbaseCredentials {
@@ -60,9 +61,9 @@ async fn coinbase() -> Coinbase {
     OpenLimits::instantiate(parameters).await
 }
 
-async fn init() -> AnyExchange {
+async fn init() -> Result<AnyExchange> {
     dotenv().ok();
-    coinbase().await.into()
+    coinbase().await.map(|exchange| exchange.into())
 }
 
 async fn _nash_websocket() -> OpenLimitsWs<NashWebsocket> {

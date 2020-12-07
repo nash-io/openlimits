@@ -121,8 +121,8 @@ impl ExchangeWs for CoinbaseWebsocket {
     type Subscription = CoinbaseSubscription;
     type Response = CoinbaseWebsocketMessage;
 
-    async fn new(parameters: Self::InitParams) -> Self {
-        CoinbaseWebsocket::new(parameters)
+    async fn new(parameters: Self::InitParams) -> Result<Self> {
+        Ok(CoinbaseWebsocket::new(parameters))
     }
 
     async fn create_stream_specific(
