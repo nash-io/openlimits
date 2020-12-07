@@ -2,6 +2,7 @@ use openlimits::coinbase::{client::websocket::CoinbaseWebsocket, model::websocke
 use std::sync::mpsc::sync_channel;
 use openlimits::exchange_ws::ExchangeWs;
 use openlimits::model::websocket::{WebSocketResponse, OpenLimitsWebSocketMessage};
+use std::time::Duration;
 
 async fn test_subscription_callback(websocket: CoinbaseWebsocket, sub: CoinbaseSubscription, expected_messages: Vec<OpenLimitsWebSocketMessage>) {
     let (tx, rx) = sync_channel(0);
@@ -25,7 +26,7 @@ async fn test_subscription_callback(websocket: CoinbaseWebsocket, sub: CoinbaseS
             }
         }
     }).await.expect("Couldn't subscribe.");
-    rx.recv().expect("Couldn't receive sync message.");
+    rx.recv_timeout(Duration::from_secs(3)).expect("Couldn't receive sync message.");
 }
 
 #[tokio::test(core_threads = 2)]
