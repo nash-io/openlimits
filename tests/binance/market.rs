@@ -47,7 +47,9 @@ async fn get_historic_rates() {
 
 #[tokio::test]
 async fn pair() {
-    let exchange = Binance::new(BinanceParameters::sandbox()).await;
+    let exchange = Binance::new(BinanceParameters::sandbox())
+        .await
+        .expect("Failed to create Client");
     let _response = exchange
         .get_pair("BTCUSDT")
         .await
@@ -60,5 +62,7 @@ async fn init() -> Binance {
         sandbox: true,
     };
 
-    OpenLimits::instantiate(parameters).await
+    OpenLimits::instantiate(parameters)
+        .await
+        .expect("Failed to create Client")
 }

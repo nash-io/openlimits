@@ -230,5 +230,7 @@ async fn init() -> Binance {
         sandbox: true,
     };
 
-    OpenLimits::instantiate(parameters).await
+    OpenLimits::instantiate(parameters)
+        .await
+        .expect("Failed to create Client")
 }

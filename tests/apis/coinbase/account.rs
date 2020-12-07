@@ -420,4 +420,5 @@ async fn init() -> Coinbase {
         }),
     })
     .await
+    .expect("Failed to create Client")
 }

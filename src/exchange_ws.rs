@@ -20,9 +20,9 @@ pub struct OpenLimitsWs<E: ExchangeWs> {
 }
 
 impl<E: ExchangeWs> OpenLimitsWs<E> {
-    pub async fn instantiate(params: E::InitParams) -> Self {
-        let websocket = E::new(params).await;
-        Self { websocket }
+    pub async fn instantiate(params: E::InitParams) -> Result<Self> {
+        let websocket = E::new(params).await?;
+        Ok(Self { websocket })
     }
 
     pub async fn create_stream_specific(
@@ -51,7 +51,7 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
 }
 
 #[async_trait]
-pub trait ExchangeWs: Send + Sync {
+pub trait ExchangeWs: Send + Sync + Sized {
     type InitParams;
     type Subscription: From<Subscription> + Send + Sync + Sized;
     type Response: TryInto<WebSocketResponse<Self::Response>, Error = OpenLimitError>
@@ -61,7 +61,7 @@ pub trait ExchangeWs: Send + Sync {
         + Sized
         + 'static;
 
-    async fn new(params: Self::InitParams) -> Self;
+    async fn new(params: Self::InitParams) -> Result<Self>;
 
     async fn create_stream_specific(
         &self,
