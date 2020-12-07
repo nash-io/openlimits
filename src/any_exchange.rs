@@ -49,9 +49,15 @@ impl Exchange for AnyExchange {
     type InnerClient = ();
     async fn new(params: InitAnyExchange) -> Result<Self> {
         match params {
-            InitAnyExchange::Nash(params) => Nash::new(params).await.map(|exchange| exchange.into()),
-            InitAnyExchange::Binance(params) => Binance::new(params).await.map(|exchange| exchange.into()),
-            InitAnyExchange::Coinbase(params) => Coinbase::new(params).await.map(|exchange| exchange.into())
+            InitAnyExchange::Nash(params) => {
+                Nash::new(params).await.map(|exchange| exchange.into())
+            }
+            InitAnyExchange::Binance(params) => {
+                Binance::new(params).await.map(|exchange| exchange.into())
+            }
+            InitAnyExchange::Coinbase(params) => {
+                Coinbase::new(params).await.map(|exchange| exchange.into())
+            }
         }
     }
     // not particularly useful to access the inner client with this type. could wrap the inner
@@ -214,16 +220,14 @@ impl ExchangeWs for AnyWsExchange {
 
     async fn new(params: Self::InitParams) -> Result<Self> {
         match params {
-            InitAnyExchange::Nash(params) => {
-                OpenLimitsWs::<NashWebsocket>::instantiate(params)
-                    .await
-                    .map(|exchange| exchange.into())
-            },
+            InitAnyExchange::Nash(params) => OpenLimitsWs::<NashWebsocket>::instantiate(params)
+                .await
+                .map(|exchange| exchange.into()),
             InitAnyExchange::Binance(params) => {
                 OpenLimitsWs::<BinanceWebsocket>::instantiate(params)
                     .await
                     .map(|exchange| exchange.into())
-            },
+            }
             InitAnyExchange::Coinbase(params) => {
                 OpenLimitsWs::<CoinbaseWebsocket>::instantiate(params)
                     .await

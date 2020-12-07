@@ -447,7 +447,10 @@ impl TryFrom<&TradeHistoryRequest>
         let (before, limit, range) = try_split_paginator(req.paginator.clone());
 
         Ok(Self {
-            market: req.market_pair.clone().ok_or(OpenLimitError::NoMarketPair)?,
+            market: req
+                .market_pair
+                .clone()
+                .ok_or(OpenLimitError::NoMarketPair)?,
             before,
             limit,
             range,
@@ -618,7 +621,10 @@ impl TryFrom<&GetOrderHistoryRequest>
         let (before, limit, range) = try_split_paginator(req.paginator.clone());
 
         Ok(Self {
-            market: req.market_pair.clone().ok_or(OpenLimitError::NoMarketPair)?,
+            market: req
+                .market_pair
+                .clone()
+                .ok_or(OpenLimitError::NoMarketPair)?,
             before,
             limit,
             range,
