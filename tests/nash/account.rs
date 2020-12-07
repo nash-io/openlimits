@@ -73,7 +73,7 @@ async fn limit_buy_ggt() {
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillTime(Duration::hours(2)),
         price: Decimal::from_str("414.46").expect("Couldn't parse string."),
-        size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.02000").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
@@ -116,9 +116,9 @@ async fn market_sell() {
 async fn limit_sell() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
-        time_in_force: TimeInForce::GoodTillCancelled,
-        price: Decimal::from_str("414.46").expect("Couldn't parse string."),
-        size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
+        time_in_force: TimeInForce::GoodTillTime(Duration::hours(2)),
+        price: Decimal::from_str("800.46").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.02").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
@@ -246,7 +246,7 @@ async fn init() -> Nash {
             secret: env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
             session: env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
         }),
-        environment: Environment::Sandbox,
+        environment: Environment::Production,
         client_id: 1,
         timeout: 100000,
     };
