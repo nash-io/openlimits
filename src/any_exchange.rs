@@ -47,12 +47,12 @@ pub enum AnyExchange {
 impl Exchange for AnyExchange {
     type InitParams = InitAnyExchange;
     type InnerClient = ();
-    async fn new(params: InitAnyExchange) -> Self {
-        match params {
+    async fn new(params: InitAnyExchange) -> Result<Self> {
+        Ok(match params {
             InitAnyExchange::Nash(params) => Nash::new(params).await.into(),
             InitAnyExchange::Binance(params) => Binance::new(params).await.into(),
-            InitAnyExchange::Coinbase(params) => Coinbase::new(params).await.into(),
-        }
+            InitAnyExchange::Coinbase(params) => Coinbase::new(params).await.into()
+        })
     }
     // not particularly useful to access the inner client with this type. could wrap the inner
     // client reference in an enum, but that would introduce lifetimes all the way down due to
@@ -212,14 +212,14 @@ impl ExchangeWs for AnyWsExchange {
     type Subscription = Subscription;
     type Response = OpenLimitsWebSocketMessage;
 
-    async fn new(params: Self::InitParams) -> Self {
-        match params {
+    async fn new(params: Self::InitParams) -> Result<Self> {
+        let o = match params {
             InitAnyExchange::Nash(params) => OpenLimitsWs::<NashWebsocket>::instantiate(params)
-                .await
+                .await?
                 .into(),
             InitAnyExchange::Binance(params) => {
                 OpenLimitsWs::<BinanceWebsocket>::instantiate(params)
-                    .await
+                    .await?
                     .into()
             }
             InitAnyExchange::Coinbase(params) => {
@@ -227,7 +227,8 @@ impl ExchangeWs for AnyWsExchange {
                     .await
                     .into()
             }
-        }
+        };
+        Ok(o)
     }
 
     async fn create_stream_specific(

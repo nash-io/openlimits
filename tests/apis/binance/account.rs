@@ -319,4 +319,5 @@ async fn init() -> Binance {
         }),
     })
     .await
+    .expect("Failed to create Client")
 }

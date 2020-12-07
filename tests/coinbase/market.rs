@@ -61,7 +61,9 @@ async fn get_historic_rates_invalid_interval() {
 
 #[tokio::test]
 async fn pair() {
-    let exchange = Coinbase::new(CoinbaseParameters::sandbox()).await;
+    let exchange = Coinbase::new(CoinbaseParameters::sandbox())
+        .await
+        .expect("Failed to create Client");
     let _response = exchange
         .get_pair("BTC-USD")
         .await
@@ -74,5 +76,7 @@ async fn init() -> Coinbase {
         sandbox: true,
     };
 
-    OpenLimits::instantiate(parameters).await
+    OpenLimits::instantiate(parameters)
+        .await
+        .expect("Failed to create Client")
 }

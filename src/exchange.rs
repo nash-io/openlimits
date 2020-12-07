@@ -14,16 +14,16 @@ use crate::{
 pub struct OpenLimits {}
 
 impl OpenLimits {
-    pub async fn instantiate<E: Exchange>(parameters: E::InitParams) -> E {
-        E::new(parameters).await
+    pub async fn instantiate<E: Exchange>(parameters: E::InitParams) -> Result<E> {
+        Ok(E::new(parameters).await?)
     }
 }
 
 #[async_trait]
-pub trait Exchange: ExchangeInfoRetrieval + ExchangeAccount + ExchangeMarketData {
+pub trait Exchange: ExchangeInfoRetrieval + ExchangeAccount + ExchangeMarketData + Sized {
     type InitParams;
     type InnerClient;
-    async fn new(params: Self::InitParams) -> Self;
+    async fn new(params: Self::InitParams) -> Result<Self>;
     fn inner_client(&self) -> Option<&Self::InnerClient>;
 }
 

@@ -64,7 +64,7 @@ impl Exchange for Binance {
     type InitParams = BinanceParameters;
     type InnerClient = BaseClient;
 
-    async fn new(parameters: Self::InitParams) -> Self {
+    async fn new(parameters: Self::InitParams) -> Result<Self> {
         let binance = match parameters.credentials {
             Some(credentials) => Binance {
                 exchange_info: ExchangeInfo::new(),
@@ -73,24 +73,19 @@ impl Exchange for Binance {
                         &credentials.api_key,
                         &credentials.api_secret,
                         parameters.sandbox,
-                    )
-                    .expect("Couldn't construct transport."),
+                    )?,
                 },
             },
             None => Binance {
                 exchange_info: ExchangeInfo::new(),
                 client: BaseClient {
-                    transport: Transport::new(parameters.sandbox)
-                        .expect("Couldn't construct transport."),
+                    transport: Transport::new(parameters.sandbox)?,
                 },
             },
         };
 
-        binance
-            .refresh_market_info()
-            .await
-            .expect("Couldn't refresh market info.");
-        binance
+        binance.refresh_market_info().await?;
+        Ok(binance)
     }
 
     fn inner_client(&self) -> Option<&Self::InnerClient> {
