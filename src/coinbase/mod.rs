@@ -318,9 +318,15 @@ impl From<model::Account> for Balance {
 
 impl From<model::Fill> for Trade {
     fn from(fill: model::Fill) -> Self {
+        let (buyer_order_id, seller_order_id) = match fill.side.as_str() {
+            "buy" => (Some(fill.order_id), None),
+            _ => (None, Some(fill.order_id)),
+        };
+
         Self {
             id: fill.trade_id.to_string(),
-            order_id: fill.order_id,
+            buyer_order_id: buyer_order_id,
+            seller_order_id: seller_order_id,
             market_pair: fill.product_id,
             price: fill.price,
             qty: fill.size,
