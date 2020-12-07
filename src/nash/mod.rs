@@ -212,7 +212,7 @@ impl ExchangeAccount for Nash {
 
     async fn get_all_open_orders(&self) -> Result<Vec<Order>> {
         let req = nash_protocol::protocol::list_account_orders::ListAccountOrdersRequest {
-            market: None,
+            market: Default::default(),
             before: None,
             buy_or_sell: None,
             limit: Some(100),
@@ -447,7 +447,7 @@ impl TryFrom<&TradeHistoryRequest>
         let (before, limit, range) = try_split_paginator(req.paginator.clone());
 
         Ok(Self {
-            market: req.market_pair.clone(),
+            market: req.market_pair.clone().ok_or(OpenLimitError::NoMarketPair)?,
             before,
             limit,
             range,
@@ -618,7 +618,7 @@ impl TryFrom<&GetOrderHistoryRequest>
         let (before, limit, range) = try_split_paginator(req.paginator.clone());
 
         Ok(Self {
-            market: req.market_pair.clone(),
+            market: req.market_pair.clone().ok_or(OpenLimitError::NoMarketPair)?,
             before,
             limit,
             range,
