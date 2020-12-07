@@ -499,7 +499,7 @@ impl From<Subscription> for CoinbaseSubscription {
     fn from(subscription: Subscription) -> Self {
         match subscription {
             Subscription::OrderBookUpdates(symbol) => CoinbaseSubscription::Level2(symbol),
-            _ => panic!("Not implemented"),
+            _ => unimplemented!(),
         }
     }
 }

@@ -59,7 +59,7 @@ impl CoinbaseWebsocket {
                 vec![Channel::Name(ChannelType::Heartbeat)],
                 vec![product_id.clone()],
             ),
-            _ => panic!("Not implemented"),
+            _ => unimplemented!(),
         };
         let subscribe = Subscribe {
             _type: SubscribeCmd::Subscribe,
@@ -146,7 +146,7 @@ impl ExchangeWs for CoinbaseWebsocket {
                 vec![Channel::Name(ChannelType::Heartbeat)],
                 vec![product_id.clone()],
             ),
-            _ => panic!("Not implemented"),
+            _ => unimplemented!(),
         };
         let subscribe = Subscribe {
             _type: SubscribeCmd::Subscribe,

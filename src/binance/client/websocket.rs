@@ -152,7 +152,7 @@ impl From<Subscription> for BinanceSubscription {
         match subscription {
             Subscription::OrderBookUpdates(symbol) => BinanceSubscription::Depth(symbol, None),
             Subscription::Trades(symbol) => BinanceSubscription::Trade(symbol),
-            _ => panic!("Not implemented"),
+            _ => unimplemented!(),
         }
     }
 }
