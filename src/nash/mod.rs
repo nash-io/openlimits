@@ -447,10 +447,7 @@ impl TryFrom<&TradeHistoryRequest>
         let (before, limit, range) = try_split_paginator(req.paginator.clone());
 
         Ok(Self {
-            market: req
-                .market_pair
-                .clone()
-                .ok_or(OpenLimitError::NoMarketPair)?,
+            market: req.market_pair.clone(),
             before,
             limit,
             range,
@@ -621,10 +618,7 @@ impl TryFrom<&GetOrderHistoryRequest>
         let (before, limit, range) = try_split_paginator(req.paginator.clone());
 
         Ok(Self {
-            market: req
-                .market_pair
-                .clone()
-                .ok_or(OpenLimitError::NoMarketPair)?,
+            market: req.market_pair.clone(),
             before,
             limit,
             range,
@@ -768,6 +762,7 @@ impl Stream for NashWebsocket {
         ResponseOrError<nash_protocol::protocol::subscriptions::SubscriptionResponse>,
         nash_protocol::errors::ProtocolError,
     >;
+
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         self.client.poll_next_unpin(cx)
     }
@@ -850,9 +845,12 @@ impl Clone for SubscriptionResponseWrapper {
         match &self.0 {
             SubscriptionResponse::Orderbook(o) => {
                 SubscriptionResponseWrapper(SubscriptionResponse::Orderbook(o.clone()))
-            }
+            },
             SubscriptionResponse::Trades(t) => {
                 SubscriptionResponseWrapper(SubscriptionResponse::Trades(t.clone()))
+            },
+            SubscriptionResponse::Ticker(ticker) => {
+                SubscriptionResponseWrapper(SubscriptionResponse::Ticker(ticker.clone()))
             }
         }
     }
@@ -875,6 +873,13 @@ impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResp
                 let trades = resp.trades.into_iter().map(|x| x.into()).collect();
                 Ok(WebSocketResponse::Generic(
                     OpenLimitsWebSocketMessage::Trades(trades),
+                ))
+            },
+            SubscriptionResponse::Ticker(resp) => {
+                Ok(WebSocketResponse::Raw(
+                    SubscriptionResponseWrapper(
+                        SubscriptionResponse::Ticker(resp.clone())
+                    )
                 ))
             }
         }
