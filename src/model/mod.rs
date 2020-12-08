@@ -168,7 +168,8 @@ pub struct OrderCanceled {
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
 pub struct Trade {
     pub id: String,
-    pub order_id: String,
+    pub buyer_order_id: Option<String>,
+    pub seller_order_id: Option<String>,
     pub market_pair: String,
     pub price: Decimal,
     pub qty: Decimal,
