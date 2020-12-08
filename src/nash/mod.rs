@@ -850,10 +850,10 @@ impl Clone for SubscriptionResponseWrapper {
         match &self.0 {
             SubscriptionResponse::Orderbook(o) => {
                 SubscriptionResponseWrapper(SubscriptionResponse::Orderbook(o.clone()))
-            },
+            }
             SubscriptionResponse::Trades(t) => {
                 SubscriptionResponseWrapper(SubscriptionResponse::Trades(t.clone()))
-            },
+            }
             SubscriptionResponse::Ticker(ticker) => {
                 SubscriptionResponseWrapper(SubscriptionResponse::Ticker(ticker.clone()))
             }
@@ -879,14 +879,10 @@ impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResp
                 Ok(WebSocketResponse::Generic(
                     OpenLimitsWebSocketMessage::Trades(trades),
                 ))
-            },
-            SubscriptionResponse::Ticker(resp) => {
-                Ok(WebSocketResponse::Raw(
-                    SubscriptionResponseWrapper(
-                        SubscriptionResponse::Ticker(resp.clone())
-                    )
-                ))
             }
+            SubscriptionResponse::Ticker(resp) => Ok(WebSocketResponse::Raw(
+                SubscriptionResponseWrapper(SubscriptionResponse::Ticker(resp.clone())),
+            )),
         }
     }
 }
