@@ -5,7 +5,7 @@ use std::{
 };
 
 use crate::{
-    errors::OpenLimitError,
+    errors::OpenLimitsError,
     model::websocket::WebSocketResponse,
     model::websocket::{OpenLimitsWebSocketMessage, Subscription},
     shared::Result,
@@ -50,11 +50,15 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
     }
 }
 
+pub trait WebSocketConnectivity {
+    fn disconnect(&self);
+}
+
 #[async_trait]
 pub trait ExchangeWs: Send + Sync + Sized {
     type InitParams;
     type Subscription: From<Subscription> + Send + Sync + Sized;
-    type Response: TryInto<WebSocketResponse<Self::Response>, Error = OpenLimitError>
+    type Response: TryInto<WebSocketResponse<Self::Response>, Error =OpenLimitsError>
         + Send
         + Sync
         + Clone
@@ -115,7 +119,7 @@ pub struct CallbackHandle {
 }
 
 impl TryFrom<OpenLimitsWebSocketMessage> for WebSocketResponse<OpenLimitsWebSocketMessage> {
-    type Error = OpenLimitError;
+    type Error = OpenLimitsError;
 
     fn try_from(value: OpenLimitsWebSocketMessage) -> Result<Self> {
         Ok(WebSocketResponse::Generic(value))
