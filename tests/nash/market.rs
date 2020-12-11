@@ -12,6 +12,7 @@ use openlimits::{
 
 use dotenv::dotenv;
 use std::env;
+use tokio::time::Duration;
 
 #[tokio::test]
 async fn order_book() {
@@ -99,7 +100,7 @@ async fn init() -> Nash {
         }),
         environment: Environment::Sandbox,
         client_id: 1,
-        timeout: 1000,
+        timeout: Duration::from_secs_f32(10.0),
     };
 
     OpenLimits::instantiate(parameters)

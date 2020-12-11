@@ -42,7 +42,7 @@ pub struct NashParameters {
     pub credentials: Option<NashCredentials>,
     pub client_id: u64,
     pub environment: Environment,
-    pub timeout: u64,
+    pub timeout: Duration,
 }
 
 impl Clone for NashParameters {
@@ -728,18 +728,14 @@ use nash_protocol::protocol::{
 };
 use nash_protocol::types::DateTimeRange;
 use std::{pin::Pin, task::Context, task::Poll};
+use tokio::time::Duration;
 
 pub struct NashWebsocket {
     pub client: Client,
 }
 
 impl NashWebsocket {
-    pub async fn public(client_id: u64, sandbox: bool, timeout: u64) -> Self {
-        let environment = if sandbox {
-            Environment::Sandbox
-        } else {
-            Environment::Production
-        };
+    pub async fn public(client_id: u64, environment: Environment, timeout: Duration) -> Self {
         NashWebsocket {
             client: Client::new(None, client_id, None, environment, timeout)
                 .await
@@ -752,7 +748,7 @@ impl NashWebsocket {
         session: &str,
         client_id: u64,
         environment: Environment,
-        timeout: u64,
+        timeout: Duration,
     ) -> Self {
         NashWebsocket {
             client: Client::from_key_data(secret, session, None, client_id, environment, timeout)

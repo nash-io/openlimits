@@ -13,6 +13,7 @@ use openlimits::exchange_ws::OpenLimitsWs;
 use openlimits::nash::{Nash, NashCredentials, NashParameters, NashWebsocket};
 use openlimits::shared::Result;
 use std::env;
+use tokio::time::Duration;
 
 #[tokio::test]
 async fn account_test() {
@@ -33,7 +34,7 @@ async fn _nash() -> Result<Nash> {
         }),
         environment: Environment::Sandbox,
         client_id: 1,
-        timeout: 1000,
+        timeout: Duration::from_secs_f32(10.0),
     };
     OpenLimits::instantiate(parameters).await
 }
@@ -74,7 +75,7 @@ async fn _nash_websocket() -> OpenLimitsWs<NashWebsocket> {
         &env::var("NASH_API_KEY").unwrap(),
         1234,
         Environment::Sandbox,
-        10000,
+        Duration::from_secs_f32(10.0),
     )
         .await;
 
