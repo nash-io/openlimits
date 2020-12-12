@@ -54,7 +54,7 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
 pub trait ExchangeWs: Send + Sync + Sized {
     type InitParams: Clone + Send + Sync + 'static;
     type Subscription: From<Subscription> + Send + Sync + Sized + Clone;
-    type Response: TryInto<WebSocketResponse<Self::Response>, Error =OpenLimitsError>
+    type Response: TryInto<WebSocketResponse<Self::Response>, Error = OpenLimitsError>
         + Send
         + Sync
         + Clone
