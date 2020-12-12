@@ -749,12 +749,11 @@ impl NashWebsocket {
         client_id: u64,
         environment: Environment,
         timeout: Duration,
-    ) -> Self {
-        NashWebsocket {
-            client: Client::from_key_data(secret, session, None, client_id, environment, timeout)
-                .await
-                .expect("Couldn't create Client."),
-        }
+    ) -> Result<Self> {
+        Client::from_key_data(secret, session, None, client_id, environment, timeout)
+            .await
+            .map(|client| NashWebsocket { client })
+            .map_err(|error| OpenLimitsError::NashProtocolError(error))
     }
 }
 

@@ -1,46 +1,49 @@
 use dotenv::dotenv;
 use nash_native_client::ws_client::client::Environment;
-use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::NashWebsocket};
-use std::{env, sync::mpsc::sync_channel};
+use openlimits::{model::websocket::Subscription, nash::NashWebsocket};
+use std::env;
+use tokio::time::Duration;
+use openlimits::shared::Result;
 
-async fn test_subscription_callback(websocket: OpenLimitsWs<NashWebsocket>, sub: Subscription) {
-    websocket
-        .subscribe(sub, move |message| {
-            let message = message.as_ref().expect("Couldn't get response.");
-            println!("{:#?}", message);
-        })
-        .await
-        .expect("Couldn't subscribe.");
-    loop {
+use openlimits::nash::{NashParameters, NashCredentials};
+use openlimits::reconnectable_ws::ReconnectableWebsocket;
+use std::thread::sleep;
 
-    }
+// FIXME: We need to create a disconnection mechanism to properly test this feature.
+async fn test_subscription_callback(websocket: ReconnectableWebsocket<NashWebsocket>, sub: Subscription) {
+    websocket.subscribe(sub, |message| {
+        match message.as_ref() {
+            Ok(message) => println!("{:#?}", message),
+            Err(e) => println!("Disconnected: {:#?}", e)
+        }
+    }).await.expect("Couldn't subscribe");
+    sleep(Duration::from_secs_f32(3.0));
 }
 
 #[tokio::test(core_threads = 2)]
 async fn orderbook() {
     let client = init().await;
     let sub = Subscription::OrderBookUpdates("btc_usdc".to_string());
-    test_subscription_callback(client, sub).await;
+    test_subscription_callback(client.expect("Couldn't create client."), sub).await;
 }
 
 #[tokio::test(core_threads = 2)]
 async fn trades() {
-    let client = init().await;
+    let client = init().await.expect("Couldn't create client.");
     let sub = Subscription::Trades("btc_usdc".to_string());
     test_subscription_callback(client, sub).await;
 }
 
-async fn init() -> OpenLimitsWs<NashWebsocket> {
+async fn init() -> Result<ReconnectableWebsocket<NashWebsocket>> {
     dotenv().ok();
-
-    let websocket = NashWebsocket::with_credential(
-        &env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
-        &env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
-        1234,
-        Environment::Production,
-        10000,
-    )
-        .await;
-
-    OpenLimitsWs { websocket  }
+    ReconnectableWebsocket::instantiate(NashParameters {
+        timeout: Duration::from_secs_f32(2.0),
+        client_id: 123,
+        credentials: Some(NashCredentials {
+            secret: env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
+            session: env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
+        }),
+        affiliate_code: None,
+        environment: Environment::Production
+    }, Duration::from_secs_f32(1.0)).await
 }
