@@ -681,35 +681,44 @@ impl From<&GetPriceTickerRequest> for nash_protocol::protocol::get_ticker::Ticke
     }
 }
 
+fn compute_price(
+    high_price: Option<impl ToString>,
+    low_price: Option<impl ToString>,
+) -> Option<Decimal> {
+    let mut price = None;
+
+    if let Some(high_price) = high_price {
+        if let Some(low_price) = low_price {
+            let high = Decimal::from_str(&high_price.to_string())
+                .expect("Couldn't parse Decimal from string.");
+            let low = Decimal::from_str(&low_price.to_string())
+                .expect("Couldn't parse Decimal from string.");
+            price = Some((high + low) / Decimal::from(2));
+        }
+    }
+
+    price
+}
+
 impl From<nash_protocol::protocol::get_ticker::TickerResponse> for Ticker {
     fn from(resp: nash_protocol::protocol::get_ticker::TickerResponse) -> Self {
-        let mut price = None;
-        if resp.best_ask_price.is_some() && resp.best_bid_price.is_some() {
-            let ask = Decimal::from_str(&resp.best_ask_price.unwrap().to_string())
-                .expect("Couldn't parse Decimal from string.");
-            let bid = Decimal::from_str(&resp.best_bid_price.unwrap().to_string())
-                .expect("Couldn't parse Decimal from string.");
-            price = Some((ask + bid) / Decimal::from(2));
+        Self {
+            price: compute_price(resp.best_ask_price, resp.best_bid_price),
+            price_24h: compute_price(resp.high_price_24h, resp.low_price_24h),
         }
-        let mut price_24h = None;
-        if resp.high_price_24h.is_some() && resp.low_price_24h.is_some() {
-            let day_high = Decimal::from_str(
-                &resp
-                    .high_price_24h
-                    .expect("Couldn't get high price 24h.")
-                    .to_string(),
-            )
-            .expect("Couldn't parse Decimal from string.");
-            let day_low = Decimal::from_str(
-                &resp
-                    .low_price_24h
-                    .expect("Couldn't get low price 24h.")
-                    .to_string(),
-            )
-            .expect("Couldn't parse Decimal from string.");
-            price_24h = Some((day_high + day_low) / Decimal::from(2));
+    }
+}
+
+impl From<nash_protocol::protocol::subscriptions::updated_ticker::SubscribeTickerResponse>
+    for Ticker
+{
+    fn from(
+        resp: nash_protocol::protocol::subscriptions::updated_ticker::SubscribeTickerResponse,
+    ) -> Self {
+        Self {
+            price: compute_price(resp.best_ask_price, resp.best_bid_price),
+            price_24h: compute_price(resp.high_price_24h, resp.low_price_24h),
         }
-        Self { price, price_24h }
     }
 }
 
@@ -837,6 +846,9 @@ impl From<Subscription> for nash_protocol::protocol::subscriptions::Subscription
             Subscription::Trades(market) => Self::Trades(
                 nash_protocol::protocol::subscriptions::trades::SubscribeTrades { market },
             ),
+            Subscription::Ticker(market) => Self::Ticker(
+                nash_protocol::protocol::subscriptions::updated_ticker::SubscribeTicker { market },
+            ),
             _ => panic!("Not supported Subscription"),
         }
     }
@@ -850,6 +862,9 @@ impl Clone for SubscriptionResponseWrapper {
         match &self.0 {
             SubscriptionResponse::Orderbook(o) => {
                 SubscriptionResponseWrapper(SubscriptionResponse::Orderbook(o.clone()))
+            }
+            SubscriptionResponse::Ticker(t) => {
+                SubscriptionResponseWrapper(SubscriptionResponse::Ticker(t.clone()))
             }
             SubscriptionResponse::Trades(t) => {
                 SubscriptionResponseWrapper(SubscriptionResponse::Trades(t.clone()))
@@ -873,6 +888,9 @@ impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResp
                     asks: resp.asks.into_iter().map(Into::into).collect(),
                     bids: resp.bids.into_iter().map(Into::into).collect(),
                 }),
+            )),
+            SubscriptionResponse::Ticker(resp) => Ok(WebSocketResponse::Generic(
+                OpenLimitsWebSocketMessage::Ticker(resp.into()),
             )),
             SubscriptionResponse::Trades(resp) => {
                 let trades = resp.trades.into_iter().map(|x| x.into()).collect();

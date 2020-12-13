@@ -31,6 +31,13 @@ async fn trades() {
     test_subscription_callback(client, sub).await;
 }
 
+#[tokio::test(core_threads = 2)]
+async fn ticker() {
+    let client = init().await;
+    let sub = Subscription::Ticker("btc_usdc".to_string());
+    test_subscription_callback(client, sub).await;
+}
+
 async fn init() -> OpenLimitsWs<NashWebsocket> {
     dotenv().ok();
 
