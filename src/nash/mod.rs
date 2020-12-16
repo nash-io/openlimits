@@ -25,6 +25,7 @@ pub use nash_native_client::ws_client::client::Client;
 pub use nash_native_client::ws_client::client::Environment;
 use rust_decimal::prelude::*;
 use std::convert::{TryFrom, TryInto};
+use std::time::Duration;
 
 pub struct Nash {
     transport: Client,
@@ -42,7 +43,7 @@ pub struct NashParameters {
     pub credentials: Option<NashCredentials>,
     pub client_id: u64,
     pub environment: Environment,
-    pub timeout: u64,
+    pub timeout: Duration,
 }
 
 impl Clone for NashParameters {
@@ -734,7 +735,7 @@ pub struct NashWebsocket {
 }
 
 impl NashWebsocket {
-    pub async fn public(client_id: u64, sandbox: bool, timeout: u64) -> Self {
+    pub async fn public(client_id: u64, sandbox: bool, timeout: Duration) -> Self {
         let environment = if sandbox {
             Environment::Sandbox
         } else {
@@ -752,7 +753,7 @@ impl NashWebsocket {
         session: &str,
         client_id: u64,
         environment: Environment,
-        timeout: u64,
+        timeout: Duration,
     ) -> Self {
         NashWebsocket {
             client: Client::from_key_data(secret, session, None, client_id, environment, timeout)

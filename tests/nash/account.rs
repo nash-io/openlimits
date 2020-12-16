@@ -14,6 +14,7 @@ use openlimits::{
 };
 use rust_decimal::prelude::{Decimal, FromStr};
 use std::env;
+use std::time::Duration as NativeDuration;
 
 #[tokio::test]
 async fn limit_buy() {
@@ -248,7 +249,7 @@ async fn init() -> Nash {
         }),
         environment: Environment::Sandbox,
         client_id: 1,
-        timeout: 100000,
+        timeout: NativeDuration::new(10,0),
     };
 
     OpenLimits::instantiate(parameters)
