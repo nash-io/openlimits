@@ -249,7 +249,7 @@ async fn init() -> Nash {
         }),
         environment: Environment::Sandbox,
         client_id: 1,
-        timeout: NativeDuration::new(10,0),
+        timeout: NativeDuration::new(10, 0),
     };
 
     OpenLimits::instantiate(parameters)
