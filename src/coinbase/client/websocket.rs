@@ -15,7 +15,7 @@ use crate::{
     coinbase::model::websocket::{
         Channel, CoinbaseSubscription, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd,
     },
-    errors::OpenLimitsError,
+    errors::OpenLimitError,
     shared::Result,
 };
 
@@ -110,7 +110,7 @@ impl Stream for CoinbaseWebsocket {
 fn parse_message(ws_message: Message) -> Result<CoinbaseWebsocketMessage> {
     let msg = match ws_message {
         Message::Text(m) => m,
-        _ => return Err(OpenLimitsError::SocketError()),
+        _ => return Err(OpenLimitError::SocketError()),
     };
     Ok(serde_json::from_str(&msg)?)
 }

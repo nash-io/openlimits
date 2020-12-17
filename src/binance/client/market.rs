@@ -7,7 +7,7 @@ use crate::{
         BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
         SymbolPrice, Ticker,
     },
-    errors::OpenLimitsError,
+    errors::OpenLimitError,
     shared::Result,
 };
 use rust_decimal::prelude::Decimal;
@@ -62,7 +62,7 @@ impl BaseClient {
                 Ok(book_tickers
                     .into_iter()
                     .find(|obj| obj.symbol == symbol)
-                    .ok_or(OpenLimitsError::SymbolNotFound())?)
+                    .ok_or(OpenLimitError::SymbolNotFound())?)
             },
         )
     }

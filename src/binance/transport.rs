@@ -10,7 +10,7 @@ use sha2::Sha256;
 use url::Url;
 
 use crate::{
-    errors::{BinanceContentError, OpenLimitsError},
+    errors::{BinanceContentError, OpenLimitError},
     shared::Result,
 };
 
@@ -216,7 +216,7 @@ impl Transport {
 
     fn check_key(&self) -> Result<(&str, &str)> {
         match self.credential.as_ref() {
-            None => Err(OpenLimitsError::NoApiKeySet()),
+            None => Err(OpenLimitError::NoApiKeySet()),
             Some((k, s)) => Ok((k, s)),
         }
     }
@@ -250,15 +250,15 @@ impl Transport {
     {
         match response.status() {
             StatusCode::OK => Ok(response.json::<O>().await?),
-            StatusCode::INTERNAL_SERVER_ERROR => Err(OpenLimitsError::InternalServerError()),
-            StatusCode::SERVICE_UNAVAILABLE => Err(OpenLimitsError::ServiceUnavailable()),
-            StatusCode::UNAUTHORIZED => Err(OpenLimitsError::Unauthorized()),
+            StatusCode::INTERNAL_SERVER_ERROR => Err(OpenLimitError::InternalServerError()),
+            StatusCode::SERVICE_UNAVAILABLE => Err(OpenLimitError::ServiceUnavailable()),
+            StatusCode::UNAUTHORIZED => Err(OpenLimitError::Unauthorized()),
             StatusCode::BAD_REQUEST => {
                 let error: BinanceContentError = response.json().await?;
 
-                Err(OpenLimitsError::BinanceError(error))
+                Err(OpenLimitError::BinanceError(error))
             }
-            s => Err(OpenLimitsError::UnkownResponse(format!(
+            s => Err(OpenLimitError::UnkownResponse(format!(
                 "Received response: {:?}",
                 s
             ))),

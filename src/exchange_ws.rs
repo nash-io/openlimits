@@ -5,14 +5,14 @@ use std::{
 };
 
 use crate::{
-    errors::OpenLimitsError,
+    errors::OpenLimitError,
     model::websocket::WebSocketResponse,
     model::websocket::{OpenLimitsWebSocketMessage, Subscription},
     shared::Result,
 };
 use async_trait::async_trait;
 use derive_more::Constructor;
-use futures::{channel::mpsc::channel, stream::BoxStream, StreamExt};
+use futures::{channel::mpsc::channel, future, stream::BoxStream, StreamExt};
 
 #[derive(Constructor)]
 pub struct OpenLimitsWs<E: ExchangeWs> {
@@ -52,9 +52,9 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
 
 #[async_trait]
 pub trait ExchangeWs: Send + Sync + Sized {
-    type InitParams: Clone + Send + Sync + 'static;
-    type Subscription: From<Subscription> + Send + Sync + Sized + Clone;
-    type Response: TryInto<WebSocketResponse<Self::Response>, Error = OpenLimitsError>
+    type InitParams;
+    type Subscription: From<Subscription> + Send + Sync + Sized;
+    type Response: TryInto<WebSocketResponse<Self::Response>, Error = OpenLimitError>
         + Send
         + Sync
         + Clone
@@ -77,18 +77,20 @@ pub trait ExchangeWs: Send + Sync + Sized {
         mut callback: F,
     ) -> Result<CallbackHandle> {
         let s = slice::from_ref(&subscription);
-        let mut stream = self.create_stream_specific(s.into()).await?;
+        let stream = self.create_stream_specific(s.into()).await?;
 
-        let (mut tx, rx) = channel(1);
-
-        tokio::spawn(async move {
-            while let Some(Ok(message)) = stream.next().await {
-                let message = message.try_into();
-                callback(&message);
-                tx.try_send(message).ok();
+        let fut = stream.then(move |m| match m {
+            Ok(message) => {
+                let r = message.try_into();
+                callback(&r);
+                future::ready(r)
             }
-            callback(&Err(OpenLimitsError::SocketError()));
+            Err(err) => future::ready(Err(err)),
         });
+
+        let (tx, rx) = channel(1);
+
+        tokio::spawn(fut.map(Ok).skip_while(|_| future::ready(true)).forward(tx));
 
         Ok(CallbackHandle { rx: Box::new(rx) })
     }
@@ -113,7 +115,7 @@ pub struct CallbackHandle {
 }
 
 impl TryFrom<OpenLimitsWebSocketMessage> for WebSocketResponse<OpenLimitsWebSocketMessage> {
-    type Error = OpenLimitsError;
+    type Error = OpenLimitError;
 
     fn try_from(value: OpenLimitsWebSocketMessage) -> Result<Self> {
         Ok(WebSocketResponse::Generic(value))

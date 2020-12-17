@@ -1,4 +1,4 @@
-pub type Result<T> = std::result::Result<T, crate::errors::OpenLimitsError>;
+pub type Result<T> = std::result::Result<T, crate::errors::OpenLimitError>;
 
 pub mod string_to_decimal {
     use std::fmt;
