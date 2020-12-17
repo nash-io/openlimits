@@ -9,6 +9,7 @@ use openlimits::{
     nash::NashCredentials,
     nash::NashParameters,
 };
+use std::time::Duration;
 
 use dotenv::dotenv;
 use std::env;
@@ -99,7 +100,7 @@ async fn init() -> Nash {
         }),
         environment: Environment::Sandbox,
         client_id: 1,
-        timeout: 1000,
+        timeout: Duration::new(10, 0),
     };
 
     OpenLimits::instantiate(parameters)
