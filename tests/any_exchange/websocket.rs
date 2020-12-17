@@ -77,8 +77,8 @@ async fn _nash_websocket() -> OpenLimitsWs<NashWebsocket> {
         Environment::Sandbox,
         Duration::from_secs_f32(10.0),
     )
-        .await
-        .expect("Couldn't connect.");
+    .await
+    .expect("Couldn't connect.");
 
     OpenLimitsWs { websocket }
 }
