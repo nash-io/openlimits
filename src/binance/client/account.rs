@@ -8,7 +8,7 @@ use crate::{
         TradeHistory, TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
         ORDER_TYPE_LIMIT_MAKER, ORDER_TYPE_MARKET,
     },
-    errors::OpenLimitsError,
+    errors::OpenLimitError,
     exchange_info::MarketPair,
     shared::Result,
 };
@@ -33,7 +33,7 @@ impl BaseClient {
                 .balances
                 .into_iter()
                 .find(|balance| balance.asset == asset)
-                .ok_or(OpenLimitsError::AssetNotFound())?;
+                .ok_or(OpenLimitError::AssetNotFound())?;
 
             Ok(balance)
         };

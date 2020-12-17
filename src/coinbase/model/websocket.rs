@@ -1,5 +1,5 @@
 use crate::coinbase::model::OrderSide;
-use crate::errors::{MissingImplementationContent, OpenLimitsError};
+use crate::errors::{MissingImplementationContent, OpenLimitError};
 use crate::model::websocket::{OpenLimitsWebSocketMessage, Subscription, WebSocketResponse};
 use crate::model::{AskBid, OrderBookResponse};
 use crate::shared::Result;
@@ -120,14 +120,14 @@ pub enum CoinbaseWebsocketMessage {
 }
 
 impl TryFrom<CoinbaseWebsocketMessage> for WebSocketResponse<CoinbaseWebsocketMessage> {
-    type Error = OpenLimitsError;
+    type Error = OpenLimitError;
 
     fn try_from(value: CoinbaseWebsocketMessage) -> Result<Self> {
         match value {
             CoinbaseWebsocketMessage::Level2(level2) => {
                 Ok(WebSocketResponse::Generic(level2.try_into()?))
             }
-            _ => Err(OpenLimitsError::MissingImplementation(
+            _ => Err(OpenLimitError::MissingImplementation(
                 MissingImplementationContent {
                     message: "Message not implemented.".into(),
                 },
@@ -150,7 +150,7 @@ pub enum Level2 {
 }
 
 impl TryFrom<Level2> for OpenLimitsWebSocketMessage {
-    type Error = OpenLimitsError;
+    type Error = OpenLimitError;
 
     fn try_from(level2: Level2) -> std::result::Result<Self, Self::Error> {
         // FIXME: How can we get the update id?

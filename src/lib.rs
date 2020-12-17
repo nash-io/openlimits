@@ -15,4 +15,3 @@ pub mod nash;
 pub mod shared;
 
 pub mod any_exchange;
-pub mod reconnectable_ws;
