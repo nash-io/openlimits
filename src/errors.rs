@@ -42,7 +42,7 @@ impl fmt::Display for MissingImplementationContent {
 }
 
 #[derive(Error, Debug)]
-pub enum OpenLimitError {
+pub enum OpenLimitsError {
     #[error("")]
     NoMarketPair,
     #[error(transparent)]

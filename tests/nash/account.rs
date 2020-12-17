@@ -248,7 +248,7 @@ async fn init() -> Nash {
         }),
         environment: Environment::Sandbox,
         client_id: 1,
-        timeout: 100000,
+        timeout: tokio::time::Duration::from_secs_f32(10.0),
     };
 
     OpenLimits::instantiate(parameters)

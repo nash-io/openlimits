@@ -1,4 +1,4 @@
-use crate::{errors::OpenLimitError, shared::Result};
+use crate::{errors::OpenLimitsError, shared::Result};
 use async_trait::async_trait;
 use rust_decimal::Decimal;
 
@@ -43,7 +43,7 @@ impl<'a> MarketPairHandle {
         self.inner
             .read()
             .map(|guard| guard.clone())
-            .map_err(|_| OpenLimitError::PoisonError())
+            .map_err(|_| OpenLimitsError::PoisonError())
     }
 }
 
@@ -71,7 +71,7 @@ impl ExchangeInfo {
     pub fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
         let market_map = self.pairs.read().expect("Couldn't read pairs.");
         let market_pair = market_map.get(name);
-        market_pair.map_or(Err(OpenLimitError::SymbolNotFound()), |inner| {
+        market_pair.map_or(Err(OpenLimitsError::SymbolNotFound()), |inner| {
             Ok(MarketPairHandle::new(inner.clone()))
         })
     }
