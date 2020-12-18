@@ -126,8 +126,8 @@ impl TryFrom<CoinbaseWebsocketMessage> for WebSocketResponse<CoinbaseWebsocketMe
         match value {
             CoinbaseWebsocketMessage::Level2(level2) => {
                 Ok(WebSocketResponse::Generic(level2.try_into()?))
-            },
-            _ => Ok(WebSocketResponse::Raw(value))
+            }
+            _ => Ok(WebSocketResponse::Raw(value)),
         }
     }
 }

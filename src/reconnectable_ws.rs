@@ -49,7 +49,9 @@ impl<E: ExchangeWs + 'static> ReconnectableWebsocket<E> {
                                         let callback = callback.clone();
                                         let tx = tx.clone();
                                         websocket.subscribe(subscription.clone(), move |message| {
-                                            if let Err(OpenLimitsError::SocketError()) = message.as_ref() {
+                                            if let Err(OpenLimitsError::SocketError()) =
+                                                message.as_ref()
+                                            {
                                                 tx.send(()).ok();
                                             }
                                             callback(message)

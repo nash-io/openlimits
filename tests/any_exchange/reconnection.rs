@@ -3,22 +3,25 @@ use openlimits::shared::Result;
 use openlimits::{model::websocket::Subscription, nash::NashWebsocket};
 use tokio::time::Duration;
 
-use openlimits::nash::NashParameters;
-use openlimits::coinbase::CoinbaseParameters;
 use openlimits::binance::{BinanceParameters, BinanceWebsocket};
-use openlimits::reconnectable_ws::ReconnectableWebsocket;
-use std::sync::{Arc, Mutex};
-use std::sync::mpsc::sync_channel;
 use openlimits::coinbase::client::websocket::CoinbaseWebsocket;
+use openlimits::coinbase::CoinbaseParameters;
 use openlimits::exchange_ws::ExchangeWs;
+use openlimits::nash::NashParameters;
+use openlimits::reconnectable_ws::ReconnectableWebsocket;
+use std::sync::mpsc::sync_channel;
+use std::sync::{Arc, Mutex};
 
-async fn test_subscription_callback<E: ExchangeWs + 'static>(websocket: ReconnectableWebsocket<E>, sub: Subscription) {
+async fn test_subscription_callback<E: ExchangeWs + 'static>(
+    websocket: ReconnectableWebsocket<E>,
+    sub: Subscription,
+) {
     let disconnections = Arc::new(Mutex::new(0 as u32));
     let (tx, rx) = sync_channel(0);
     let websocket = Arc::new(websocket);
     let weak_websocket = Arc::downgrade(&websocket);
-    websocket.subscribe(sub, move |message| {
-        match message.as_ref() {
+    websocket
+        .subscribe(sub, move |message| match message.as_ref() {
             Ok(_message) => {
                 if let Ok(disconnections) = disconnections.lock().map(|value| *value) {
                     if disconnections >= 2 {
@@ -26,16 +29,18 @@ async fn test_subscription_callback<E: ExchangeWs + 'static>(websocket: Reconnec
                     }
                 }
                 let websocket = weak_websocket.upgrade().expect("Couldn't get websocket.");
-                tokio::spawn(async move {
-                    websocket.disconnect().await
-                });
-            },
-            Err(_error) => {
-                *disconnections.lock().expect("Couldn't lock disconnections.") += 1;
+                tokio::spawn(async move { websocket.disconnect().await });
             }
-        }
-    }).await.expect("Couldn't subscribe");
-    rx.recv_timeout(Duration::from_secs_f32(10.0)).expect("Couldn't receive sync.");
+            Err(_error) => {
+                *disconnections
+                    .lock()
+                    .expect("Couldn't lock disconnections.") += 1;
+            }
+        })
+        .await
+        .expect("Couldn't subscribe");
+    rx.recv_timeout(Duration::from_secs_f32(10.0))
+        .expect("Couldn't receive sync.");
 }
 
 #[tokio::test(core_threads = 2)]
@@ -63,10 +68,11 @@ async fn init_coinbase() -> Result<ReconnectableWebsocket<CoinbaseWebsocket>> {
     ReconnectableWebsocket::instantiate(
         CoinbaseParameters {
             credentials: None,
-            sandbox: true
+            sandbox: true,
         },
-        Duration::from_secs_f32(1.0)
-    ).await
+        Duration::from_secs_f32(1.0),
+    )
+    .await
 }
 
 async fn init_nash() -> Result<ReconnectableWebsocket<NashWebsocket>> {
@@ -80,15 +86,16 @@ async fn init_nash() -> Result<ReconnectableWebsocket<NashWebsocket>> {
         },
         Duration::from_secs_f32(1.0),
     )
-        .await
+    .await
 }
 
 async fn init_binance() -> Result<ReconnectableWebsocket<BinanceWebsocket>> {
     ReconnectableWebsocket::instantiate(
         BinanceParameters {
             sandbox: false,
-            credentials: None
+            credentials: None,
         },
-        Duration::from_secs_f32(1.0)
-    ).await
+        Duration::from_secs_f32(1.0),
+    )
+    .await
 }
