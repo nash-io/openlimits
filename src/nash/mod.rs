@@ -781,6 +781,10 @@ impl ExchangeWs for NashWebsocket {
         })
     }
 
+    async fn disconnect(&self) {
+        self.client.disconnect().await;
+    }
+
     async fn create_stream_specific(
         &self,
         subscriptions: Subscriptions<Self::Subscription>,

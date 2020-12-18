@@ -1,5 +1,5 @@
 use crate::coinbase::model::OrderSide;
-use crate::errors::{MissingImplementationContent, OpenLimitsError};
+use crate::errors::OpenLimitsError;
 use crate::model::websocket::{OpenLimitsWebSocketMessage, Subscription, WebSocketResponse};
 use crate::model::{AskBid, OrderBookResponse};
 use crate::shared::Result;
@@ -126,12 +126,8 @@ impl TryFrom<CoinbaseWebsocketMessage> for WebSocketResponse<CoinbaseWebsocketMe
         match value {
             CoinbaseWebsocketMessage::Level2(level2) => {
                 Ok(WebSocketResponse::Generic(level2.try_into()?))
-            }
-            _ => Err(OpenLimitsError::MissingImplementation(
-                MissingImplementationContent {
-                    message: "Message not implemented.".into(),
-                },
-            )),
+            },
+            _ => Ok(WebSocketResponse::Raw(value))
         }
     }
 }

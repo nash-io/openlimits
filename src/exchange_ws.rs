@@ -13,6 +13,7 @@ use crate::{
 use async_trait::async_trait;
 use derive_more::Constructor;
 use futures::{channel::mpsc::channel, stream::BoxStream, StreamExt};
+use serde::export::fmt::Debug;
 
 #[derive(Constructor)]
 pub struct OpenLimitsWs<E: ExchangeWs> {
@@ -48,6 +49,10 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
     ) -> Result<BoxStream<'static, Result<WebSocketResponse<E::Response>>>> {
         self.websocket.create_stream(subscriptions).await
     }
+
+    pub async fn disconnect(&self) {
+        self.websocket.disconnect().await
+    }
 }
 
 #[async_trait]
@@ -59,9 +64,12 @@ pub trait ExchangeWs: Send + Sync + Sized {
         + Sync
         + Clone
         + Sized
+        + Debug
         + 'static;
 
     async fn new(params: Self::InitParams) -> Result<Self>;
+
+    async fn disconnect(&self);
 
     async fn create_stream_specific(
         &self,

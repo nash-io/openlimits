@@ -23,6 +23,8 @@ use crate::coinbase::model::websocket::ChannelType;
 use crate::coinbase::CoinbaseParameters;
 use crate::exchange_ws::{ExchangeWs, Subscriptions};
 use futures::stream::BoxStream;
+use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
+use std::sync::Mutex;
 
 const WS_URL_PROD: &str = "wss://ws-feed.pro.coinbase.com";
 const WS_URL_SANDBOX: &str = "wss://ws-feed-public.sandbox.pro.coinbase.com";
@@ -39,13 +41,15 @@ type WSStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
 pub struct CoinbaseWebsocket {
     pub subscriptions: HashMap<CoinbaseSubscription, SplitStream<WSStream>>,
     pub parameters: CoinbaseParameters,
+    disconnection_senders: Mutex<Vec<UnboundedSender<()>>>
 }
 
 impl CoinbaseWebsocket {
     pub fn new(parameters: CoinbaseParameters) -> Self {
         Self {
-            subscriptions: HashMap::new(),
+            subscriptions: Default::default(),
             parameters,
+            disconnection_senders: Default::default()
         }
     }
 
@@ -125,6 +129,15 @@ impl ExchangeWs for CoinbaseWebsocket {
         Ok(CoinbaseWebsocket::new(parameters))
     }
 
+    async fn disconnect(&self) {
+        if let Ok(mut senders) = self.disconnection_senders.lock() {
+            for sender in senders.iter() {
+                sender.send(()).ok();
+            }
+            senders.clear();
+        }
+    }
+
     async fn create_stream_specific(
         &self,
         subscription: Subscriptions<Self::Subscription>,
@@ -135,7 +148,7 @@ impl ExchangeWs for CoinbaseWebsocket {
             WS_URL_PROD
         };
         let endpoint = url::Url::parse(ws_url).expect("Couldn't parse url.");
-        let (mut ws_stream, _) = connect_async(endpoint).await?;
+        let (ws_stream, _) = connect_async(endpoint).await?;
 
         let (channels, product_ids) = match &subscription.as_slice()[0] {
             CoinbaseSubscription::Level2(product_id) => (
@@ -155,9 +168,19 @@ impl ExchangeWs for CoinbaseWebsocket {
             product_ids,
         };
         let subscribe = serde_json::to_string(&subscribe)?;
-        ws_stream.send(Message::Text(subscribe)).await?;
+        let (mut sink, stream) = ws_stream.split();
+        let (disconnection_sender, mut disconnection_receiver) = unbounded_channel();
+        sink.send(Message::Text(subscribe)).await?;
+        tokio::spawn(async move {
+            if disconnection_receiver.recv().await.is_some() {
+                sink.close().await.ok();
+            }
+        });
 
-        let s = ws_stream.map(|message| parse_message(message?));
+        if let Ok(mut senders) = self.disconnection_senders.lock() {
+            senders.push(disconnection_sender);
+        }
+        let s = stream.map(|message| parse_message(message?));
 
         Ok(s.boxed())
     }

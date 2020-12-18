@@ -29,6 +29,7 @@ impl<E: ExchangeWs + 'static> ReconnectableWebsocket<E> {
         {
             let websocket = Arc::downgrade(&websocket);
             let subscriptions = Arc::downgrade(&subscriptions);
+            let tx = tx.clone();
             tokio::spawn(async move {
                 while let Some(_) = rx.recv().await {
                     'reconnection: loop {
@@ -46,7 +47,11 @@ impl<E: ExchangeWs + 'static> ReconnectableWebsocket<E> {
                                 let subscriptions =
                                     subscriptions.iter().map(|(subscription, callback)| {
                                         let callback = callback.clone();
+                                        let tx = tx.clone();
                                         websocket.subscribe(subscription.clone(), move |message| {
+                                            if let Err(OpenLimitsError::SocketError()) = message.as_ref() {
+                                                tx.send(()).ok();
+                                            }
                                             callback(message)
                                         })
                                     });
@@ -58,7 +63,6 @@ impl<E: ExchangeWs + 'static> ReconnectableWebsocket<E> {
                                     break 'reconnection;
                                 }
                             }
-                            println!("Couldn't connect. Trying again.");
                             sleep(reattempt_interval);
                         }
                     }
@@ -116,5 +120,9 @@ impl<E: ExchangeWs + 'static> ReconnectableWebsocket<E> {
             .await
             .create_stream(subscriptions)
             .await
+    }
+
+    pub async fn disconnect(&self) {
+        self.websocket.lock().await.disconnect().await;
     }
 }

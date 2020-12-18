@@ -13,11 +13,13 @@ use crate::{
 };
 
 use async_trait::async_trait;
-use futures::{stream::BoxStream, StreamExt};
+use futures::{stream::BoxStream, SinkExt, StreamExt};
 use serde::{de, Deserialize, Serialize};
 use serde_json::Value;
 use std::{convert::TryFrom, fmt::Display};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
+use std::sync::Mutex;
+use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
 
 const WS_URL_PROD: &str = "wss://stream.binance.com:9443/stream";
 const WS_URL_SANDBOX: &str = "wss://testnet.binance.vision/stream";
@@ -31,6 +33,7 @@ enum Either<L, R> {
 
 pub struct BinanceWebsocket {
     parameters: BinanceParameters,
+    disconnection_senders: Mutex<Vec<UnboundedSender<()>>>
 }
 
 #[async_trait]
@@ -40,7 +43,19 @@ impl ExchangeWs for BinanceWebsocket {
     type Response = BinanceWebsocketMessage;
 
     async fn new(parameters: Self::InitParams) -> Result<Self> {
-        Ok(BinanceWebsocket { parameters })
+        Ok(BinanceWebsocket {
+            parameters,
+            disconnection_senders: Default::default()
+        })
+    }
+
+    async fn disconnect(&self) {
+        if let Ok(mut senders) = self.disconnection_senders.lock() {
+            for sender in senders.iter() {
+                sender.send(()).ok();
+            }
+            senders.clear();
+        }
     }
 
     async fn create_stream_specific(
@@ -61,7 +76,19 @@ impl ExchangeWs for BinanceWebsocket {
             .map_err(|e| OpenLimitsError::UrlParserError(e))?;
         let (ws_stream, _) = connect_async(endpoint).await?;
 
-        let s = ws_stream.map(|message| match message {
+        let (mut sink, stream) = ws_stream.split();
+        let (disconnection_sender, mut disconnection_receiver) = unbounded_channel();
+        tokio::spawn(async move {
+            if disconnection_receiver.recv().await.is_some() {
+                sink.close().await.ok();
+            }
+        });
+
+        if let Ok(mut senders) = self.disconnection_senders.lock() {
+            senders.push(disconnection_sender);
+        }
+
+        let s = stream.map(|message| match message {
             Ok(msg) => parse_message(msg),
             Err(_) => Err(OpenLimitsError::SocketError()),
         });
