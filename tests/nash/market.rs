@@ -9,10 +9,10 @@ use openlimits::{
     nash::NashCredentials,
     nash::NashParameters,
 };
-use std::time::Duration;
 
 use dotenv::dotenv;
 use std::env;
+use tokio::time::Duration;
 
 #[tokio::test]
 async fn order_book() {

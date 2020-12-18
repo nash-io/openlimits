@@ -1,5 +1,5 @@
 use crate::{
-    errors::{CoinbaseContentError, OpenLimitError},
+    errors::{CoinbaseContentError, OpenLimitsError},
     shared::Result,
 };
 
@@ -218,7 +218,7 @@ impl Transport {
         D: Serialize,
     {
         let api_secret = match self.api_secret.as_ref() {
-            None => Err(OpenLimitError::NoApiKeySet()),
+            None => Err(OpenLimitsError::NoApiKeySet()),
             Some(v) => Ok(v),
         }?;
         let key = base64::decode(api_secret).expect("Failed to base64 decode Coinbase API secret");
@@ -253,25 +253,25 @@ impl Transport {
                 let text = response.text().await?;
                 serde_json::from_str::<O>(&text).map_err(move |err| {
                     println!("{}", &text);
-                    OpenLimitError::NotParsableResponse(format!("Error:{} Payload: {}", err, text))
+                    OpenLimitsError::NotParsableResponse(format!("Error:{} Payload: {}", err, text))
                 })
             }
 
-            StatusCode::INTERNAL_SERVER_ERROR => Err(OpenLimitError::InternalServerError()),
-            StatusCode::SERVICE_UNAVAILABLE => Err(OpenLimitError::ServiceUnavailable()),
+            StatusCode::INTERNAL_SERVER_ERROR => Err(OpenLimitsError::InternalServerError()),
+            StatusCode::SERVICE_UNAVAILABLE => Err(OpenLimitsError::ServiceUnavailable()),
             StatusCode::UNAUTHORIZED => {
                 let text = response.text().await?;
                 println!("{}", text);
-                Err(OpenLimitError::Unauthorized())
+                Err(OpenLimitsError::Unauthorized())
             }
             StatusCode::BAD_REQUEST => {
                 let error: CoinbaseContentError = response.json().await?;
 
-                Err(OpenLimitError::CoinbaseError(error))
+                Err(OpenLimitsError::CoinbaseError(error))
             }
             s => {
                 let text = response.text().await?;
-                Err(OpenLimitError::UnkownResponse(format!(
+                Err(OpenLimitsError::UnkownResponse(format!(
                     "Received response: {:?}, value: {}",
                     s, text
                 )))

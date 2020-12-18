@@ -3,7 +3,7 @@ use crate::{
         model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
         BinanceParameters,
     },
-    errors::OpenLimitError,
+    errors::OpenLimitsError,
     exchange_ws::ExchangeWs,
     exchange_ws::Subscriptions,
     model::websocket::OpenLimitsWebSocketMessage,
@@ -58,12 +58,12 @@ impl ExchangeWs for BinanceWebsocket {
             false => WS_URL_PROD,
         };
         let endpoint = url::Url::parse(&format!("{}?streams={}", ws_url, streams))
-            .map_err(|e| OpenLimitError::UrlParserError(e))?;
+            .map_err(|e| OpenLimitsError::UrlParserError(e))?;
         let (ws_stream, _) = connect_async(endpoint).await?;
 
         let s = ws_stream.map(|message| match message {
             Ok(msg) => parse_message(msg),
-            Err(_) => Err(OpenLimitError::SocketError()),
+            Err(_) => Err(OpenLimitsError::SocketError()),
         });
 
         Ok(s.boxed())
@@ -161,7 +161,7 @@ impl From<Subscription> for BinanceSubscription {
 }
 
 impl TryFrom<BinanceWebsocketMessage> for WebSocketResponse<BinanceWebsocketMessage> {
-    type Error = OpenLimitError;
+    type Error = OpenLimitsError;
 
     fn try_from(value: BinanceWebsocketMessage) -> Result<Self> {
         match value {
@@ -174,7 +174,7 @@ impl TryFrom<BinanceWebsocketMessage> for WebSocketResponse<BinanceWebsocketMess
             BinanceWebsocketMessage::Ping => {
                 Ok(WebSocketResponse::Generic(OpenLimitsWebSocketMessage::Ping))
             }
-            BinanceWebsocketMessage::Close => Err(OpenLimitError::SocketError()),
+            BinanceWebsocketMessage::Close => Err(OpenLimitsError::SocketError()),
             _ => Ok(WebSocketResponse::Raw(value)),
         }
     }
@@ -189,5 +189,5 @@ fn parse_message(ws_message: Message) -> Result<BinanceWebsocketMessage> {
         Message::Close(..) => return Ok(BinanceWebsocketMessage::Close),
     };
 
-    serde_json::from_str(&msg).map_err(OpenLimitError::JsonError)
+    serde_json::from_str(&msg).map_err(OpenLimitsError::JsonError)
 }

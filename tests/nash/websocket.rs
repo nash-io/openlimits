@@ -1,8 +1,8 @@
 use dotenv::dotenv;
 use nash_native_client::ws_client::client::Environment;
 use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::NashWebsocket};
-use std::time::Duration;
 use std::{env, sync::mpsc::sync_channel};
+use tokio::time::Duration;
 
 async fn test_subscription_callback(websocket: OpenLimitsWs<NashWebsocket>, sub: Subscription) {
     let (tx, rx) = sync_channel(0);
@@ -42,7 +42,8 @@ async fn init() -> OpenLimitsWs<NashWebsocket> {
         Environment::Sandbox,
         Duration::new(10, 0),
     )
-    .await;
+    .await
+    .expect("Couldn't connect.");
 
     OpenLimitsWs { websocket }
 }
