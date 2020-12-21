@@ -5,7 +5,7 @@ use openlimits::{
     model::websocket::Subscription,
 };
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn orderbook() {
     let ws = init().await;
     let s = ws
@@ -17,7 +17,7 @@ async fn orderbook() {
     print!("{:?}", ob);
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn trades() {
     let ws = init().await;
     let s = ws

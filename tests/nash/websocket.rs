@@ -18,14 +18,14 @@ async fn test_subscription_callback(websocket: OpenLimitsWs<NashWebsocket>, sub:
     rx.recv().expect("Couldn't receive sync message.");
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn orderbook() {
     let client = init().await;
     let sub = Subscription::OrderBookUpdates("btc_usdc".to_string());
     test_subscription_callback(client, sub).await;
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn trades() {
     let client = init().await;
     let sub = Subscription::Trades("btc_usdc".to_string());

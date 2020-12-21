@@ -197,6 +197,7 @@ async fn get_order_history() {
     let exchange = init().await;
     let req = GetOrderHistoryRequest {
         market_pair: Some(String::from("eth_btc")),
+        order_status: None,
         paginator: None,
     };
 

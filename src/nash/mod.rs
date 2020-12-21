@@ -64,7 +64,6 @@ impl Clone for NashParameters {
 }
 
 async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
-    let timeout = std::time::Duration::from_millis(params.timeout);
     let out = match params.credentials {
         Some(credentials) => {
             Client::from_key_data(
@@ -467,7 +466,7 @@ impl From<nash_protocol::types::Trade> for Trade {
         let price = Decimal::from_str(&resp.limit_price.to_string())
             .expect("Couldn't parse Decimal from string.");
 
-        let (fees, order_id) = match resp.account_side {
+        let (fees, _order_id) = match resp.account_side {
             nash_protocol::types::AccountTradeSide::Taker => (
                 Decimal::from_str(&resp.taker_fee.to_string())
                     .expect("Couldn't parse Decimal from string."),
