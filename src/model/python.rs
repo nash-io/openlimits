@@ -213,7 +213,7 @@ impl<'a> FromPyObject<'a> for NashParameters {
             client_id,
             environment,
             timeout,
-            sign_states_loop_interval
+            sign_states_loop_interval,
         })
     }
 }
