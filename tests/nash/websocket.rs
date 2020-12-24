@@ -40,12 +40,8 @@ async fn init() -> OpenLimitsWs<NashWebsocket> {
         &env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
         1234,
         Environment::Sandbox,
-<<<<<<< HEAD
         Duration::new(10,0),
         None
-=======
-        Duration::new(10, 0),
->>>>>>> master
     )
     .await;
 
