@@ -1,6 +1,6 @@
 [package]
 name = "openlimits"
-version = "0.1.6"
+version = "0.1.7"
 authors = ["steffel <2143646+steffenix@users.noreply.github.com>", "Ethan Fast <ethan@nash.io>"]
 edition = "2018"
 description = "A open source Rust high performance cryptocurrency trading API with support for multiple exchanges and language wrappers. Focused in safety, correctness and speed."
@@ -40,5 +40,5 @@ sha2 = "0.9.1"
 url = "2.1.1"
 derive_more = "0.99"
 nash-protocol = { version = "=0.1.20", default-features = false, features = ["rustcrypto"] }
-nash-native-client = { version = "=0.1.13", default-features = false, features = ["rustcrypto"] }
+nash-native-client = { version = "=0.1.14", default-features = false, features = ["rustcrypto"] }
 pyo3 = { version = "0.12.3", optional = true }
