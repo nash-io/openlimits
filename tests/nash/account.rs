@@ -247,9 +247,11 @@ async fn init() -> Nash {
             secret: env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
             session: env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
         }),
-        environment: Environment::Sandbox,
+        environment: Environment::Production,
         client_id: 1,
         timeout: NativeDuration::new(10,0),
+        // sign states in background, checking whether is required every 100s. None turns off the functionality
+        sign_states_loop_interval: Some(100) 
     };
 
     OpenLimits::instantiate(parameters)
