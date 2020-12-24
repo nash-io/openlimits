@@ -249,9 +249,13 @@ async fn init() -> Nash {
         }),
         environment: Environment::Production,
         client_id: 1,
+<<<<<<< HEAD
         timeout: NativeDuration::new(10,0),
         // sign states in background, checking whether is required every 100s. None turns off the functionality
         sign_states_loop_interval: Some(100) 
+=======
+        timeout: NativeDuration::new(10, 0),
+>>>>>>> master
     };
 
     OpenLimits::instantiate(parameters)

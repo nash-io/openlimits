@@ -34,8 +34,12 @@ async fn _nash() -> Result<Nash> {
         }),
         environment: Environment::Sandbox,
         client_id: 1,
+<<<<<<< HEAD
         timeout: Duration::new(10,0),
         sign_states_loop_interval: None
+=======
+        timeout: Duration::new(10, 0),
+>>>>>>> master
     };
     OpenLimits::instantiate(parameters).await
 }
@@ -76,8 +80,12 @@ async fn _nash_websocket() -> OpenLimitsWs<NashWebsocket> {
         &env::var("NASH_API_KEY").unwrap(),
         1234,
         Environment::Sandbox,
+<<<<<<< HEAD
         Duration::new(10,0),
         None
+=======
+        Duration::new(10, 0),
+>>>>>>> master
     )
     .await;
 

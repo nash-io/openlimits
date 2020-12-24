@@ -100,8 +100,12 @@ async fn init() -> Nash {
         }),
         environment: Environment::Production,
         client_id: 1,
+<<<<<<< HEAD
         timeout: Duration::new(10,0),
         sign_states_loop_interval: Some(100)
+=======
+        timeout: Duration::new(10, 0),
+>>>>>>> master
     };
 
     OpenLimits::instantiate(parameters)
