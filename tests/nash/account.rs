@@ -14,8 +14,8 @@ use openlimits::{
 };
 use rust_decimal::prelude::{Decimal, FromStr};
 use std::env;
-use std::time::Duration as NativeDuration;
 use std::sync::Arc;
+use std::time::Duration as NativeDuration;
 
 #[tokio::test]
 async fn limit_buy() {
@@ -203,7 +203,7 @@ async fn get_order_history() {
 async fn test_concurrent_requests() {
     let exchange = init().await;
     let client = Arc::new(exchange);
-    async fn make_request(client: Arc<Nash>, i: u64){
+    async fn make_request(client: Arc<Nash>, i: u64) {
         let req = client.get_account_balances(None).await;
         if !req.is_err() {
             println!("completed req {}", i);
@@ -267,9 +267,9 @@ async fn init() -> Nash {
         }),
         environment: Environment::Sandbox,
         client_id: 1,
-        timeout: NativeDuration::new(10,0),
+        timeout: NativeDuration::new(10, 0),
         // sign states in background, checking whether is required every 100s. None turns off the functionality
-        sign_states_loop_interval: Some(100) 
+        sign_states_loop_interval: Some(100),
     };
 
     OpenLimits::instantiate(parameters)
