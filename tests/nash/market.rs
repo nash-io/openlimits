@@ -98,7 +98,7 @@ async fn init() -> Nash {
             secret: env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
             session: env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
         }),
-        environment: Environment::Production,
+        environment: Environment::Sandbox,
         client_id: 1,
         timeout: Duration::new(10, 0),
         sign_states_loop_interval: None,
