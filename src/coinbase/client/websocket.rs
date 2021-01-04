@@ -23,8 +23,8 @@ use crate::coinbase::model::websocket::ChannelType;
 use crate::coinbase::CoinbaseParameters;
 use crate::exchange_ws::{ExchangeWs, Subscriptions};
 use futures::stream::BoxStream;
-use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
 use std::sync::Mutex;
+use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
 
 const WS_URL_PROD: &str = "wss://ws-feed.pro.coinbase.com";
 const WS_URL_SANDBOX: &str = "wss://ws-feed-public.sandbox.pro.coinbase.com";
@@ -41,7 +41,7 @@ type WSStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
 pub struct CoinbaseWebsocket {
     pub subscriptions: HashMap<CoinbaseSubscription, SplitStream<WSStream>>,
     pub parameters: CoinbaseParameters,
-    disconnection_senders: Mutex<Vec<UnboundedSender<()>>>
+    disconnection_senders: Mutex<Vec<UnboundedSender<()>>>,
 }
 
 impl CoinbaseWebsocket {
@@ -49,7 +49,7 @@ impl CoinbaseWebsocket {
         Self {
             subscriptions: Default::default(),
             parameters,
-            disconnection_senders: Default::default()
+            disconnection_senders: Default::default(),
         }
     }
 

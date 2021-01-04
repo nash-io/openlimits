@@ -16,10 +16,10 @@ use async_trait::async_trait;
 use futures::{stream::BoxStream, SinkExt, StreamExt};
 use serde::{de, Deserialize, Serialize};
 use serde_json::Value;
-use std::{convert::TryFrom, fmt::Display};
-use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 use std::sync::Mutex;
-use tokio::sync::mpsc::{UnboundedSender, unbounded_channel};
+use std::{convert::TryFrom, fmt::Display};
+use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
+use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 
 const WS_URL_PROD: &str = "wss://stream.binance.com:9443/stream";
 const WS_URL_SANDBOX: &str = "wss://testnet.binance.vision/stream";
@@ -33,7 +33,7 @@ enum Either<L, R> {
 
 pub struct BinanceWebsocket {
     parameters: BinanceParameters,
-    disconnection_senders: Mutex<Vec<UnboundedSender<()>>>
+    disconnection_senders: Mutex<Vec<UnboundedSender<()>>>,
 }
 
 #[async_trait]
@@ -45,7 +45,7 @@ impl ExchangeWs for BinanceWebsocket {
     async fn new(parameters: Self::InitParams) -> Result<Self> {
         Ok(BinanceWebsocket {
             parameters,
-            disconnection_senders: Default::default()
+            disconnection_senders: Default::default(),
         })
     }
 
