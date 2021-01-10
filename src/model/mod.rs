@@ -12,12 +12,12 @@ pub mod python;
 
 pub mod websocket;
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq, Eq, Hash)]
 pub struct OrderBookRequest {
     pub market_pair: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq, Eq, Hash)]
 pub struct OrderBookResponse {
     pub update_id: Option<u64>,
     pub last_update_id: Option<u64>,
@@ -25,13 +25,13 @@ pub struct OrderBookResponse {
     pub asks: Vec<AskBid>,
 }
 
-#[derive(Serialize, Deserialize, Copy, Clone, Constructor, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Copy, Clone, Constructor, Debug, Default, PartialEq, Eq, Hash)]
 pub struct AskBid {
     pub price: Decimal,
     pub qty: Decimal,
 }
 
-#[derive(Clone, Debug, PartialEq, Copy)]
+#[derive(Clone, Debug, PartialEq, Copy, Eq, Hash)]
 pub enum TimeInForce {
     GoodTillCancelled,
     ImmediateOrCancelled,
@@ -99,7 +99,7 @@ impl Default for TimeInForce {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq, Eq, Hash)]
 pub struct OpenLimitOrderRequest {
     pub market_pair: String,
     pub size: Decimal,
@@ -108,7 +108,7 @@ pub struct OpenLimitOrderRequest {
     pub post_only: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq, Eq, Hash)]
 pub struct OpenMarketOrderRequest {
     pub market_pair: String,
     pub size: Decimal,
@@ -149,7 +149,7 @@ pub struct CancelOrderRequest {
     pub market_pair: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq, Eq, Hash)]
 pub struct CancelAllOrdersRequest {
     pub market_pair: Option<String>,
 }
@@ -179,7 +179,7 @@ pub struct Trade {
     pub created_at: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Liquidity {
     Maker,
@@ -193,20 +193,20 @@ pub struct TradeHistoryRequest {
     pub paginator: Option<Paginator>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq, Eq, Hash)]
 pub struct Balance {
     pub asset: String,
     pub total: Decimal,
     pub free: Decimal,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq, Eq, Hash)]
 pub struct Ticker {
     pub price: Option<Decimal>,
     pub price_24h: Option<Decimal>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, PartialEq, Eq, Hash)]
 pub struct Candle {
     pub time: u64,
     pub low: Decimal,
@@ -216,7 +216,7 @@ pub struct Candle {
     pub volume: Decimal,
 }
 
-#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq, Eq, Hash)]
 pub struct GetPriceTickerRequest {
     pub market_pair: String,
 }
@@ -234,14 +234,14 @@ pub struct GetHistoricTradesRequest {
     pub paginator: Option<Paginator>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Side {
     Buy,
     Sell,
 }
 
-#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Interval {
     #[serde(rename = "1m")]
     OneMinute,
@@ -301,7 +301,7 @@ impl Interval {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OrderStatus {
     New,
