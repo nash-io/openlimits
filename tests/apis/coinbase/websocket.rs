@@ -42,7 +42,7 @@ async fn test_subscription_callback(
         .expect("Couldn't receive sync message.");
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn order_book() {
     let websocket = init().await;
     let sub = CoinbaseSubscription::Level2("BTC-USD".to_string());
