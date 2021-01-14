@@ -43,7 +43,7 @@ pub struct NashParameters {
     pub client_id: u64,
     pub environment: Environment,
     pub timeout: Duration,
-    pub sign_states_loop_interval: Option<u64>
+    pub sign_states_loop_interval: Option<u64>,
 }
 
 impl Clone for NashParameters {
@@ -58,7 +58,7 @@ impl Clone for NashParameters {
                 Environment::Dev(s) => Environment::Dev(s),
             },
             timeout: self.timeout,
-            sign_states_loop_interval: self.sign_states_loop_interval
+            sign_states_loop_interval: self.sign_states_loop_interval,
         }
     }
 }
@@ -73,7 +73,7 @@ async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
                 params.client_id,
                 params.environment,
                 params.timeout,
-                params.sign_states_loop_interval
+                params.sign_states_loop_interval,
             )
             .await
         }
@@ -84,7 +84,7 @@ async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
                 None,
                 params.environment,
                 params.timeout,
-                params.sign_states_loop_interval
+                params.sign_states_loop_interval,
             )
             .await
         }
@@ -739,11 +739,23 @@ pub struct NashWebsocket {
 }
 
 impl NashWebsocket {
-    pub async fn public(client_id: u64, environment: Environment, timeout: Duration, sign_states_loop_interval: Option<u64>) -> Self {
+    pub async fn public(
+        client_id: u64,
+        environment: Environment,
+        timeout: Duration,
+        sign_states_loop_interval: Option<u64>,
+    ) -> Self {
         NashWebsocket {
-            client: Client::new(None, client_id, None, environment, timeout, sign_states_loop_interval)
-                .await
-                .expect("Couldn't create Client."),
+            client: Client::new(
+                None,
+                client_id,
+                None,
+                environment,
+                timeout,
+                sign_states_loop_interval,
+            )
+            .await
+            .expect("Couldn't create Client."),
         }
     }
 
@@ -753,12 +765,20 @@ impl NashWebsocket {
         client_id: u64,
         environment: Environment,
         timeout: Duration,
-        sign_states_loop_interval: Option<u64>
+        sign_states_loop_interval: Option<u64>,
     ) -> Result<Self> {
-        Client::from_key_data(secret, session, None, client_id, environment, timeout, sign_states_loop_interval)
-            .await
-            .map(|client| NashWebsocket { client })
-            .map_err(OpenLimitsError::NashProtocolError)
+        Client::from_key_data(
+            secret,
+            session,
+            None,
+            client_id,
+            environment,
+            timeout,
+            sign_states_loop_interval,
+        )
+        .await
+        .map(|client| NashWebsocket { client })
+        .map_err(OpenLimitsError::NashProtocolError)
     }
 }
 

@@ -240,7 +240,7 @@ impl ExchangeWs for AnyWsExchange {
         match self {
             Self::Nash(exchange) => exchange.disconnect().await,
             Self::Coinbase(exchange) => exchange.disconnect().await,
-            Self::Binance(exchange) => exchange.disconnect().await
+            Self::Binance(exchange) => exchange.disconnect().await,
         }
     }
 

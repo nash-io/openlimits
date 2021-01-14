@@ -83,7 +83,7 @@ async fn init_nash() -> Result<ReconnectableWebsocket<NashWebsocket>> {
             credentials: None,
             affiliate_code: None,
             environment: Environment::Sandbox,
-            sign_states_loop_interval: None
+            sign_states_loop_interval: None,
         },
         Duration::from_secs_f32(1.0),
     )
