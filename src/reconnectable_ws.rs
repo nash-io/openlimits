@@ -12,7 +12,10 @@ use tokio::time::Duration;
 pub type SubscriptionCallback<Response> =
     Arc<dyn Fn(&Result<WebSocketResponse<Response>>) + Sync + Send + 'static>;
 
-pub type SubscriptionCallbackRegistry<E> = (Subscription, SubscriptionCallback<<E as ExchangeWs>::Response>);
+pub type SubscriptionCallbackRegistry<E> = (
+    Subscription,
+    SubscriptionCallback<<E as ExchangeWs>::Response>,
+);
 
 pub struct ReconnectableWebsocket<E: ExchangeWs> {
     websocket: Arc<Mutex<OpenLimitsWs<E>>>,
