@@ -51,18 +51,18 @@ jobs:
 
       run:  cargo test --release -- --test-threads=1
 
-  clippy_check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
-        with:
-            toolchain: stable
-            components: clippy
-            override: true
-      - uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+#   clippy_check:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v1
+#       - uses: actions-rs/toolchain@v1
+#         with:
+#             toolchain: stable
+#             components: clippy
+#             override: true
+#       - uses: actions-rs/clippy-check@v1
+#         with:
+#           token: ${{ secrets.GITHUB_TOKEN }}
 
   rustfmt_check:
     runs-on: ubuntu-latest
