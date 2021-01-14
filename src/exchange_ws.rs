@@ -13,7 +13,7 @@ use crate::{
 use async_trait::async_trait;
 use derive_more::Constructor;
 use futures::{channel::mpsc::channel, stream::BoxStream, StreamExt};
-use serde::export::fmt::Debug;
+use std::fmt::Debug;
 
 #[derive(Constructor)]
 pub struct OpenLimitsWs<E: ExchangeWs> {
