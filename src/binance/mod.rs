@@ -424,8 +424,8 @@ impl From<model::TradeHistory> for Trade {
         };
         Self {
             id: trade_history.id.to_string(),
-            buyer_order_id: buyer_order_id,
-            seller_order_id: seller_order_id,
+            buyer_order_id,
+            seller_order_id,
             market_pair: trade_history.symbol,
             price: trade_history.price,
             qty: trade_history.qty,

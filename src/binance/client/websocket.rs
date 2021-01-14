@@ -73,7 +73,7 @@ impl ExchangeWs for BinanceWebsocket {
             false => WS_URL_PROD,
         };
         let endpoint = url::Url::parse(&format!("{}?streams={}", ws_url, streams))
-            .map_err(|e| OpenLimitsError::UrlParserError(e))?;
+            .map_err(OpenLimitsError::UrlParserError)?;
         let (ws_stream, _) = connect_async(endpoint).await?;
 
         let (mut sink, stream) = ws_stream.split();

@@ -3,6 +3,7 @@
 // I kept the `unstable_features` as `deny` because it's critical.
 #![deny(unstable_features)]
 #![warn(unused_import_braces)]
+#![allow(clippy::too_many_arguments)]
 
 pub mod binance;
 pub mod coinbase;

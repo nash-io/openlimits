@@ -12,10 +12,12 @@ use tokio::time::Duration;
 pub type SubscriptionCallback<Response> =
     Arc<dyn Fn(&Result<WebSocketResponse<Response>>) + Sync + Send + 'static>;
 
+pub type SubscriptionCallbackRegistry<E> = (Subscription, SubscriptionCallback<<E as ExchangeWs>::Response>);
+
 pub struct ReconnectableWebsocket<E: ExchangeWs> {
     websocket: Arc<Mutex<OpenLimitsWs<E>>>,
     tx: UnboundedSender<()>,
-    subscriptions: Arc<Mutex<Vec<(Subscription, SubscriptionCallback<E::Response>)>>>,
+    subscriptions: Arc<Mutex<Vec<SubscriptionCallbackRegistry<E>>>>,
 }
 
 impl<E: ExchangeWs + 'static> ReconnectableWebsocket<E> {
@@ -23,7 +25,7 @@ impl<E: ExchangeWs + 'static> ReconnectableWebsocket<E> {
         let websocket = E::new(params.clone()).await?;
         let websocket = OpenLimitsWs { websocket };
         let websocket = Arc::new(Mutex::new(websocket));
-        let subscriptions: Arc<Mutex<Vec<(Subscription, SubscriptionCallback<E::Response>)>>> =
+        let subscriptions: Arc<Mutex<Vec<SubscriptionCallbackRegistry<E>>>> =
             Arc::new(Mutex::new(Default::default()));
         let (tx, mut rx) = unbounded_channel();
         {
@@ -31,7 +33,7 @@ impl<E: ExchangeWs + 'static> ReconnectableWebsocket<E> {
             let subscriptions = Arc::downgrade(&subscriptions);
             let tx = tx.clone();
             tokio::spawn(async move {
-                while let Some(_) = rx.recv().await {
+                while rx.recv().await.is_some() {
                     'reconnection: loop {
                         if let (Some(websocket), Some(subscriptions)) =
                             (websocket.upgrade(), subscriptions.upgrade())

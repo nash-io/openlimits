@@ -58,7 +58,7 @@ impl Clone for NashParameters {
                 Environment::Dev(s) => Environment::Dev(s),
             },
             timeout: self.timeout,
-            sign_states_loop_interval: self.sign_states_loop_interval.clone()
+            sign_states_loop_interval: self.sign_states_loop_interval
         }
     }
 }
@@ -90,7 +90,7 @@ async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
         }
     };
 
-    Ok(out.map_err(|e| OpenLimitsError::NashProtocolError(e))?)
+    Ok(out.map_err(OpenLimitsError::NashProtocolError)?)
 }
 
 #[async_trait]
@@ -758,7 +758,7 @@ impl NashWebsocket {
         Client::from_key_data(secret, session, None, client_id, environment, timeout, sign_states_loop_interval)
             .await
             .map(|client| NashWebsocket { client })
-            .map_err(|error| OpenLimitsError::NashProtocolError(error))
+            .map_err(OpenLimitsError::NashProtocolError)
     }
 }
 
@@ -876,7 +876,7 @@ impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResp
                 ))
             }
             SubscriptionResponse::Ticker(resp) => Ok(WebSocketResponse::Raw(
-                SubscriptionResponseWrapper(SubscriptionResponse::Ticker(resp.clone())),
+                SubscriptionResponseWrapper(SubscriptionResponse::Ticker(resp)),
             )),
         }
     }
@@ -894,7 +894,7 @@ impl From<TimeInForce> for nash_protocol::types::OrderCancellationPolicy {
             }
             TimeInForce::GoodTillTime(duration) => {
                 let expire_time = Utc::now() + duration;
-                nash_protocol::types::OrderCancellationPolicy::GoodTilTime(expire_time.clone())
+                nash_protocol::types::OrderCancellationPolicy::GoodTilTime(expire_time)
             }
         }
     }
