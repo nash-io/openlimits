@@ -1,4 +1,4 @@
-pub type Result<T> = std::result::Result<T, crate::errors::OpenLimitError>;
+pub type Result<T> = std::result::Result<T, crate::errors::OpenLimitsError>;
 
 pub mod string_to_decimal {
     use std::fmt;
@@ -86,7 +86,7 @@ pub mod naive_datetime_from_string {
         let DatetimeFromString::String(s) = DatetimeFromString::deserialize(deserializer)?;
         let a = NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S.%fZ");
         match a {
-            Ok(t) => return Ok(t),
+            Ok(t) => Ok(t),
             Err(_e) => NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%SZ")
                 .map_err(serde::de::Error::custom),
         }

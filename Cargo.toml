@@ -23,6 +23,7 @@ base64 = "0.12.3"
 chrono = { version = "0.4.11", features = ["std", "serde"] }
 dotenv = "0.15.0"
 futures = "0.3.5"
+futures-util = "0.3.8"
 hex = "0.4.2"
 hmac = "0.8.1"
 log = "0.4.8"
@@ -39,6 +40,6 @@ tungstenite = "0.11.0"
 sha2 = "0.9.1"
 url = "2.1.1"
 derive_more = "0.99"
-nash-protocol = { version = "=0.1.20", default-features = false, features = ["rustcrypto"] }
-nash-native-client = { version = "=0.1.13", default-features = false, features = ["rustcrypto"] }
+nash-protocol = { version = "=0.1.21", default-features = false, features = ["rustcrypto"] }
+nash-native-client = { version = "=0.1.16", default-features = false, features = ["rustcrypto"] }
 pyo3 = { version = "0.12.3", optional = true }

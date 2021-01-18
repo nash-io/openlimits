@@ -3,7 +3,7 @@ use crate::{
         model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
         BinanceParameters,
     },
-    errors::OpenLimitError,
+    errors::OpenLimitsError,
     exchange_ws::ExchangeWs,
     exchange_ws::Subscriptions,
     model::websocket::OpenLimitsWebSocketMessage,
@@ -13,10 +13,12 @@ use crate::{
 };
 
 use async_trait::async_trait;
-use futures::{stream::BoxStream, StreamExt};
+use futures::{stream::BoxStream, SinkExt, StreamExt};
 use serde::{de, Deserialize, Serialize};
 use serde_json::Value;
+use std::sync::Mutex;
 use std::{convert::TryFrom, fmt::Display};
+use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 
 const WS_URL_PROD: &str = "wss://stream.binance.com:9443/stream";
@@ -31,6 +33,7 @@ enum Either<L, R> {
 
 pub struct BinanceWebsocket {
     parameters: BinanceParameters,
+    disconnection_senders: Mutex<Vec<UnboundedSender<()>>>,
 }
 
 #[async_trait]
@@ -40,7 +43,19 @@ impl ExchangeWs for BinanceWebsocket {
     type Response = BinanceWebsocketMessage;
 
     async fn new(parameters: Self::InitParams) -> Result<Self> {
-        Ok(BinanceWebsocket { parameters })
+        Ok(BinanceWebsocket {
+            parameters,
+            disconnection_senders: Default::default(),
+        })
+    }
+
+    async fn disconnect(&self) {
+        if let Ok(mut senders) = self.disconnection_senders.lock() {
+            for sender in senders.iter() {
+                sender.send(()).ok();
+            }
+            senders.clear();
+        }
     }
 
     async fn create_stream_specific(
@@ -58,12 +73,24 @@ impl ExchangeWs for BinanceWebsocket {
             false => WS_URL_PROD,
         };
         let endpoint = url::Url::parse(&format!("{}?streams={}", ws_url, streams))
-            .map_err(|e| OpenLimitError::UrlParserError(e))?;
+            .map_err(OpenLimitsError::UrlParserError)?;
         let (ws_stream, _) = connect_async(endpoint).await?;
 
-        let s = ws_stream.map(|message| match message {
+        let (mut sink, stream) = ws_stream.split();
+        let (disconnection_sender, mut disconnection_receiver) = unbounded_channel();
+        tokio::spawn(async move {
+            if disconnection_receiver.recv().await.is_some() {
+                sink.close().await.ok();
+            }
+        });
+
+        if let Ok(mut senders) = self.disconnection_senders.lock() {
+            senders.push(disconnection_sender);
+        }
+
+        let s = stream.map(|message| match message {
             Ok(msg) => parse_message(msg),
-            Err(_) => Err(OpenLimitError::SocketError()),
+            Err(_) => Err(OpenLimitsError::SocketError()),
         });
 
         Ok(s.boxed())
@@ -161,7 +188,7 @@ impl From<Subscription> for BinanceSubscription {
 }
 
 impl TryFrom<BinanceWebsocketMessage> for WebSocketResponse<BinanceWebsocketMessage> {
-    type Error = OpenLimitError;
+    type Error = OpenLimitsError;
 
     fn try_from(value: BinanceWebsocketMessage) -> Result<Self> {
         match value {
@@ -174,7 +201,7 @@ impl TryFrom<BinanceWebsocketMessage> for WebSocketResponse<BinanceWebsocketMess
             BinanceWebsocketMessage::Ping => {
                 Ok(WebSocketResponse::Generic(OpenLimitsWebSocketMessage::Ping))
             }
-            BinanceWebsocketMessage::Close => Err(OpenLimitError::SocketError()),
+            BinanceWebsocketMessage::Close => Err(OpenLimitsError::SocketError()),
             _ => Ok(WebSocketResponse::Raw(value)),
         }
     }
@@ -189,5 +216,5 @@ fn parse_message(ws_message: Message) -> Result<BinanceWebsocketMessage> {
         Message::Close(..) => return Ok(BinanceWebsocketMessage::Close),
     };
 
-    serde_json::from_str(&msg).map_err(OpenLimitError::JsonError)
+    serde_json::from_str(&msg).map_err(OpenLimitsError::JsonError)
 }

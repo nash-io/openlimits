@@ -16,8 +16,9 @@ use rust_decimal::prelude::{Decimal, FromStr};
 use std::env;
 use std::time::Duration as NativeDuration;
 
-#[tokio::test]
-async fn limit_buy() {
+// FIXME: https://github.com/nash-io/openlimits/issues/157
+// #[tokio::test]
+async fn _limit_buy() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
@@ -33,8 +34,9 @@ async fn limit_buy() {
     println!("{:?}", resp);
 }
 
-#[tokio::test]
-async fn limit_buy_ioc() {
+// FIXME: https://github.com/nash-io/openlimits/issues/157
+// #[tokio::test]
+async fn _limit_buy_ioc() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::ImmediateOrCancelled,
@@ -50,8 +52,9 @@ async fn limit_buy_ioc() {
     println!("{:?}", resp);
 }
 
-#[tokio::test]
-async fn limit_buy_fok() {
+// FIXME: https://github.com/nash-io/openlimits/issues/157
+// #[tokio::test]
+async fn _limit_buy_fok() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::FillOrKill,
@@ -85,8 +88,9 @@ async fn limit_buy_ggt() {
     println!("{:?}", resp);
 }
 
-#[tokio::test]
-async fn market_buy() {
+// FIXME: https://github.com/nash-io/openlimits/issues/157
+// #[tokio::test]
+async fn _market_buy() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
         size: Decimal::from_str("10.0").expect("Couldn't parse string."),
@@ -99,8 +103,9 @@ async fn market_buy() {
     println!("{:?}", resp);
 }
 
-#[tokio::test]
-async fn market_sell() {
+// FIXME: https://github.com/nash-io/openlimits/issues/157
+// #[tokio::test]
+async fn _market_sell() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
         size: Decimal::from_str("0.02").expect("Couldn't parse string."),
@@ -113,8 +118,9 @@ async fn market_sell() {
     println!("{:?}", resp);
 }
 
-#[tokio::test]
-async fn limit_sell() {
+// FIXME: https://github.com/nash-io/openlimits/issues/157
+// #[tokio::test]
+async fn _limit_sell() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillTime(Duration::hours(2)),
@@ -130,8 +136,9 @@ async fn limit_sell() {
     println!("{:?}", resp);
 }
 
-#[tokio::test]
-async fn cancel_order() {
+// FIXME: https://github.com/nash-io/openlimits/issues/157
+// #[tokio::test]
+async fn _cancel_order() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
@@ -156,8 +163,9 @@ async fn cancel_order() {
     println!("{:?}", resp);
 }
 
-#[tokio::test]
-async fn cancel_all_orders() {
+// FIXME: https://github.com/nash-io/openlimits/issues/157
+// #[tokio::test]
+async fn _cancel_all_orders() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
@@ -250,6 +258,7 @@ async fn init() -> Nash {
         environment: Environment::Sandbox,
         client_id: 1,
         timeout: NativeDuration::new(10, 0),
+        sign_states_loop_interval: None,
     };
 
     OpenLimits::instantiate(parameters)

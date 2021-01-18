@@ -3,7 +3,7 @@ pub mod model;
 mod transport;
 
 use crate::{
-    errors::OpenLimitError,
+    errors::OpenLimitsError,
     exchange::Exchange,
     exchange::ExchangeAccount,
     exchange::ExchangeMarketData,
@@ -205,7 +205,7 @@ impl ExchangeAccount for Coinbase {
                 pair,
                 req.size,
                 req.price,
-                model::OrderTimeInForce::from(req.time_in_force.clone()),
+                model::OrderTimeInForce::from(req.time_in_force),
                 req.post_only,
             )
             .await
@@ -219,7 +219,7 @@ impl ExchangeAccount for Coinbase {
                 pair,
                 req.size,
                 req.price,
-                model::OrderTimeInForce::from(req.time_in_force.clone()),
+                model::OrderTimeInForce::from(req.time_in_force),
                 req.post_only,
             )
             .await
@@ -325,8 +325,8 @@ impl From<model::Fill> for Trade {
 
         Self {
             id: fill.trade_id.to_string(),
-            buyer_order_id: buyer_order_id,
-            seller_order_id: seller_order_id,
+            buyer_order_id,
+            seller_order_id,
             market_pair: fill.product_id,
             price: fill.price,
             qty: fill.size,
@@ -368,7 +368,7 @@ impl From<model::Candle> for Candle {
 }
 
 impl TryFrom<Interval> for u32 {
-    type Error = OpenLimitError;
+    type Error = OpenLimitsError;
     fn try_from(value: Interval) -> Result<Self> {
         match value {
             Interval::OneMinute => Ok(60),
@@ -377,7 +377,7 @@ impl TryFrom<Interval> for u32 {
             Interval::OneHour => Ok(3600),
             Interval::SixHours => Ok(21600),
             Interval::OneDay => Ok(86400),
-            _ => Err(OpenLimitError::MissingParameter(format!(
+            _ => Err(OpenLimitsError::MissingParameter(format!(
                 "{:?} is not supported in Coinbase",
                 value,
             ))),
@@ -386,7 +386,7 @@ impl TryFrom<Interval> for u32 {
 }
 
 impl TryFrom<&GetHistoricRatesRequest> for model::CandleRequestParams {
-    type Error = OpenLimitError;
+    type Error = OpenLimitsError;
     fn try_from(params: &GetHistoricRatesRequest) -> Result<Self> {
         let granularity = u32::try_from(params.interval)?;
         Ok(Self {
