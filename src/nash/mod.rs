@@ -516,7 +516,7 @@ impl From<nash_protocol::types::AccountTradeSide> for Liquidity {
 impl TryFrom<&GetHistoricRatesRequest>
     for nash_protocol::protocol::list_candles::ListCandlesRequest
 {
-    type Error = OpenLimitError;
+    type Error = OpenLimitsError;
     fn try_from(req: &GetHistoricRatesRequest) -> crate::shared::Result<Self> {
         let (before, limit, range) = try_split_paginator(req.paginator.clone())?;
 
@@ -547,7 +547,7 @@ fn try_split_paginator(
             paginator.before,
             match paginator.limit {
                 Some(v) => Some(i64::try_from(v).map_err(|_| {
-                    OpenLimitError::InvalidParameter(
+                    OpenLimitsError::InvalidParameter(
                         "Couldn't convert paginator limit to i64".to_string(),
                     )
                 })?),
@@ -694,7 +694,7 @@ impl From<nash_protocol::types::OrderStatus> for OrderStatus {
 }
 
 impl TryFrom<OrderStatus> for nash_protocol::types::OrderStatus {
-    type Error = OpenLimitError;
+    type Error = OpenLimitsError;
     fn try_from(status: OrderStatus) -> crate::shared::Result<Self> {
         Ok(match status {
             OrderStatus::Filled => nash_protocol::types::OrderStatus::Filled,
@@ -702,7 +702,7 @@ impl TryFrom<OrderStatus> for nash_protocol::types::OrderStatus {
             OrderStatus::Canceled => nash_protocol::types::OrderStatus::Canceled,
             OrderStatus::Pending => nash_protocol::types::OrderStatus::Pending,
             _ => {
-                return Err(OpenLimitError::InvalidParameter(
+                return Err(OpenLimitsError::InvalidParameter(
                     "Had invalid order status for Nash".to_string(),
                 ))
             }
