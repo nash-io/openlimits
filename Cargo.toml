@@ -27,16 +27,17 @@ futures-util = "0.3"
 hex = "0.4.2"
 hmac = "0.8.1"
 log = "0.4.8"
-reqwest = { version = "0.10", features = ["json", "blocking"] }
+reqwest = { version = "0.11", features = ["json", "blocking"] }
 rust_decimal = "1.7.0"
 sugar = "0.2.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_urlencoded = "0.6.1"
 thiserror = "1.0.20"
-tokio = { version = "0.3", features = ["full"] }
-tokio-tungstenite = { version = "0.12", features = ["tls"] }
-tungstenite = "0.11.1"
+tokio = { version = "1.0", features = ["full"] }
+tokio-stream = "0.1"
+tokio-tungstenite = { version = "0.13", features = ["tls"] }
+tungstenite = "0.12"
 sha2 = "0.9.1"
 url = "2.1.1"
 derive_more = "0.99"

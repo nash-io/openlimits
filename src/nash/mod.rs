@@ -807,7 +807,7 @@ impl ExchangeWs for NashWebsocket {
 
         for subscription in subscriptions.into_iter() {
             let stream = self.client.subscribe_protocol(subscription).await?;
-            streams.push(stream);
+            streams.push(tokio_stream::wrappers::UnboundedReceiverStream::new(stream));
         }
 
         let s = streams.map(|message| match message {
