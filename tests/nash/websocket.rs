@@ -1,15 +1,15 @@
+use crate::openlimits::exchange::ExchangeAccount;
 use dotenv::dotenv;
 use nash_native_client::ws_client::client::Environment;
+use openlimits::exchange::OpenLimits;
+use openlimits::model::{CancelAllOrdersRequest, OpenLimitOrderRequest, TimeInForce};
+use openlimits::nash::{Nash, NashCredentials, NashParameters};
 use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::NashWebsocket};
+use rust_decimal::Decimal;
+use std::str::FromStr;
+use std::time::Duration as NativeDuration;
 use std::{env, sync::mpsc::sync_channel};
 use tokio::time::Duration;
-use openlimits::model::{OpenLimitOrderRequest, TimeInForce, CancelAllOrdersRequest};
-use rust_decimal::Decimal;
-use openlimits::nash::{Nash, NashParameters, NashCredentials};
-use openlimits::exchange::OpenLimits;
-use std::str::FromStr;
-use crate::openlimits::exchange::ExchangeAccount;
-use std::time::Duration as NativeDuration;
 
 async fn init_exchange() -> Nash {
     dotenv().ok();
@@ -45,7 +45,11 @@ async fn test_subscription_callback(websocket: OpenLimitsWs<NashWebsocket>, sub:
     rx.recv().expect("Couldn't receive sync message.");
 }
 
-async fn test_account_subscription_callback(websocket: OpenLimitsWs<NashWebsocket>, sub: Subscription, cancel_orders: bool) {
+async fn test_account_subscription_callback(
+    websocket: OpenLimitsWs<NashWebsocket>,
+    sub: Subscription,
+    cancel_orders: bool,
+) {
     let (tx, rx) = sync_channel(0);
 
     websocket

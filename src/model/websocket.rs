@@ -7,7 +7,7 @@ pub enum Subscription {
     Trades(String),           // symbol
     AccountOrders(String),    // symbol
     AccountTrades(String),    // symbol
-    AccountBalance(String)    // symbol
+    AccountBalance(String),   // symbol
 }
 
 #[derive(Debug, Clone)]

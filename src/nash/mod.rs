@@ -925,14 +925,14 @@ impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResp
                 SubscriptionResponseWrapper(SubscriptionResponse::Ticker(resp)),
             )),
             SubscriptionResponse::AccountTrades(resp) => Ok(WebSocketResponse::Raw(
-                SubscriptionResponseWrapper(SubscriptionResponse::AccountTrades(resp))
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountTrades(resp)),
             )),
             SubscriptionResponse::AccountOrders(resp) => Ok(WebSocketResponse::Raw(
-                SubscriptionResponseWrapper(SubscriptionResponse::AccountOrders(resp))
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountOrders(resp)),
             )),
             SubscriptionResponse::AccountBalances(resp) => Ok(WebSocketResponse::Raw(
-                SubscriptionResponseWrapper(SubscriptionResponse::AccountBalances(resp))
-            ))
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountBalances(resp)),
+            )),
         }
     }
 }
