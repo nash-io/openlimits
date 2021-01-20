@@ -337,6 +337,7 @@ impl Nash {
         buy_or_sell: nash_protocol::types::BuyOrSell,
     ) -> nash_protocol::protocol::place_order::LimitOrderRequest {
         nash_protocol::protocol::place_order::LimitOrderRequest {
+            client_order_id: None,
             cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(
                 req.time_in_force,
             ),
@@ -352,6 +353,7 @@ impl Nash {
         req: &OpenMarketOrderRequest,
     ) -> nash_protocol::protocol::place_order::MarketOrderRequest {
         nash_protocol::protocol::place_order::MarketOrderRequest {
+            client_order_id: None,
             market: req.market_pair.clone(),
             amount: format!("{}", req.size),
         }
@@ -852,6 +854,21 @@ impl From<Subscription> for nash_protocol::protocol::subscriptions::Subscription
             Subscription::Trades(market) => Self::Trades(
                 nash_protocol::protocol::subscriptions::trades::SubscribeTrades { market },
             ),
+            Subscription::AccountOrders(market) => Self::AccountOrders(
+                nash_protocol::protocol::subscriptions::updated_account_orders::SubscribeAccountOrders {
+                    market: Some(market)
+                }
+            ),
+            Subscription::AccountTrades(market_name) => Self::AccountTrades(
+                nash_protocol::protocol::subscriptions::new_account_trades::SubscribeAccountTrades {
+                    market_name
+                }
+            ),
+            Subscription::AccountBalance(market) => Self::AccountBalances(
+                nash_protocol::protocol::subscriptions::updated_account_balances::SubscribeAccountBalances {
+                    symbol: Some(market)
+                }
+            ),
             _ => panic!("Not supported Subscription"),
         }
     }
@@ -871,6 +888,15 @@ impl Clone for SubscriptionResponseWrapper {
             }
             SubscriptionResponse::Ticker(ticker) => {
                 SubscriptionResponseWrapper(SubscriptionResponse::Ticker(ticker.clone()))
+            }
+            SubscriptionResponse::AccountBalances(balances) => {
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountBalances(balances.clone()))
+            }
+            SubscriptionResponse::AccountOrders(orders) => {
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountOrders(orders.clone()))
+            }
+            SubscriptionResponse::AccountTrades(trades) => {
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountTrades(trades.clone()))
             }
         }
     }
@@ -898,6 +924,15 @@ impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResp
             SubscriptionResponse::Ticker(resp) => Ok(WebSocketResponse::Raw(
                 SubscriptionResponseWrapper(SubscriptionResponse::Ticker(resp)),
             )),
+            SubscriptionResponse::AccountTrades(resp) => Ok(WebSocketResponse::Raw(
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountTrades(resp))
+            )),
+            SubscriptionResponse::AccountOrders(resp) => Ok(WebSocketResponse::Raw(
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountOrders(resp))
+            )),
+            SubscriptionResponse::AccountBalances(resp) => Ok(WebSocketResponse::Raw(
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountBalances(resp))
+            ))
         }
     }
 }
