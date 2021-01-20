@@ -21,8 +21,7 @@ use crate::{
 };
 use async_trait::async_trait;
 use chrono::Utc;
-pub use nash_native_client::ws_client::client::Client;
-pub use nash_native_client::ws_client::client::Environment;
+pub use nash_native_client::{Client, Environment};
 use rust_decimal::prelude::*;
 use std::convert::{TryFrom, TryInto};
 
@@ -43,7 +42,7 @@ pub struct NashParameters {
     pub client_id: u64,
     pub environment: Environment,
     pub timeout: Duration,
-    pub sign_states_loop_interval: Option<u64>,
+    pub sign_states_loop_interval: Option<Duration>,
 }
 
 impl Clone for NashParameters {
@@ -64,33 +63,35 @@ impl Clone for NashParameters {
 }
 
 async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
-    let out = match params.credentials {
+    let client = match params.credentials {
         Some(credentials) => {
-            Client::from_key_data(
+            Client::from_keys(
                 &credentials.secret,
                 &credentials.session,
                 params.affiliate_code,
                 params.client_id,
                 params.environment,
                 params.timeout,
-                params.sign_states_loop_interval,
             )
-            .await
+            .await?
         }
         None => {
-            Client::new(
+            Client::from_keys_path(
                 None,
                 params.client_id,
                 None,
                 params.environment,
                 params.timeout,
-                params.sign_states_loop_interval,
             )
-            .await
+            .await?
         }
     };
 
-    Ok(out.map_err(OpenLimitsError::NashProtocolError)?)
+    if let Some(interval) = params.sign_states_loop_interval {
+        client.start_background_state_signing(interval);
+    }
+
+    Ok(client)
 }
 
 #[async_trait]
@@ -159,13 +160,13 @@ impl ExchangeMarketData for Nash {
 impl ExchangeAccount for Nash {
     async fn cancel_all_orders(&self, req: &CancelAllOrdersRequest) -> Result<Vec<OrderCanceled>> {
         let req: nash_protocol::protocol::cancel_all_orders::CancelAllOrders = req.into();
-        self.transport.run(req).await?;
+        self.transport.run_http(req).await?;
         Ok(vec![])
     }
 
     async fn cancel_order(&self, req: &CancelOrderRequest) -> Result<OrderCanceled> {
         let req: nash_protocol::protocol::cancel_order::CancelOrderRequest = req.into();
-        let resp = self.transport.run(req).await;
+        let resp = self.transport.run_http(req).await;
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::cancel_order::CancelOrderResponse>(
                 resp,
@@ -267,7 +268,7 @@ impl ExchangeAccount for Nash {
         let req: nash_protocol::protocol::place_order::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Buy);
 
-        let resp = self.transport.run(req).await;
+        let resp = self.transport.run_http(req).await;
 
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::place_order::PlaceOrderResponse>(
@@ -280,7 +281,7 @@ impl ExchangeAccount for Nash {
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
         let req: nash_protocol::protocol::place_order::LimitOrderRequest =
             Nash::convert_limit_order(req, nash_protocol::types::BuyOrSell::Sell);
-        let resp = self.transport.run(req).await;
+        let resp = self.transport.run_http(req).await;
 
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::place_order::PlaceOrderResponse>(
@@ -294,7 +295,7 @@ impl ExchangeAccount for Nash {
         let req: nash_protocol::protocol::place_order::MarketOrderRequest =
             Nash::convert_market_request(req);
 
-        let resp = self.transport.run(req).await;
+        let resp = self.transport.run_http(req).await;
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::place_order::PlaceOrderResponse>(
                 resp,
@@ -768,50 +769,6 @@ use tokio::time::Duration;
 
 pub struct NashWebsocket {
     pub client: Client,
-}
-
-impl NashWebsocket {
-    pub async fn public(
-        client_id: u64,
-        environment: Environment,
-        timeout: Duration,
-        sign_states_loop_interval: Option<u64>,
-    ) -> Self {
-        NashWebsocket {
-            client: Client::new(
-                None,
-                client_id,
-                None,
-                environment,
-                timeout,
-                sign_states_loop_interval,
-            )
-            .await
-            .expect("Couldn't create Client."),
-        }
-    }
-
-    pub async fn with_credential(
-        secret: &str,
-        session: &str,
-        client_id: u64,
-        environment: Environment,
-        timeout: Duration,
-        sign_states_loop_interval: Option<u64>,
-    ) -> Result<Self> {
-        Client::from_key_data(
-            secret,
-            session,
-            None,
-            client_id,
-            environment,
-            timeout,
-            sign_states_loop_interval,
-        )
-        .await
-        .map(|client| NashWebsocket { client })
-        .map_err(OpenLimitsError::NashProtocolError)
-    }
 }
 
 impl Stream for NashWebsocket {

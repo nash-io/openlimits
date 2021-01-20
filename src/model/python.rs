@@ -207,6 +207,7 @@ impl<'a> FromPyObject<'a> for NashParameters {
                 "sign states loop interval not included in nash credentials",
             ))?
             .extract()?;
+        let sign_states_loop_interval = sign_states_loop_interval.map(Duration::from_millis);
         Ok(NashParameters {
             affiliate_code,
             credentials,

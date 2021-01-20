@@ -1,6 +1,6 @@
 use chrono::Duration;
 use dotenv::dotenv;
-use nash_native_client::ws_client::client::Environment;
+use nash_native_client::Environment;
 use openlimits::{
     exchange::{ExchangeAccount, OpenLimits},
     model::OpenMarketOrderRequest,

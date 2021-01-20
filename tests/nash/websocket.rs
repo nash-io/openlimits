@@ -1,8 +1,10 @@
 use dotenv::dotenv;
-use nash_native_client::ws_client::client::Environment;
+use nash_native_client::Environment;
 use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::NashWebsocket};
 use std::{env, sync::mpsc::sync_channel};
 use tokio::time::Duration;
+use openlimits::nash::{NashParameters, NashCredentials};
+use openlimits::exchange_ws::ExchangeWs;
 
 async fn test_subscription_callback(websocket: OpenLimitsWs<NashWebsocket>, sub: Subscription) {
     let (tx, rx) = sync_channel(0);
@@ -35,14 +37,17 @@ async fn trades() {
 async fn init() -> OpenLimitsWs<NashWebsocket> {
     dotenv().ok();
 
-    let websocket = NashWebsocket::with_credential(
-        &env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
-        &env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
-        1234,
-        Environment::Sandbox,
-        Duration::new(10, 0),
-        None,
-    )
+    let websocket = NashWebsocket::new(NashParameters {
+        credentials: Some(NashCredentials {
+            secret: env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
+            session: env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
+        }),
+        affiliate_code: None,
+        client_id: 1234,
+        environment: Environment::Sandbox,
+        timeout: Duration::from_secs(10),
+        sign_states_loop_interval: None,
+    })
     .await
     .expect("Couldn't connect.");
 
