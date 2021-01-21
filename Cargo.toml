@@ -1,6 +1,6 @@
 [package]
 name = "openlimits"
-version = "0.1.7"
+version = "0.1.6"
 authors = ["steffel <2143646+steffenix@users.noreply.github.com>", "Ethan Fast <ethan@nash.io>"]
 edition = "2018"
 description = "A open source Rust high performance cryptocurrency trading API with support for multiple exchanges and language wrappers. Focused in safety, correctness and speed."

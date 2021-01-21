@@ -14,7 +14,6 @@ use openlimits::{
 };
 use rust_decimal::prelude::{Decimal, FromStr};
 use std::env;
-use std::sync::Arc;
 use std::time::Duration as NativeDuration;
 
 // FIXME: https://github.com/nash-io/openlimits/issues/157
@@ -197,7 +196,6 @@ async fn get_order_history() {
     let exchange = init().await;
     let req = GetOrderHistoryRequest {
         market_pair: Some(String::from("eth_btc")),
-        order_status: None,
         paginator: None,
     };
 
@@ -206,23 +204,6 @@ async fn get_order_history() {
         .await
         .expect("Couldn't get order history.");
     println!("{:?}", resp);
-}
-
-#[tokio::test]
-async fn test_concurrent_requests() {
-    let exchange = init().await;
-    let client = Arc::new(exchange);
-    async fn make_request(client: Arc<Nash>, i: u64) {
-        let req = client.get_account_balances(None).await;
-        if !req.is_err() {
-            println!("completed req {}", i);
-        }
-    }
-    let mut tasks = Vec::new();
-    for i in 0..10 {
-        tasks.push(tokio::spawn(make_request(client.clone(), i)));
-    }
-    futures::future::join_all(tasks).await;
 }
 
 // #[tokio::test]

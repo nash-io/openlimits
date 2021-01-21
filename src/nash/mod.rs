@@ -467,13 +467,12 @@ impl From<nash_protocol::types::Trade> for Trade {
         let price = Decimal::from_str(&resp.limit_price.to_string())
             .expect("Couldn't parse Decimal from string.");
 
-        let (fees, _order_id) = match resp.account_side {
-            nash_protocol::types::AccountTradeSide::Taker => (
+        let fees = match resp.account_side {
+            nash_protocol::types::AccountTradeSide::Taker => {
                 Decimal::from_str(&resp.taker_fee.to_string())
-                    .expect("Couldn't parse Decimal from string."),
-                resp.taker_order_id.clone(),
-            ),
-            _ => (Decimal::from(0), resp.maker_order_id.clone()),
+                    .expect("Couldn't parse Decimal from string.")
+            }
+            _ => Decimal::from(0),
         };
 
         let (buyer_order_id, seller_order_id) = match resp.direction {
