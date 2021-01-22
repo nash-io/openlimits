@@ -1,4 +1,4 @@
-use nash_native_client::ws_client::client::Environment;
+use nash_native_client::Environment;
 use openlimits::{
     exchange::{ExchangeMarketData, OpenLimits},
     exchange_info::ExchangeInfoRetrieval,

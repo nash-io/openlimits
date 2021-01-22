@@ -3,14 +3,14 @@
 // supported exchanges.
 
 use dotenv::dotenv;
-use nash_native_client::ws_client::client::Environment;
+use nash_native_client::Environment;
 use openlimits::any_exchange::{AnyExchange, AnyWsExchange};
 use openlimits::binance::{Binance, BinanceCredentials, BinanceParameters};
 use openlimits::coinbase::client::websocket::CoinbaseWebsocket;
 use openlimits::coinbase::{Coinbase, CoinbaseCredentials, CoinbaseParameters};
 use openlimits::exchange::OpenLimits;
 use openlimits::exchange_ws::OpenLimitsWs;
-use openlimits::nash::{Nash, NashCredentials, NashParameters, NashWebsocket};
+use openlimits::nash::{Nash, NashCredentials, NashParameters};
 use openlimits::shared::Result;
 use std::env;
 use tokio::time::Duration;
@@ -66,23 +66,6 @@ async fn coinbase() -> Result<Coinbase> {
 async fn init() -> Result<AnyExchange> {
     dotenv().ok();
     coinbase().await.map(|exchange| exchange.into())
-}
-
-async fn _nash_websocket() -> OpenLimitsWs<NashWebsocket> {
-    dotenv().ok();
-
-    let websocket = NashWebsocket::with_credential(
-        &env::var("NASH_API_SECRET").unwrap(),
-        &env::var("NASH_API_KEY").unwrap(),
-        1234,
-        Environment::Sandbox,
-        Duration::from_secs_f32(10.0),
-        None,
-    )
-    .await
-    .expect("Couldn't connect.");
-
-    OpenLimitsWs { websocket }
 }
 
 async fn coinbase_websocket() -> OpenLimitsWs<CoinbaseWebsocket> {
