@@ -143,7 +143,7 @@ async fn _cancel_order() {
     let req = OpenLimitOrderRequest {
         time_in_force: TimeInForce::GoodTillCancelled,
         price: Decimal::from_str("200.46").expect("Couldn't parse string."),
-        size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.0300").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
         post_only: false,
     };
@@ -196,6 +196,7 @@ async fn get_order_history() {
     let exchange = init().await;
     let req = GetOrderHistoryRequest {
         market_pair: Some(String::from("eth_btc")),
+        order_status: None,
         paginator: None,
     };
 
