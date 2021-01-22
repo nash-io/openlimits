@@ -1,10 +1,10 @@
 use dotenv::dotenv;
 use nash_native_client::Environment;
+use openlimits::exchange_ws::ExchangeWs;
+use openlimits::nash::{NashCredentials, NashParameters};
 use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::NashWebsocket};
 use std::{env, sync::mpsc::sync_channel};
 use tokio::time::Duration;
-use openlimits::nash::{NashParameters, NashCredentials};
-use openlimits::exchange_ws::ExchangeWs;
 
 async fn test_subscription_callback(websocket: OpenLimitsWs<NashWebsocket>, sub: Subscription) {
     let (tx, rx) = sync_channel(0);
