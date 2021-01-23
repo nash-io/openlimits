@@ -6,9 +6,7 @@ use crate::{
     errors::OpenLimitsError,
     exchange_ws::ExchangeWs,
     exchange_ws::Subscriptions,
-    model::websocket::OpenLimitsWebSocketMessage,
-    model::websocket::Subscription,
-    model::websocket::WebSocketResponse,
+    model::websocket::{OpenLimitsWebSocketMessage, Subscription, WebSocketResponse},
     shared::Result,
 };
 
@@ -182,6 +180,7 @@ impl From<Subscription> for BinanceSubscription {
         match subscription {
             Subscription::OrderBookUpdates(symbol) => BinanceSubscription::Depth(symbol, None),
             Subscription::Trades(symbol) => BinanceSubscription::Trade(symbol),
+            Subscription::Ticker(symbol) => BinanceSubscription::Ticker(symbol),
             _ => unimplemented!(),
         }
     }
@@ -197,6 +196,9 @@ impl TryFrom<BinanceWebsocketMessage> for WebSocketResponse<BinanceWebsocketMess
             )),
             BinanceWebsocketMessage::Trade(trade) => Ok(WebSocketResponse::Generic(
                 OpenLimitsWebSocketMessage::Trades(trade.into()),
+            )),
+            BinanceWebsocketMessage::Ticker(ticker) => Ok(WebSocketResponse::Generic(
+                OpenLimitsWebSocketMessage::Ticker(ticker.into()),
             )),
             BinanceWebsocketMessage::Ping => {
                 Ok(WebSocketResponse::Generic(OpenLimitsWebSocketMessage::Ping))

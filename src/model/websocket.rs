@@ -1,4 +1,4 @@
-use super::{OrderBookResponse, Trade};
+use super::{OrderBookResponse, Ticker, Trade};
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Subscription {
@@ -21,4 +21,5 @@ pub enum OpenLimitsWebSocketMessage {
     OrderBook(OrderBookResponse),
     OrderBookDiff(OrderBookResponse),
     Trades(Vec<Trade>),
+    Ticker(Ticker),
 }

@@ -29,6 +29,18 @@ async fn trades() {
     print!("{:?}", trades);
 }
 
+#[tokio::test(core_threads = 2)]
+async fn ticker() {
+    let ws = init().await;
+    let s = ws
+        .create_stream(&[Subscription::Ticker("bnbbtc".to_string())])
+        .await;
+
+    let trades = s.expect("Couldn't create stream.").next().await;
+
+    print!("{:?}", trades);
+}
+
 async fn init() -> OpenLimitsWs<BinanceWebsocket> {
     OpenLimitsWs {
         websocket: BinanceWebsocket::new(BinanceParameters::prod())

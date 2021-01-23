@@ -34,6 +34,13 @@ async fn trades() {
     test_subscription_callback(ws, sub).await;
 }
 
+#[tokio::test(core_threads = 2)]
+async fn ticker() {
+    let ws = init().await;
+    let sub = Subscription::Ticker("btcusdt".to_string());
+    test_subscription_callback(ws, sub).await;
+}
+
 async fn init() -> OpenLimitsWs<BinanceWebsocket> {
     OpenLimitsWs {
         websocket: BinanceWebsocket::new(BinanceParameters::prod())

@@ -21,6 +21,7 @@ use crate::{
 use async_trait::async_trait;
 pub use client::websocket::BinanceWebsocket;
 use model::KlineSummaries;
+use rust_decimal::Decimal;
 use transport::Transport;
 
 use client::BaseClient;
@@ -350,6 +351,15 @@ impl From<TradeMessage> for Trade {
             },
             liquidity: None,
             created_at: trade.trade_order_time,
+        }
+    }
+}
+
+impl From<model::websocket::Ticker> for Ticker {
+    fn from(ticker: model::websocket::Ticker) -> Self {
+        Self {
+            price: Some((ticker.best_bid + ticker.best_ask) / Decimal::from(2)),
+            price_24h: Some(ticker.average_price),
         }
     }
 }
