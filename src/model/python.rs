@@ -7,6 +7,7 @@ use crate::nash::{Environment, NashCredentials, NashParameters};
 use pyo3::exceptions::PyException;
 use pyo3::prelude::{FromPyObject, IntoPy, PyObject, PyResult, Python, ToPyObject};
 use pyo3::types::PyDict;
+use std::time::Duration;
 
 // Python to Rust...
 
@@ -199,12 +200,21 @@ impl<'a> FromPyObject<'a> for NashParameters {
                 "timeout not included in nash credentials",
             ))?
             .extract()?;
+        let timeout = Duration::from_millis(timeout);
+        let sign_states_loop_interval: Option<u64> = py_dict
+            .get_item("timeout")
+            .ok_or(PyException::new_err(
+                "sign states loop interval not included in nash credentials",
+            ))?
+            .extract()?;
+        let sign_states_loop_interval = sign_states_loop_interval.map(Duration::from_millis);
         Ok(NashParameters {
             affiliate_code,
             credentials,
             client_id,
             environment,
             timeout,
+            sign_states_loop_interval,
         })
     }
 }

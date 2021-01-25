@@ -1,6 +1,6 @@
 use crate::openlimits::exchange::ExchangeAccount;
 use dotenv::dotenv;
-use nash_native_client::ws_client::client::Environment;
+use nash_native_client::Environment;
 use openlimits::exchange::OpenLimits;
 use openlimits::model::{CancelAllOrdersRequest, OpenLimitOrderRequest, TimeInForce};
 use openlimits::nash::{Nash, NashCredentials, NashParameters};
@@ -10,6 +10,8 @@ use std::str::FromStr;
 use std::time::Duration as NativeDuration;
 use std::{env, sync::mpsc::sync_channel};
 use tokio::time::Duration;
+use openlimits::model::websocket::AccountOrders;
+use openlimits::exchange_ws::ExchangeWs;
 
 async fn init_exchange() -> Nash {
     dotenv().ok();
@@ -89,35 +91,41 @@ async fn test_account_subscription_callback(
     rx.recv().expect("Couldn't receive sync message.");
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn account_orders() {
     let client = init().await;
-    let sub = Subscription::AccountOrders("eth_btc".to_string());
+    let sub = Subscription::AccountOrders(AccountOrders {
+        market: Some("eth_btc".to_string()),
+        order_type: None,
+        status: None,
+        buy_or_sell: None,
+        range: None
+    });
     test_account_subscription_callback(client, sub, true).await;
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn account_trades() {
     let client = init().await;
     let sub = Subscription::AccountTrades("eth_btc".to_string());
     test_account_subscription_callback(client, sub, false).await;
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn account_balance() {
     let client = init().await;
     let sub = Subscription::AccountBalance("eth".to_string());
     test_account_subscription_callback(client, sub, false).await;
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn orderbook() {
     let client = init().await;
     let sub = Subscription::OrderBookUpdates("btc_usdc".to_string());
     test_subscription_callback(client, sub).await;
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn trades() {
     let client = init().await;
     let sub = Subscription::Trades("btc_usdc".to_string());
@@ -127,14 +135,17 @@ async fn trades() {
 async fn init() -> OpenLimitsWs<NashWebsocket> {
     dotenv().ok();
 
-    let websocket = NashWebsocket::with_credential(
-        &env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
-        &env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
-        1234,
-        Environment::Sandbox,
-        Duration::new(10, 0),
-        None,
-    )
+    let websocket = NashWebsocket::new(NashParameters {
+        credentials: Some(NashCredentials {
+            secret: env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
+            session: env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
+        }),
+        affiliate_code: None,
+        client_id: 1234,
+        environment: Environment::Sandbox,
+        timeout: Duration::from_secs(10),
+        sign_states_loop_interval: None,
+    })
     .await
     .expect("Couldn't connect.");
 

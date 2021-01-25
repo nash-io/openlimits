@@ -1,4 +1,4 @@
-use nash_native_client::ws_client::client::Environment;
+use nash_native_client::Environment;
 use openlimits::shared::Result;
 use openlimits::{model::websocket::Subscription, nash::NashWebsocket};
 use tokio::time::Duration;
@@ -43,21 +43,21 @@ async fn test_subscription_callback<E: ExchangeWs + 'static>(
         .expect("Couldn't receive sync.");
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn coinbase() {
     let client = init_coinbase().await;
     let sub = Subscription::OrderBookUpdates("BTC-USD".to_string());
     test_subscription_callback(client.expect("Couldn't create client."), sub).await;
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn nash() {
     let client = init_nash().await;
     let sub = Subscription::OrderBookUpdates("btc_usdc".to_string());
     test_subscription_callback(client.expect("Couldn't create client."), sub).await;
 }
 
-#[tokio::test(core_threads = 2)]
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn binance() {
     let client = init_binance().await;
     let sub = Subscription::OrderBookUpdates("bnbbtc".to_string());

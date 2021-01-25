@@ -157,6 +157,7 @@ pub struct CancelAllOrdersRequest {
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
 pub struct GetOrderHistoryRequest {
     pub market_pair: Option<String>,
+    pub order_status: Option<Vec<OrderStatus>>,
     pub paginator: Option<Paginator>,
 }
 
@@ -234,7 +235,7 @@ pub struct GetHistoricTradesRequest {
     pub paginator: Option<Paginator>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Side {
     Buy,
@@ -301,7 +302,7 @@ impl Interval {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OrderStatus {
     New,
@@ -326,7 +327,7 @@ pub struct Paginator {
     pub after: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Hash)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum OrderType {
     Limit,

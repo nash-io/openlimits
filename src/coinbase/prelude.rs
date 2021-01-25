@@ -1,1 +1,1 @@
-pub type Result<T> = std::result::Result<T, OpenLimitError>;
+pub type Result<T> = std::result::Result<T, OpenLimitsError>;
