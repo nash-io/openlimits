@@ -760,16 +760,16 @@ impl From<&GetOrderRequest> for nash_protocol::protocol::get_account_order::GetA
     }
 }
 
+use crate::model::websocket::AccountOrders;
 use futures::stream::{BoxStream, SelectAll, Stream, StreamExt};
+use nash_protocol::protocol::subscriptions::updated_account_orders::SubscribeAccountOrders;
 use nash_protocol::protocol::{
     subscriptions::{SubscriptionRequest, SubscriptionResponse},
     ResponseOrError,
 };
+use nash_protocol::types::{BuyOrSell, DateTimeRange};
 use std::{pin::Pin, task::Context, task::Poll};
 use tokio::time::Duration;
-use nash_protocol::types::{BuyOrSell, DateTimeRange};
-use crate::model::websocket::AccountOrders;
-use nash_protocol::protocol::subscriptions::updated_account_orders::SubscribeAccountOrders;
 
 pub struct NashWebsocket {
     pub client: Client,
@@ -838,7 +838,7 @@ impl From<Side> for BuyOrSell {
     fn from(side: Side) -> Self {
         match side {
             Side::Buy => BuyOrSell::Buy,
-            Side::Sell => BuyOrSell::Sell
+            Side::Sell => BuyOrSell::Sell,
         }
     }
 }
@@ -847,13 +847,13 @@ impl TryFrom<OrderType> for nash_protocol::types::OrderType {
     type Error = OpenLimitsError;
     fn try_from(order_type: OrderType) -> Result<Self> {
         match order_type {
-            OrderType::Limit      => Ok(Self::Limit),
-            OrderType::Market     => Ok(Self::Market),
-            OrderType::StopLimit  => Ok(Self::StopLimit),
+            OrderType::Limit => Ok(Self::Limit),
+            OrderType::Market => Ok(Self::Market),
+            OrderType::StopLimit => Ok(Self::StopLimit),
             OrderType::StopMarket => Ok(Self::StopMarket),
-            OrderType::Unknown    => Err(
-                OpenLimitsError::InvalidParameter("Had invalid order type for Nash".to_string())
-            )
+            OrderType::Unknown => Err(OpenLimitsError::InvalidParameter(
+                "Had invalid order type for Nash".to_string(),
+            )),
         }
     }
 }
@@ -863,30 +863,26 @@ impl From<AccountOrders> for SubscribeAccountOrders {
         Self {
             market: account_orders.market.clone(),
             order_type: account_orders.order_type.map(|x| {
-                x.iter().cloned().map(|x| {
-                    x.try_into().ok()
-                }).filter(|x| {
-                    x.is_some()
-                }).map(|x| {
-                    x.unwrap()
-                }).collect()
+                x.iter()
+                    .cloned()
+                    .map(|x| x.try_into().ok())
+                    .filter(|x| x.is_some())
+                    .map(|x| x.unwrap())
+                    .collect()
             }),
-            range: account_orders.range.map(|range| {
-                DateTimeRange {
-                    start: timestamp_to_utc_datetime(range.start),
-                    stop: timestamp_to_utc_datetime(range.end)
-                }
+            range: account_orders.range.map(|range| DateTimeRange {
+                start: timestamp_to_utc_datetime(range.start),
+                stop: timestamp_to_utc_datetime(range.end),
             }),
             buy_or_sell: account_orders.buy_or_sell.map(|x| x.into()),
             status: account_orders.status.map(|x| {
-                x.iter().cloned().map(|x| {
-                    x.try_into().ok()
-                }).filter(|x| {
-                    x.is_some()
-                }).map(|x| {
-                    x.unwrap()
-                }).collect()
-            })
+                x.iter()
+                    .cloned()
+                    .map(|x| x.try_into().ok())
+                    .filter(|x| x.is_some())
+                    .map(|x| x.unwrap())
+                    .collect()
+            }),
         }
     }
 }
