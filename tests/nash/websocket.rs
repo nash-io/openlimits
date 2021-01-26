@@ -1,10 +1,37 @@
+use crate::openlimits::exchange::ExchangeAccount;
 use dotenv::dotenv;
 use nash_native_client::Environment;
+use openlimits::exchange::OpenLimits;
 use openlimits::exchange_ws::ExchangeWs;
-use openlimits::nash::{NashCredentials, NashParameters};
+use openlimits::model::websocket::AccountOrders;
+use openlimits::model::{CancelAllOrdersRequest, OpenLimitOrderRequest, TimeInForce};
+use openlimits::nash::{Nash, NashCredentials, NashParameters};
 use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::NashWebsocket};
+use rust_decimal::Decimal;
+use std::str::FromStr;
+use std::time::Duration as NativeDuration;
 use std::{env, sync::mpsc::sync_channel};
 use tokio::time::Duration;
+
+async fn init_exchange() -> Nash {
+    dotenv().ok();
+
+    let parameters = NashParameters {
+        affiliate_code: None,
+        credentials: Some(NashCredentials {
+            secret: env::var("NASH_API_SECRET").expect("Couldn't get environment variable."),
+            session: env::var("NASH_API_KEY").expect("Couldn't get environment variable."),
+        }),
+        environment: Environment::Sandbox,
+        client_id: 1,
+        timeout: NativeDuration::new(10, 0),
+        sign_states_loop_interval: None,
+    };
+
+    OpenLimits::instantiate(parameters)
+        .await
+        .expect("Failed to create Client")
+}
 
 async fn test_subscription_callback(websocket: OpenLimitsWs<NashWebsocket>, sub: Subscription) {
     let (tx, rx) = sync_channel(0);
@@ -18,6 +45,77 @@ async fn test_subscription_callback(websocket: OpenLimitsWs<NashWebsocket>, sub:
         .expect("Couldn't subscribe.");
 
     rx.recv().expect("Couldn't receive sync message.");
+}
+
+async fn test_account_subscription_callback(
+    websocket: OpenLimitsWs<NashWebsocket>,
+    sub: Subscription,
+    cancel_orders: bool,
+) {
+    let (tx, rx) = sync_channel(0);
+
+    websocket
+        .subscribe(sub, move |m| {
+            m.as_ref().expect("Couldn't get response.");
+            tx.send(()).expect("Couldn't send sync message.");
+        })
+        .await
+        .expect("Couldn't subscribe.");
+
+    let exchange = init_exchange().await;
+    let req = OpenLimitOrderRequest {
+        time_in_force: TimeInForce::GoodTillCancelled,
+        price: Decimal::from_str("0.01").expect("Couldn't parse string."),
+        size: Decimal::from_str("0.1").expect("Couldn't parse string."),
+        market_pair: String::from("eth_btc"),
+        post_only: false,
+    };
+
+    exchange
+        .limit_buy(&req)
+        .await
+        .expect("Couldn't limit sell.");
+
+    if cancel_orders {
+        let req = CancelAllOrdersRequest {
+            market_pair: Some("eth_btc".to_string()),
+        };
+
+        let resp = exchange
+            .cancel_all_orders(&req)
+            .await
+            .expect("Couldn't cancel all orders.");
+        println!("{:?}", resp);
+    }
+
+    rx.recv().expect("Couldn't receive sync message.");
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn account_orders() {
+    let client = init().await;
+    let sub = Subscription::AccountOrders(AccountOrders {
+        market: Some("eth_btc".to_string()),
+        order_type: None,
+        status: None,
+        buy_or_sell: None,
+        range: None,
+    });
+    test_account_subscription_callback(client, sub, true).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn account_trades() {
+    let client = init().await;
+    let sub = Subscription::AccountTrades("eth_btc".to_string());
+    test_account_subscription_callback(client, sub, false).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn account_balance() {
+    let client = init().await;
+    let sub = Subscription::AccountBalance("eth".to_string());
+    test_account_subscription_callback(client, sub, false).await;
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]

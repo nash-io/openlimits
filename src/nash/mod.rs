@@ -338,6 +338,7 @@ impl Nash {
         buy_or_sell: nash_protocol::types::BuyOrSell,
     ) -> nash_protocol::protocol::place_order::LimitOrderRequest {
         nash_protocol::protocol::place_order::LimitOrderRequest {
+            client_order_id: None,
             cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(
                 req.time_in_force,
             ),
@@ -353,6 +354,7 @@ impl Nash {
         req: &OpenMarketOrderRequest,
     ) -> nash_protocol::protocol::place_order::MarketOrderRequest {
         nash_protocol::protocol::place_order::MarketOrderRequest {
+            client_order_id: None,
             market: req.market_pair.clone(),
             amount: format!("{}", req.size),
         }
@@ -758,11 +760,14 @@ impl From<&GetOrderRequest> for nash_protocol::protocol::get_account_order::GetA
     }
 }
 
+use crate::model::websocket::AccountOrders;
 use futures::stream::{BoxStream, SelectAll, Stream, StreamExt};
+use nash_protocol::protocol::subscriptions::updated_account_orders::SubscribeAccountOrders;
 use nash_protocol::protocol::{
     subscriptions::{SubscriptionRequest, SubscriptionResponse},
     ResponseOrError,
 };
+use nash_protocol::types::{BuyOrSell, DateTimeRange};
 use std::{pin::Pin, task::Context, task::Poll};
 use tokio::time::Duration;
 
@@ -829,6 +834,59 @@ impl ExchangeWs for NashWebsocket {
     }
 }
 
+impl From<Side> for BuyOrSell {
+    fn from(side: Side) -> Self {
+        match side {
+            Side::Buy => BuyOrSell::Buy,
+            Side::Sell => BuyOrSell::Sell,
+        }
+    }
+}
+
+impl TryFrom<OrderType> for nash_protocol::types::OrderType {
+    type Error = OpenLimitsError;
+    fn try_from(order_type: OrderType) -> Result<Self> {
+        match order_type {
+            OrderType::Limit => Ok(Self::Limit),
+            OrderType::Market => Ok(Self::Market),
+            OrderType::StopLimit => Ok(Self::StopLimit),
+            OrderType::StopMarket => Ok(Self::StopMarket),
+            OrderType::Unknown => Err(OpenLimitsError::InvalidParameter(
+                "Had invalid order type for Nash".to_string(),
+            )),
+        }
+    }
+}
+
+impl From<AccountOrders> for SubscribeAccountOrders {
+    fn from(account_orders: AccountOrders) -> Self {
+        Self {
+            market: account_orders.market.clone(),
+            order_type: account_orders.order_type.map(|x| {
+                x.iter()
+                    .cloned()
+                    .map(|x| x.try_into().ok())
+                    .filter(|x| x.is_some())
+                    .map(|x| x.unwrap())
+                    .collect()
+            }),
+            range: account_orders.range.map(|range| DateTimeRange {
+                start: timestamp_to_utc_datetime(range.start),
+                stop: timestamp_to_utc_datetime(range.end),
+            }),
+            buy_or_sell: account_orders.buy_or_sell.map(|x| x.into()),
+            status: account_orders.status.map(|x| {
+                x.iter()
+                    .cloned()
+                    .map(|x| x.try_into().ok())
+                    .filter(|x| x.is_some())
+                    .map(|x| x.unwrap())
+                    .collect()
+            }),
+        }
+    }
+}
+
 impl From<Subscription> for nash_protocol::protocol::subscriptions::SubscriptionRequest {
     fn from(sub: Subscription) -> Self {
         match sub {
@@ -839,6 +897,19 @@ impl From<Subscription> for nash_protocol::protocol::subscriptions::Subscription
             ),
             Subscription::Trades(market) => Self::Trades(
                 nash_protocol::protocol::subscriptions::trades::SubscribeTrades { market },
+            ),
+            Subscription::AccountOrders(account_orders) => Self::AccountOrders(
+                account_orders.into()
+            ),
+            Subscription::AccountTrades(market_name) => Self::AccountTrades(
+                nash_protocol::protocol::subscriptions::new_account_trades::SubscribeAccountTrades {
+                    market_name
+                }
+            ),
+            Subscription::AccountBalance(symbol) => Self::AccountBalances(
+                nash_protocol::protocol::subscriptions::updated_account_balances::SubscribeAccountBalances {
+                    symbol
+                }
             ),
             _ => panic!("Not supported Subscription"),
         }
@@ -859,6 +930,15 @@ impl Clone for SubscriptionResponseWrapper {
             }
             SubscriptionResponse::Ticker(ticker) => {
                 SubscriptionResponseWrapper(SubscriptionResponse::Ticker(ticker.clone()))
+            }
+            SubscriptionResponse::AccountBalances(balances) => {
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountBalances(balances.clone()))
+            }
+            SubscriptionResponse::AccountOrders(orders) => {
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountOrders(orders.clone()))
+            }
+            SubscriptionResponse::AccountTrades(trades) => {
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountTrades(trades.clone()))
             }
         }
     }
@@ -885,6 +965,15 @@ impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResp
             }
             SubscriptionResponse::Ticker(resp) => Ok(WebSocketResponse::Raw(
                 SubscriptionResponseWrapper(SubscriptionResponse::Ticker(resp)),
+            )),
+            SubscriptionResponse::AccountTrades(resp) => Ok(WebSocketResponse::Raw(
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountTrades(resp)),
+            )),
+            SubscriptionResponse::AccountOrders(resp) => Ok(WebSocketResponse::Raw(
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountOrders(resp)),
+            )),
+            SubscriptionResponse::AccountBalances(resp) => Ok(WebSocketResponse::Raw(
+                SubscriptionResponseWrapper(SubscriptionResponse::AccountBalances(resp)),
             )),
         }
     }
