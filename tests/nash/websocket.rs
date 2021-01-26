@@ -2,6 +2,8 @@ use crate::openlimits::exchange::ExchangeAccount;
 use dotenv::dotenv;
 use nash_native_client::Environment;
 use openlimits::exchange::OpenLimits;
+use openlimits::exchange_ws::ExchangeWs;
+use openlimits::model::websocket::AccountOrders;
 use openlimits::model::{CancelAllOrdersRequest, OpenLimitOrderRequest, TimeInForce};
 use openlimits::nash::{Nash, NashCredentials, NashParameters};
 use openlimits::{exchange_ws::OpenLimitsWs, model::websocket::Subscription, nash::NashWebsocket};
@@ -10,8 +12,6 @@ use std::str::FromStr;
 use std::time::Duration as NativeDuration;
 use std::{env, sync::mpsc::sync_channel};
 use tokio::time::Duration;
-use openlimits::model::websocket::AccountOrders;
-use openlimits::exchange_ws::ExchangeWs;
 
 async fn init_exchange() -> Nash {
     dotenv().ok();
@@ -99,7 +99,7 @@ async fn account_orders() {
         order_type: None,
         status: None,
         buy_or_sell: None,
-        range: None
+        range: None,
     });
     test_account_subscription_callback(client, sub, true).await;
 }

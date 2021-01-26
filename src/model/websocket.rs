@@ -1,6 +1,6 @@
 use super::{OrderBookResponse, Trade};
+use crate::model::{OrderStatus, OrderType, Side};
 use serde::{Deserialize, Serialize};
-use crate::model::{OrderType, OrderStatus, Side};
 use std::ops::Range;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
@@ -9,7 +9,7 @@ pub struct AccountOrders {
     pub order_type: Option<Vec<OrderType>>,
     pub buy_or_sell: Option<Side>,
     pub range: Option<Range<u64>>,
-    pub status: Option<Vec<OrderStatus>>
+    pub status: Option<Vec<OrderStatus>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
