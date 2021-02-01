@@ -1,4 +1,4 @@
-name: Security audit
+name: Security Audit
 on:
   push:
     branches: [ master ]
