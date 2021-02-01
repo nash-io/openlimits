@@ -1,0 +1,77 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: Test
+    steps:
+    - uses: actions/checkout@v2
+    - name: Cache Cargo registry
+      uses: actions/cache@v1
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-stable-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-stable-cargo-registry-
+    - name: Cache Cargo index
+      uses: actions/cache@v1
+      with:
+        path: ~/.cargo/git
+        key: ${{ runner.os }}-stable-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-stable-cargo-index-
+    - name: Cache Cargo build
+      uses: actions/cache@v1
+      with:
+        path: target/debug
+        key: ${{ runner.os }}-stable-build-target-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-stable-build-target-
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      env:
+        BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
+        BINANCE_API_SECRET: ${{ secrets.BINANCE_API_SECRET }}
+        COINBASE_API_KEY: ${{ secrets.COINBASE_API_KEY }}
+        COINBASE_API_SECRET: ${{ secrets.COINBASE_API_SECRET }}
+        COINBASE_PASSPHRASE: ${{ secrets.COINBASE_PASSPHRASE }}
+        NASH_API_SECRET: ${{ secrets.NASH_API_SECRET }}
+        NASH_API_KEY: ${{ secrets.NASH_API_KEY }}
+      run:  cargo test --release -- --test-threads=1
+
+  clippy_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions-rs/toolchain@v1
+        with:
+            toolchain: stable
+            components: clippy
+            override: true
+      - uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+# Only run it on push
+#  rustfmt_check:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: actions-rs/toolchain@v1
+#        with:
+#            toolchain: stable
+#            components: rustfmt
+#            override: true
+#      - uses: mbrobbel/rustfmt-check@master
+#        with:
+#          token: ${{ secrets.GITHUB_TOKEN }}

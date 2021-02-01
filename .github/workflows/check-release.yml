@@ -1,0 +1,18 @@
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  check-release:
+    runs-on: ubuntu-latest
+    name: Check Release
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: nash-io/cargo-release-action@main
+        with:
+          major-label: major
+          minor-label: minor
+          patch-label: patch

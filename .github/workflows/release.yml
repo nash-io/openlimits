@@ -1,0 +1,22 @@
+on:
+  push:
+    branches:
+      - main
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: Release
+    name: Release
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.BOT_GITHUB_TOKEN }}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - uses: nash-io/cargo-release-action@main
+        with:
+          major-label: major
+          minor-label: minor
+          patch-label: patch
+          cargo-token: ${{ secrets.CARGO_TOKEN }}
