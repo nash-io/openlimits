@@ -236,6 +236,14 @@ impl ExchangeWs for AnyWsExchange {
         }
     }
 
+    async fn disconnect(&self) {
+        match self {
+            Self::Nash(exchange) => exchange.disconnect().await,
+            Self::Coinbase(exchange) => exchange.disconnect().await,
+            Self::Binance(exchange) => exchange.disconnect().await,
+        }
+    }
+
     async fn create_stream_specific(
         &self,
         subscriptions: Subscriptions<Self::Subscription>,

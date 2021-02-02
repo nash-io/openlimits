@@ -1,4 +1,4 @@
-use nash_native_client::ws_client::client::Environment;
+use nash_native_client::Environment;
 use openlimits::{
     exchange::{ExchangeMarketData, OpenLimits},
     exchange_info::ExchangeInfoRetrieval,
@@ -9,10 +9,10 @@ use openlimits::{
     nash::NashCredentials,
     nash::NashParameters,
 };
-use std::time::Duration;
 
 use dotenv::dotenv;
 use std::env;
+use tokio::time::Duration;
 
 #[tokio::test]
 async fn order_book() {
@@ -101,6 +101,7 @@ async fn init() -> Nash {
         environment: Environment::Sandbox,
         client_id: 1,
         timeout: Duration::new(10, 0),
+        sign_states_loop_interval: None,
     };
 
     OpenLimits::instantiate(parameters)

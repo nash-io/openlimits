@@ -6,6 +6,18 @@ I'm really glad you're reading this, because we need all the industry to work to
 
 Please send a [GitHub Pull Request](https://github.com/nash-io/openlimits/pull/new/master) with a clear list of what you've done (read more about [pull requests](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests)). When you send a pull request, we will love you forever if it is small. Incremental improvements accumulate fast.
 
+### Pull Request rules
+
+Every Pull Request should have one `release label` so the auto-release action can correctly bump the semantic version (`major.minor.patch`). A `release label` can be:
+
+* `major`: Used when you make incompatible API changes,
+* `mijor`: Used when you add functionality in a backwards-compatible manner, and
+* `patch`: Used when you make backwards-compatible bug fixes.
+
+For more details about it, check the [semver](https://semver.org/) website.
+
+As a reminder: According to the [spec-item-4](https://semver.org/#spec-item-4): Major version zero (0.y.z) is for initial development. Anything MAY change at any time. The public API `SHOULD NOT` be considered stable.
+
 ## Coding conventions
 
 The conventions still needs to be defined, for now we rely on the rust-analyzer.

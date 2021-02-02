@@ -5,7 +5,7 @@ use std::convert::TryFrom;
 
 use crate::{
     binance::model::{websocket::TradeMessage, SymbolFilter, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET},
-    errors::OpenLimitError,
+    errors::OpenLimitsError,
     exchange::ExchangeAccount,
     exchange::{Exchange, ExchangeMarketData},
     exchange_info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
@@ -232,7 +232,7 @@ impl ExchangeAccount for Binance {
                 .await
                 .map(Into::into)
         } else {
-            Err(OpenLimitError::MissingParameter(
+            Err(OpenLimitsError::MissingParameter(
                 "pair parameter is required.".to_string(),
             ))
         }
@@ -244,7 +244,7 @@ impl ExchangeAccount for Binance {
                 .await
                 .map(|v| v.into_iter().map(Into::into).collect())
         } else {
-            Err(OpenLimitError::MissingParameter(
+            Err(OpenLimitsError::MissingParameter(
                 "pair parameter is required.".to_string(),
             ))
         }
@@ -281,7 +281,7 @@ impl ExchangeAccount for Binance {
 
     async fn get_order(&self, req: &GetOrderRequest) -> Result<Order> {
         let pair = req.market_pair.clone().ok_or_else(|| {
-            OpenLimitError::MissingParameter("market_pair parameter is required.".to_string())
+            OpenLimitsError::MissingParameter("market_pair parameter is required.".to_string())
         })?;
         let u64_id = req
             .id
@@ -424,8 +424,8 @@ impl From<model::TradeHistory> for Trade {
         };
         Self {
             id: trade_history.id.to_string(),
-            buyer_order_id: buyer_order_id,
-            seller_order_id: seller_order_id,
+            buyer_order_id,
+            seller_order_id,
             market_pair: trade_history.symbol,
             price: trade_history.price,
             qty: trade_history.qty,
@@ -453,24 +453,24 @@ impl From<model::SymbolPrice> for Ticker {
 }
 
 impl TryFrom<&GetOrderHistoryRequest> for model::AllOrderReq {
-    type Error = OpenLimitError;
+    type Error = OpenLimitsError;
     fn try_from(req: &GetOrderHistoryRequest) -> Result<Self> {
         Ok(Self {
             paginator: req.paginator.clone().map(|p| p.into()),
             symbol: req.market_pair.clone().ok_or_else(|| {
-                OpenLimitError::MissingParameter("market_pair parameter is required.".to_string())
+                OpenLimitsError::MissingParameter("market_pair parameter is required.".to_string())
             })?,
         })
     }
 }
 
 impl TryFrom<&TradeHistoryRequest> for model::TradeHistoryReq {
-    type Error = OpenLimitError;
+    type Error = OpenLimitsError;
     fn try_from(trade_history: &TradeHistoryRequest) -> Result<Self> {
         Ok(Self {
             paginator: trade_history.paginator.clone().map(|p| p.into()),
             symbol: trade_history.market_pair.clone().ok_or_else(|| {
-                OpenLimitError::MissingParameter("market_pair parameter is required.".to_string())
+                OpenLimitsError::MissingParameter("market_pair parameter is required.".to_string())
             })?,
         })
     }
