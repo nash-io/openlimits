@@ -2,7 +2,7 @@ name: Check Release
 on:
   pull_request:
     branches:
-      - main
+      - master
 jobs:
   check-release:
     runs-on: ubuntu-latest
