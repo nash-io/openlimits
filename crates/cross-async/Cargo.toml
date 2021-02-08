@@ -1,5 +1,5 @@
 [package]
-name = "huobi"
+name = "cross-async"
 version = "0.1.0"
 authors = ["Danilo Guanabara <danguafer@gmail.com>"]
 edition = "2018"
@@ -7,8 +7,4 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nash-ws = { path = "../../../nash-ws" }
-libflate = "1.0.3"
-
-[dev-dependencies]
-cross-test = { path = "../../../../notdanilo/cross-test" }
+tokio = "1.1.1"
