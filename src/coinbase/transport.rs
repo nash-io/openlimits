@@ -1,7 +1,9 @@
 use crate::{
-    errors::{CoinbaseContentError, OpenLimitsError},
+    errors::OpenLimitsError,
     shared::Result,
 };
+
+use super::CoinbaseContentError;
 
 use hmac::{Hmac, Mac, NewMac};
 use reqwest::header;

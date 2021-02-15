@@ -12,7 +12,7 @@ use crate::{
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
-        GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
+        GetPriceTickerRequest, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
@@ -23,6 +23,8 @@ use chrono::Duration;
 use client::BaseClient;
 use std::convert::TryFrom;
 use transport::Transport;
+use serde::{Serialize, Deserialize};
+use thiserror::Error;
 
 #[derive(Clone)]
 pub struct Coinbase {
@@ -300,12 +302,6 @@ impl ExchangeAccount for Coinbase {
     }
 }
 
-impl From<String> for OrderCanceled {
-    fn from(id: String) -> Self {
-        Self { id }
-    }
-}
-
 impl From<model::Account> for Balance {
     fn from(account: model::Account) -> Self {
         Self {
@@ -363,24 +359,6 @@ impl From<model::Candle> for Candle {
             open: candle.open,
             close: candle.close,
             volume: candle.volume,
-        }
-    }
-}
-
-impl TryFrom<Interval> for u32 {
-    type Error = OpenLimitsError;
-    fn try_from(value: Interval) -> Result<Self> {
-        match value {
-            Interval::OneMinute => Ok(60),
-            Interval::FiveMinutes => Ok(300),
-            Interval::FifteenMinutes => Ok(900),
-            Interval::OneHour => Ok(3600),
-            Interval::SixHours => Ok(21600),
-            Interval::OneDay => Ok(86400),
-            _ => Err(OpenLimitsError::MissingParameter(format!(
-                "{:?} is not supported in Coinbase",
-                value,
-            ))),
         }
     }
 }
@@ -513,5 +491,16 @@ impl From<model::OrderStatus> for OrderStatus {
             model::OrderStatus::Pending => OrderStatus::Pending,
             model::OrderStatus::Rejected => OrderStatus::Rejected,
         }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Error)]
+pub struct CoinbaseContentError {
+    pub message: String,
+}
+
+impl std::fmt::Display for CoinbaseContentError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "error message: {}", self.message)
     }
 }

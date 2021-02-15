@@ -112,9 +112,10 @@ impl Stream for CoinbaseWebsocket {
 }
 
 fn parse_message(ws_message: Message) -> Result<CoinbaseWebsocketMessage> {
+    // FIXME: Remove return. Both Ok and Err can be returned from the matches.
     let msg = match ws_message {
         Message::Text(m) => m,
-        _ => return Err(OpenLimitsError::SocketError()),
+        _ => return Err(OpenLimitsError::SocketError().into()),
     };
     Ok(serde_json::from_str(&msg)?)
 }

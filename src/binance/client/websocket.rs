@@ -61,7 +61,7 @@ impl ExchangeWs for BinanceWebsocket {
     async fn create_stream_specific(
         &self,
         subscriptions: Subscriptions<Self::Subscription>,
-    ) -> Result<BoxStream<'static, Result<Self::Response>>> {
+    ) -> Result<BoxStream<'static, core::result::Result<Self::Response, exchange::errors::Error>>> {
         let streams = subscriptions
             .into_iter()
             .map(|bs| bs.to_string())
@@ -188,7 +188,7 @@ impl From<Subscription> for BinanceSubscription {
 }
 
 impl TryFrom<BinanceWebsocketMessage> for WebSocketResponse<BinanceWebsocketMessage> {
-    type Error = OpenLimitsError;
+    type Error = exchange::model::Error;
 
     fn try_from(value: BinanceWebsocketMessage) -> Result<Self> {
         match value {
@@ -201,7 +201,7 @@ impl TryFrom<BinanceWebsocketMessage> for WebSocketResponse<BinanceWebsocketMess
             BinanceWebsocketMessage::Ping => {
                 Ok(WebSocketResponse::Generic(OpenLimitsWebSocketMessage::Ping))
             }
-            BinanceWebsocketMessage::Close => Err(OpenLimitsError::SocketError()),
+            BinanceWebsocketMessage::Close => Err(OpenLimitsError::SocketError().into()),
             _ => Ok(WebSocketResponse::Raw(value)),
         }
     }
@@ -216,5 +216,5 @@ fn parse_message(ws_message: Message) -> Result<BinanceWebsocketMessage> {
         Message::Close(..) => return Ok(BinanceWebsocketMessage::Close),
     };
 
-    serde_json::from_str(&msg).map_err(OpenLimitsError::JsonError)
+    serde_json::from_str(&msg).map_err(|error| OpenLimitsError::JsonError(error).into())
 }

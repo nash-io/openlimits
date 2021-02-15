@@ -1,0 +1,11 @@
+/home/notdanilo/dev/nash-io/openlimits/crates/exchange/target/debug/deps/libthiserror_impl-64571c2dde4a0a44.so: /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/lib.rs /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/ast.rs /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/attr.rs /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/expand.rs /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/fmt.rs /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/prop.rs /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/valid.rs
+
+/home/notdanilo/dev/nash-io/openlimits/crates/exchange/target/debug/deps/thiserror_impl-64571c2dde4a0a44.d: /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/lib.rs /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/ast.rs /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/attr.rs /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/expand.rs /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/fmt.rs /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/prop.rs /home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/valid.rs
+
+/home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/lib.rs:
+/home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/ast.rs:
+/home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/attr.rs:
+/home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/expand.rs:
+/home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/fmt.rs:
+/home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/prop.rs:
+/home/notdanilo/.cargo/registry/src/github.com-1ecc6299db9ec823/thiserror-impl-1.0.23/src/valid.rs:

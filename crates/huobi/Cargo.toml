@@ -9,6 +9,8 @@ edition = "2018"
 [dependencies]
 nash-ws = { path = "../../../nash-ws" }
 cross-async = { path = "../cross-async" }
+exchange = { path = "../exchange" }
+messaging = { path = "../messaging" }
 libflate = "1.0.3"
 async-trait = "0.1"
 serde = { version = "1.0.123", features=["derive"] }
