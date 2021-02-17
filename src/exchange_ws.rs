@@ -1,13 +1,13 @@
 use std::{
     any::Any,
-    convert::{TryFrom, TryInto},
+    convert::TryInto,
     slice,
 };
 
 use crate::{
     errors::OpenLimitsError,
     model::websocket::WebSocketResponse,
-    model::websocket::{OpenLimitsWebSocketMessage, Subscription},
+    model::websocket::Subscription,
     shared::Result,
 };
 use async_trait::async_trait;
@@ -59,7 +59,7 @@ impl<E: ExchangeWs> OpenLimitsWs<E> {
 pub trait ExchangeWs: Send + Sync + Sized {
     type InitParams: Clone + Send + Sync + 'static;
     type Subscription: From<Subscription> + Send + Sync + Sized + Clone;
-    type Response: TryInto<WebSocketResponse<Self::Response>, Error = OpenLimitsError>
+    type Response: TryInto<WebSocketResponse<Self::Response>, Error = anyhow::Error>
         + Send
         + Sync
         + Clone
@@ -118,14 +118,6 @@ pub trait ExchangeWs: Send + Sync + Sized {
 #[derive(Debug)]
 pub struct CallbackHandle {
     rx: Box<dyn Any + Send>,
-}
-
-impl TryFrom<OpenLimitsWebSocketMessage> for WebSocketResponse<OpenLimitsWebSocketMessage> {
-    type Error = OpenLimitsError;
-
-    fn try_from(value: OpenLimitsWebSocketMessage) -> Result<Self> {
-        Ok(WebSocketResponse::Generic(value))
-    }
 }
 
 pub struct Subscriptions<T: From<Subscription>> {

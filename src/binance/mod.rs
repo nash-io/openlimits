@@ -2,6 +2,8 @@ pub mod client;
 pub mod model;
 mod transport;
 use std::convert::TryFrom;
+use serde::{Serialize, Deserialize};
+use thiserror::Error;
 
 use crate::{
     binance::model::{websocket::TradeMessage, SymbolFilter, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET},
@@ -12,7 +14,7 @@ use crate::{
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
-        GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
+        GetPriceTickerRequest, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest, Transaction,
     },
@@ -24,6 +26,8 @@ use model::KlineSummaries;
 use transport::Transport;
 
 use client::BaseClient;
+use std::collections::HashMap;
+use serde_json::Value;
 
 #[derive(Clone)]
 pub struct Binance {
@@ -488,28 +492,6 @@ impl From<&GetHistoricRatesRequest> for model::KlineParams {
     }
 }
 
-impl From<Interval> for &str {
-    fn from(interval: Interval) -> Self {
-        match interval {
-            Interval::OneMinute => "1m",
-            Interval::ThreeMinutes => "3m",
-            Interval::FiveMinutes => "5m",
-            Interval::FifteenMinutes => "15m",
-            Interval::ThirtyMinutes => "30m",
-            Interval::OneHour => "1h",
-            Interval::TwoHours => "2h",
-            Interval::FourHours => "4h",
-            Interval::SixHours => "6h",
-            Interval::EightHours => "8h",
-            Interval::TwelveHours => "12h",
-            Interval::OneDay => "1d",
-            Interval::ThreeDays => "3d",
-            Interval::OneWeek => "1w",
-            Interval::OneMonth => "1M",
-        }
-    }
-}
-
 impl From<model::KlineSummary> for Candle {
     fn from(kline_summary: model::KlineSummary) -> Self {
         Self {
@@ -552,16 +534,6 @@ impl From<Paginator> for model::Paginator {
     }
 }
 
-impl From<String> for Side {
-    fn from(side: String) -> Self {
-        if side == "buy" {
-            Side::Buy
-        } else {
-            Side::Sell
-        }
-    }
-}
-
 impl From<model::OrderStatus> for OrderStatus {
     fn from(status: model::OrderStatus) -> OrderStatus {
         match status {
@@ -573,5 +545,20 @@ impl From<model::OrderStatus> for OrderStatus {
             model::OrderStatus::PendingCancel => OrderStatus::PendingCancel,
             model::OrderStatus::Rejected => OrderStatus::Rejected,
         }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Error)]
+pub struct BinanceContentError {
+    pub code: i16,
+    pub msg: String,
+
+    #[serde(flatten)]
+    extra: HashMap<String, Value>,
+}
+
+impl std::fmt::Display for BinanceContentError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "error code: {} msg: {}", self.code, self.msg)
     }
 }

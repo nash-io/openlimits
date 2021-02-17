@@ -10,9 +10,11 @@ use sha2::Sha256;
 use url::Url;
 
 use crate::{
-    errors::{BinanceContentError, OpenLimitsError},
+    errors::OpenLimitsError,
     shared::Result,
 };
+
+use super::BinanceContentError;
 
 type HmacSha256 = Hmac<Sha256>;
 

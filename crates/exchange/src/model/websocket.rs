@@ -1,7 +1,8 @@
 use super::{OrderBookResponse, Trade};
-use crate::model::{OrderStatus, OrderType, Side};
+use crate::model::{OrderStatus, OrderType, Side, Result};
 use serde::{Deserialize, Serialize};
 use std::ops::Range;
+use std::convert::TryFrom;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct AccountOrders {
@@ -34,4 +35,12 @@ pub enum OpenLimitsWebSocketMessage {
     OrderBook(OrderBookResponse),
     OrderBookDiff(OrderBookResponse),
     Trades(Vec<Trade>),
+}
+
+impl TryFrom<OpenLimitsWebSocketMessage> for WebSocketResponse<OpenLimitsWebSocketMessage> {
+    type Error = anyhow::Error;
+
+    fn try_from(value: OpenLimitsWebSocketMessage) -> Result<Self> {
+        Ok(WebSocketResponse::Generic(value))
+    }
 }

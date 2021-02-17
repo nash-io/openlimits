@@ -120,7 +120,7 @@ pub enum CoinbaseWebsocketMessage {
 }
 
 impl TryFrom<CoinbaseWebsocketMessage> for WebSocketResponse<CoinbaseWebsocketMessage> {
-    type Error = OpenLimitsError;
+    type Error = anyhow::Error;
 
     fn try_from(value: CoinbaseWebsocketMessage) -> Result<Self> {
         match value {
@@ -146,9 +146,9 @@ pub enum Level2 {
 }
 
 impl TryFrom<Level2> for OpenLimitsWebSocketMessage {
-    type Error = OpenLimitsError;
+    type Error = anyhow::Error;
 
-    fn try_from(level2: Level2) -> std::result::Result<Self, Self::Error> {
+    fn try_from(level2: Level2) -> Result<Self> {
         // FIXME: How can we get the update id?
         let last_update_id = None;
         let update_id = None;
