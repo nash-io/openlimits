@@ -17,7 +17,7 @@ Cargo.lock
 #
 #already existing elements were commented out
 
-/target
+target
 #Cargo.lock
 .DS_store
 .env

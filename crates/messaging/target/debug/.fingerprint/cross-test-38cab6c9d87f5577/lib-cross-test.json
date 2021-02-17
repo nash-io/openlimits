@@ -1,1 +1,0 @@
-{"rustc":7210524046684111384,"features":"[]","target":5807239598351659955,"profile":6299028598154287785,"path":15700366455353587323,"deps":[[3315487925146169324,"tokio",false,11521688938808387833]],"local":[{"CheckDepInfo":{"dep_info":"debug/.fingerprint/cross-test-38cab6c9d87f5577/dep-lib-cross-test"}}],"rustflags":[],"metadata":7760875827457758707,"config":0}
