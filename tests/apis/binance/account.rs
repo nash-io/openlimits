@@ -127,14 +127,15 @@ async fn get_order() {
 
 #[tokio::test]
 async fn limit_buy() {
+    let pair_text = "BNBBUSD";
     let exchange = init().await;
     let pair = exchange
-        .get_pair("BNBBTC")
+        .get_pair(pair_text)
         .await
         .expect("Couldn't get pair handle.")
         .read()
         .expect("Couldn't read pair.");
-    let price = get_price(&exchange, "BNBBTC").await;
+    let price = get_price(&exchange, pair_text).await;
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
@@ -152,14 +153,15 @@ async fn limit_buy() {
 
 #[tokio::test]
 async fn rounded_limit_buy() {
+    let pair_text = "BNBBUSD";
     let exchange = init().await;
     let pair = exchange
-        .get_pair("BNBBTC")
+        .get_pair(pair_text)
         .await
         .expect("Couldn't get pair handle.")
         .read()
         .expect("Couldn't read pair.");
-    let price = get_price(&exchange, "BNBBTC").await;
+    let price = get_price(&exchange, pair_text).await;
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
@@ -198,9 +200,10 @@ async fn limit_sell_ioc() {
 
 #[tokio::test]
 async fn market_buy() {
+    let pair_text = "BNBBUSD";
     let exchange = init().await;
     let pair = exchange
-        .get_pair("BNBBTC")
+        .get_pair(pair_text)
         .await
         .expect("Couldn't get pair handle.")
         .read()

@@ -17,12 +17,13 @@ use openlimits::model::GetPriceTickerRequest;
 
 #[tokio::test]
 async fn limit_buy() {
+    let pair_text = "BNBBUSD";
     let exchange = init().await;
-    let price = get_price(&exchange, "BNBBTC").await;
+    let price = get_price(&exchange, pair_text).await;
     let req = OpenLimitOrderRequest {
         price,
         size: Decimal::new(1, 1),
-        market_pair: String::from("BNBBTC"),
+        market_pair: String::from(pair_text),
         post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
@@ -76,7 +77,7 @@ async fn market_buy() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
         size: Decimal::new(1, 2),
-        market_pair: String::from("BNBBTC"),
+        market_pair: String::from("BNBBUSD"),
     };
     let resp = exchange
         .market_buy(&req)
