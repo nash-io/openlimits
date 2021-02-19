@@ -12,12 +12,15 @@ use openlimits::{
     },
 };
 use rust_decimal::prelude::Decimal;
+use openlimits::exchange::ExchangeMarketData;
+use openlimits::model::GetPriceTickerRequest;
 
 #[tokio::test]
 async fn limit_buy() {
     let exchange = init().await;
+    let price = get_price(&exchange, "BNBBTC").await;
     let req = OpenLimitOrderRequest {
-        price: Decimal::new(17, 4),
+        price,
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
         post_only: false,
@@ -30,8 +33,9 @@ async fn limit_buy() {
 #[tokio::test]
 async fn limit_sell() {
     let exchange = init().await;
+    let price = get_price(&exchange, "BNBBTC").await;
     let req = OpenLimitOrderRequest {
-        price: Decimal::new(1, 3),
+        price,
         post_only: false,
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
@@ -71,7 +75,7 @@ async fn post_only() {
 async fn market_buy() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
-        size: Decimal::new(1, 1),
+        size: Decimal::new(1, 2),
         market_pair: String::from("BNBBTC"),
     };
     let resp = exchange
@@ -171,12 +175,18 @@ async fn get_order_history() {
     println!("{:?}", resp);
 }
 
+async fn get_price(exchange: &Binance, pair: &str) -> Decimal {
+    let get_price_ticker_request = GetPriceTickerRequest { market_pair: pair.to_string() };
+    let ticker = exchange.get_price_ticker(&get_price_ticker_request).await.expect("Couldn't get ticker.");
+    ticker.price.expect("Couldn't get price.")
+}
+
 #[tokio::test]
 async fn get_all_open_orders() {
     let exchange = init().await;
-
+    let price = get_price(&exchange, "BNBBTC").await;
     let req = OpenLimitOrderRequest {
-        price: Decimal::new(5, 3),
+        price,
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
         post_only: false,

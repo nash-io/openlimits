@@ -10,6 +10,9 @@ use openlimits::{
     exchange::Exchange,
     exchange_info::ExchangeInfoRetrieval,
 };
+use openlimits::exchange::ExchangeMarketData;
+use openlimits::model::GetPriceTickerRequest;
+use openlimits::binance::model::Order;
 
 #[tokio::test]
 async fn get_account() {
@@ -75,27 +78,44 @@ async fn get_all_orders() {
     println!("{:?}", resp);
 }
 
-#[tokio::test]
-async fn get_order() {
-    let exchange = init().await;
+async fn get_price(exchange: &Binance, pair: &str) -> Decimal {
+    let market_pair = pair.to_string();
+    let get_price_ticker_request = GetPriceTickerRequest { market_pair };
+    let ticker = exchange
+        .get_price_ticker(&get_price_ticker_request)
+        .await
+        .expect("Couldn't get ticker.");
+    ticker
+        .price
+        .expect("Couldn't get price.")
+}
+
+async fn place_limit_sell(exchange: &Binance, time_in_force: TimeInForce) -> Order {
     let pair = exchange
         .get_pair("BNBBTC")
         .await
         .expect("Couldn't get pair handle.")
         .read()
         .expect("Couldn't read pair.");
-    let transaction = exchange
+    let price = get_price(&exchange, "BNBBTC").await;
+    exchange
         .inner_client()
         .expect("Couldn't get inner time.")
         .limit_sell(
             pair,
             Decimal::new(1, 1),
-            Decimal::new(2, 3),
-            TimeInForce::GTC,
+            price,
+            time_in_force,
             false,
         )
         .await
-        .expect("Couldn't limit sell.");
+        .expect("Couldn't limit sell.")
+}
+
+#[tokio::test]
+async fn get_order() {
+    let exchange = init().await;
+    let transaction = place_limit_sell(&exchange, TimeInForce::GTC).await;
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
@@ -114,13 +134,14 @@ async fn limit_buy() {
         .expect("Couldn't get pair handle.")
         .read()
         .expect("Couldn't read pair.");
+    let price = get_price(&exchange, "BNBBTC").await;
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
         .limit_buy(
             pair,
             Decimal::new(1, 1),
-            Decimal::new(17, 4),
+            price,
             TimeInForce::GTC,
             false,
         )
@@ -138,13 +159,14 @@ async fn rounded_limit_buy() {
         .expect("Couldn't get pair handle.")
         .read()
         .expect("Couldn't read pair.");
+    let price = get_price(&exchange, "BNBBTC").await;
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
         .limit_buy(
             pair,
             Decimal::new(12345678, 8),
-            Decimal::new(1, 3),
+            price,
             TimeInForce::GTC,
             false,
         )
@@ -156,72 +178,21 @@ async fn rounded_limit_buy() {
 #[tokio::test]
 async fn limit_sell() {
     let exchange = init().await;
-    let pair = exchange
-        .get_pair("BNBBTC")
-        .await
-        .expect("Couldn't get pair handle.")
-        .read()
-        .expect("Couldn't read pair.");
-    let resp = exchange
-        .inner_client()
-        .expect("Couldn't get inner time.")
-        .limit_sell(
-            pair,
-            Decimal::new(1, 1),
-            Decimal::new(2, 3),
-            TimeInForce::GTC,
-            false,
-        )
-        .await
-        .expect("Couldn't limit sell.");
+    let resp = place_limit_sell(&exchange, TimeInForce::GTC).await;
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn limit_sell_fok() {
     let exchange = init().await;
-    let pair = exchange
-        .get_pair("BNBBTC")
-        .await
-        .expect("Couldn't get pair handle.")
-        .read()
-        .expect("Couldn't read pair.");
-    let resp = exchange
-        .inner_client()
-        .expect("Couldn't get inner time.")
-        .limit_sell(
-            pair,
-            Decimal::new(1, 1),
-            Decimal::new(2, 3),
-            TimeInForce::FOK,
-            false,
-        )
-        .await
-        .expect("Couldn't limit sell.");
+    let resp = place_limit_sell(&exchange, TimeInForce::FOK).await;
     println!("{:?}", resp);
 }
 
 #[tokio::test]
 async fn limit_sell_ioc() {
     let exchange = init().await;
-    let pair = exchange
-        .get_pair("BNBBTC")
-        .await
-        .expect("Couldn't get pair handle.")
-        .read()
-        .expect("Couldn't read pair.");
-    let resp = exchange
-        .inner_client()
-        .expect("Couldn't get inner time.")
-        .limit_sell(
-            pair,
-            Decimal::new(1, 1),
-            Decimal::new(2, 3),
-            TimeInForce::IOC,
-            false,
-        )
-        .await
-        .expect("Couldn't limit sell.");
+    let resp = place_limit_sell(&exchange, TimeInForce::IOC).await;
     println!("{:?}", resp);
 }
 
@@ -237,7 +208,7 @@ async fn market_buy() {
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
-        .market_buy(pair, Decimal::new(1, 0))
+        .market_buy(pair, Decimal::new(1, 2))
         .await
         .expect("Couldn't market buy.");
     println!("{:?}", resp);
@@ -265,24 +236,7 @@ async fn market_sell() {
 #[tokio::test]
 async fn cancel_order() {
     let exchange = init().await;
-    let pair = exchange
-        .get_pair("BNBBTC")
-        .await
-        .expect("Couldn't get pair handle.")
-        .read()
-        .expect("Couldn't read pair.");
-    let transaction = exchange
-        .inner_client()
-        .expect("Couldn't get inner time.")
-        .limit_sell(
-            pair,
-            Decimal::new(1, 1),
-            Decimal::new(2, 3),
-            TimeInForce::GTC,
-            false,
-        )
-        .await
-        .expect("Couldn't limit sell.");
+    let transaction = place_limit_sell(&exchange, TimeInForce::GTC).await;
     let resp = exchange
         .inner_client()
         .expect("Couldn't get inner time.")
