@@ -63,12 +63,14 @@ impl Clone for NashParameters {
 }
 
 async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
+    let turn_off_sign_states = params.sign_states_loop_interval.is_none();
     let client = match params.credentials {
         Some(credentials) => {
             Client::from_keys(
                 &credentials.secret,
                 &credentials.session,
                 params.affiliate_code,
+                turn_off_sign_states,
                 params.client_id,
                 params.environment,
                 params.timeout,
@@ -78,8 +80,9 @@ async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
         None => {
             Client::from_keys_path(
                 None,
-                params.client_id,
                 None,
+                turn_off_sign_states,
+                params.client_id,
                 params.environment,
                 params.timeout,
             )
@@ -88,7 +91,7 @@ async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
     };
 
     if let Some(interval) = params.sign_states_loop_interval {
-        client.start_background_state_signing(interval);
+        client.start_background_sign_states_loop(interval);
     }
 
     Ok(client)
