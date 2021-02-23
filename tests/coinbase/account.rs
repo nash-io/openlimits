@@ -14,6 +14,7 @@ use openlimits::{
 use rust_decimal::prelude::Decimal;
 
 #[tokio::test]
+#[ignore]
 async fn limit_buy() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
@@ -30,6 +31,7 @@ async fn limit_buy() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn limit_sell() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
@@ -64,6 +66,7 @@ async fn post_only() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn market_buy() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
@@ -78,6 +81,7 @@ async fn market_buy() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn market_sell() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
@@ -118,6 +122,7 @@ async fn cancel_order() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn cancel_all_orders() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {

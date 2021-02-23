@@ -36,6 +36,7 @@ async fn product() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn trades() {
     let exchange = Coinbase::new(CoinbaseParameters::sandbox())
         .await
