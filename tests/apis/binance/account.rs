@@ -125,7 +125,9 @@ async fn get_order() {
     println!("{:?}", resp);
 }
 
+
 #[tokio::test]
+#[ignore]
 async fn limit_buy() {
     let pair_text = "BNBBUSD";
     let exchange = init().await;
@@ -152,6 +154,7 @@ async fn limit_buy() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn rounded_limit_buy() {
     let pair_text = "BNBBUSD";
     let exchange = init().await;
@@ -199,6 +202,7 @@ async fn limit_sell_ioc() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn market_buy() {
     let pair_text = "BNBBUSD";
     let exchange = init().await;

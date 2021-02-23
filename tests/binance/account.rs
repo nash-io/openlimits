@@ -16,6 +16,7 @@ use openlimits::exchange::ExchangeMarketData;
 use openlimits::model::GetPriceTickerRequest;
 
 #[tokio::test]
+#[ignore]
 async fn limit_buy() {
     let pair_text = "BNBBUSD";
     let exchange = init().await;
@@ -73,6 +74,7 @@ async fn post_only() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn market_buy() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
