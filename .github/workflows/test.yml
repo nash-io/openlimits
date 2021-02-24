@@ -11,7 +11,14 @@ env:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # windows-latest
+        # https://github.com/ZenGo-X/kms-secp256k1/issues/25
+        # https://github.com/vhnatyk/gmp-release
+        # https://github.com/TonyBogdanov/zip
+        os: [macOS-latest, ubuntu-latest]
     environment: Test
     steps:
     - uses: actions/checkout@v2
