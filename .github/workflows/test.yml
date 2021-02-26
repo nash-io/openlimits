@@ -14,9 +14,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # https://github.com/ZenGo-X/kms-secp256k1/issues/25
-        # https://github.com/vhnatyk/gmp-release
-        # https://github.com/TonyBogdanov/zip
         os: [windows-latest, macOS-latest, ubuntu-latest]
     environment: Test
     steps:
