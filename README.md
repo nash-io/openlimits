@@ -29,10 +29,21 @@ Future goals are:
 
 There is a project slack, [click here](https://join.slack.com/t/openlimitsworkspace/shared_invite/zt-ifhd5tv4-9QL73tCB~fDcRJzDFEuOrQ) to join.
 
+### Requirements (Windows only)
+
+OpenLimits uses `rust_gmp` by default because it runs about 30% faster than `num_bigint`.
+
+If you are on Windows, you need to build and install both `gmp.lib` and `gmp.dll`.
+You can find more info about how to build it in the [gmp official page](https://gmplib.org/) and how to install it on Rust in [this comment](https://github.com/ZenGo-X/kms-secp256k1/issues/25#issuecomment-555946633). 
+
+If you want an easier path, you can use `num_bigint` instead, because it doesn't require any of the previous steps. To do it, you can use the library as:
+
+`openlimits = { version = "0.1", default-features = false, features = ["num_bigint"] }`
+
 ### Testing
 
 In order to run the tests you will have to provide environment variables for the sandbox API of the exchanges, you can use environment variables or use a `.env` file.
 
 ### Sponsorship
 
-We invite industry participants to join us in sponsoring a new high quality open source standard for crypto trading APIs. [Nash](https://nash.io) is dedicating a maintainer and initial rewards for external contributors that close issues. Look for the wiki [rewards table](https://github.com/nash-io/openlimits/wiki/Rewards-sizes) and for reward size labels on open issues. 
+We invite industry participants to join us in sponsoring a new high quality open source standard for crypto trading APIs. [Nash](https://nash.io) is dedicating a maintainer and initial rewards for external contributors that close issues. Look for the wiki [rewards table](https://github.com/nash-io/openlimits/wiki/Rewards-sizes) and for reward size labels on open issues.

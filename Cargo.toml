@@ -12,7 +12,7 @@ keywords = ["cryptocurrency", "exchange", "openlimits", "api"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["num_bigint"]
+default = ["rust_gmp"]
 rust_gmp = ["nash-protocol/rust_gmp", "nash-native-client/rust_gmp"]
 num_bigint = ["nash-protocol/num_bigint", "nash-native-client/num_bigint"]
 python = ["pyo3"]
