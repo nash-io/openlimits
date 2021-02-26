@@ -40,7 +40,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-stable-build-target-
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --release --no-default-features --features num_bigint --verbose
     - name: Run tests
       env:
         BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}
