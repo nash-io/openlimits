@@ -1,8 +1,8 @@
-use std::process::Command;
-use std::path::Path;
-
 #[cfg(target_os = "windows")]
 fn main() {
+    use std::process::Command;
+    use std::path::Path;
+
     let rustup_output = Command::new("rustup")
         .arg("which")
         .arg("rustc")
