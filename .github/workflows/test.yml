@@ -50,7 +50,7 @@ jobs:
         COINBASE_PASSPHRASE: ${{ secrets.COINBASE_PASSPHRASE }}
         NASH_API_SECRET: ${{ secrets.NASH_API_SECRET }}
         NASH_API_KEY: ${{ secrets.NASH_API_KEY }}
-      run:  cargo test --release --no-default-features --features num_bigint -- --test-threads=1
+      run:  cargo test --release -- --test-threads=1
 
   clippy_check:
     runs-on: ubuntu-latest
