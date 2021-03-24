@@ -14,11 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # windows-latest
-        # https://github.com/ZenGo-X/kms-secp256k1/issues/25
-        # https://github.com/vhnatyk/gmp-release
-        # https://github.com/TonyBogdanov/zip
-        os: [macOS-latest, ubuntu-latest]
+        os: [windows-latest, macOS-latest, ubuntu-latest]
     environment: Test
     steps:
     - uses: actions/checkout@v2
@@ -44,7 +40,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-stable-build-target-
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --release
     - name: Run tests
       env:
         BINANCE_API_KEY: ${{ secrets.BINANCE_API_KEY }}

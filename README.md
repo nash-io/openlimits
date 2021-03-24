@@ -35,4 +35,4 @@ In order to run the tests you will have to provide environment variables for the
 
 ### Sponsorship
 
-We invite industry participants to join us in sponsoring a new high quality open source standard for crypto trading APIs. [Nash](https://nash.io) is dedicating a maintainer and initial rewards for external contributors that close issues. Look for the wiki [rewards table](https://github.com/nash-io/openlimits/wiki/Rewards-sizes) and for reward size labels on open issues. 
+We invite industry participants to join us in sponsoring a new high quality open source standard for crypto trading APIs. [Nash](https://nash.io) is dedicating a maintainer and initial rewards for external contributors that close issues. Look for the wiki [rewards table](https://github.com/nash-io/openlimits/wiki/Rewards-sizes) and for reward size labels on open issues.
