@@ -69,7 +69,7 @@ impl Transport {
         if sandbox {
             String::from("https://api-public.sandbox.pro.coinbase.com")
         } else {
-            String::from("https://api.coinbase.com")
+            String::from("https://api.pro.coinbase.com")
         }
     }
 
