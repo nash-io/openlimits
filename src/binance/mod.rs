@@ -1,6 +1,7 @@
 pub mod client;
 pub mod model;
 mod transport;
+use rust_decimal::prelude::*;
 use std::convert::TryFrom;
 
 use crate::{
@@ -10,7 +11,7 @@ use crate::{
     exchange::{Exchange, ExchangeMarketData},
     exchange_info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     model::{
-        AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
+        AccountFees, AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
@@ -277,6 +278,15 @@ impl ExchangeAccount for Binance {
             .get_account()
             .await
             .map(|v| v.balances.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_account_fees(&self) -> Result<AccountFees> {
+        // Binance returns 10 for 0.1%
+        let coefficient = Decimal::from_i32(10000).unwrap();
+        self.client.get_account().await.map(|v| AccountFees {
+            maker: v.maker_commission / coefficient,
+            taker: v.taker_commission / coefficient,
+        })
     }
 
     async fn get_order(&self, req: &GetOrderRequest) -> Result<Order> {

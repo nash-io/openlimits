@@ -44,6 +44,16 @@ pub struct Account {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Fees {
+    #[serde(with = "string_to_decimal")]
+    pub maker_fee_rate: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub taker_fee_rate: Decimal,
+    #[serde(with = "string_to_decimal")]
+    pub usd_volume: Decimal,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Candle {
     pub time: u64,
     pub low: Decimal,

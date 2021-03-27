@@ -1,5 +1,5 @@
 pub mod websocket;
-use crate::shared::{string_to_decimal, string_to_opt_decimal};
+use crate::shared::{f32_to_decimal, string_to_decimal, string_to_opt_decimal};
 use serde::{Deserialize, Serialize};
 
 use rust_decimal::prelude::Decimal;
@@ -30,8 +30,10 @@ pub struct ExchangeInformation {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountInformation {
-    pub maker_commission: f32,
-    pub taker_commission: f32,
+    #[serde(with = "f32_to_decimal")]
+    pub maker_commission: Decimal,
+    #[serde(with = "f32_to_decimal")]
+    pub taker_commission: Decimal,
     pub buyer_commission: f32,
     pub seller_commission: f32,
     pub can_trade: bool,

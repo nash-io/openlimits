@@ -1,7 +1,7 @@
 use super::BaseClient;
 use crate::{
     coinbase::model::{
-        Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
+        Account, CancelAllOrders, CancelOrder, Fees, Fill, GetFillsReq, GetOrderRequest, Order,
         OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, OrderTimeInForce,
         Paginator,
     },
@@ -14,6 +14,10 @@ use rust_decimal::prelude::*;
 impl BaseClient {
     pub async fn get_account(&self, paginator: Option<&Paginator>) -> Result<Vec<Account>> {
         self.transport.signed_get("/accounts", paginator).await
+    }
+
+    pub async fn get_fees(&self) -> Result<Fees> {
+        self.transport.signed_get::<_, ()>("/fees", None).await
     }
 
     pub async fn get_orders(&self, params: Option<&GetOrderRequest>) -> Result<Vec<Order>> {
