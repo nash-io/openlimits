@@ -18,7 +18,7 @@ impl BaseClient {
             .transport
             .put(
                 USER_DATA_STREAM,
-                Some(&vec![("listen_key", listen_key.to_string())]),
+                Some(&vec![("listenKey", listen_key.to_string())]),
             )
             .await?;
         Ok(success)
@@ -29,7 +29,7 @@ impl BaseClient {
             .transport
             .delete(
                 USER_DATA_STREAM,
-                Some(&vec![("listen_key", listen_key.to_string())]),
+                Some(&vec![("listenKey", listen_key.to_string())]),
             )
             .await?;
         Ok(success)
