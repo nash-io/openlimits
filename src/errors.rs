@@ -5,6 +5,21 @@ use std::fmt;
 use thiserror::Error;
 
 #[derive(Serialize, Deserialize, Debug, Error)]
+pub struct ExmoContentError {
+    pub code: i16,
+    pub msg: String,
+
+    #[serde(flatten)]
+    extra: HashMap<String, Value>,
+}
+
+impl fmt::Display for ExmoContentError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "error code: {} msg: {}", self.code, self.msg)
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Error)]
 pub struct BinanceContentError {
     pub code: i16,
     pub msg: String,
@@ -49,6 +64,8 @@ pub enum OpenLimitsError {
     BinanceError(#[from] BinanceContentError),
     #[error(transparent)]
     CoinbaseError(#[from] CoinbaseContentError),
+    #[error(transparent)]
+    ExmoError(#[from] ExmoContentError),
     #[error(transparent)]
     NashProtocolError(#[from] nash_protocol::errors::ProtocolError),
     #[error(transparent)]
