@@ -1,9 +1,13 @@
-// REVIEW: I removed some of the deny's because they were slowing down the development and I made
-// them `warn` again. Since most of them are `warn` by default, I simply removed them from the list.
-// I kept the `unstable_features` as `deny` because it's critical.
 #![deny(unstable_features)]
-#![warn(unused_import_braces)]
 #![allow(clippy::too_many_arguments)]
+#![warn(missing_docs)]
+#![warn(trivial_casts)]
+#![warn(trivial_numeric_casts)]
+#![warn(unused_import_braces)]
+#![warn(unused_qualifications)]
+#![warn(unsafe_code)]
+#![warn(missing_copy_implementations)]
+#![warn(missing_debug_implementations)]
 
 pub mod binance;
 pub mod coinbase;
