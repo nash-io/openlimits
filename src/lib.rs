@@ -15,6 +15,7 @@ pub mod errors;
 pub mod exchange;
 pub mod exchange_info;
 pub mod exchange_ws;
+pub mod exmo;
 pub mod model;
 pub mod nash;
 pub mod shared;
