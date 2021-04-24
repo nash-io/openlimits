@@ -19,10 +19,10 @@ use crate::{
 };
 use crate::{
     model::{
-        websocket::Subscription, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
-        GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
-        GetPriceTickerRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
-        OrderBookRequest, OrderBookResponse, OrderCanceled, Paginator, Ticker, Trade,
+        websocket::Subscription, AccountFees, Balance, CancelAllOrdersRequest, CancelOrderRequest,
+        Candle, GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest,
+        GetOrderRequest, GetPriceTickerRequest, OpenLimitOrderRequest, OpenMarketOrderRequest,
+        Order, OrderBookRequest, OrderBookResponse, OrderCanceled, Paginator, Ticker, Trade,
         TradeHistoryRequest,
     },
     shared::Result,
@@ -163,6 +163,13 @@ impl ExchangeAccount for AnyExchange {
             Self::Nash(nash) => nash.get_account_balances(paginator).await,
             Self::Binance(binance) => binance.get_account_balances(paginator).await,
             Self::Coinbase(coinbase) => coinbase.get_account_balances(paginator).await,
+        }
+    }
+    async fn get_account_fees(&self) -> Result<AccountFees> {
+        match self {
+            Self::Nash(nash) => nash.get_account_fees().await,
+            Self::Binance(binance) => binance.get_account_fees().await,
+            Self::Coinbase(coinbase) => coinbase.get_account_fees().await,
         }
     }
     async fn get_order(&self, req: &GetOrderRequest) -> Result<Order> {

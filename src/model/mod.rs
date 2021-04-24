@@ -187,6 +187,12 @@ pub enum Liquidity {
     Taker,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct AccountFees {
+    pub maker: Decimal,
+    pub taker: Decimal,
+}
+
 #[derive(Serialize, Deserialize, Default)]
 pub struct TradeHistoryRequest {
     pub market_pair: Option<String>,

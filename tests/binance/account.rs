@@ -1,6 +1,8 @@
 use dotenv::dotenv;
 use std::env;
 
+use openlimits::exchange::ExchangeMarketData;
+use openlimits::model::GetPriceTickerRequest;
 use openlimits::{
     binance::Binance,
     binance::BinanceCredentials,
@@ -12,8 +14,6 @@ use openlimits::{
     },
 };
 use rust_decimal::prelude::Decimal;
-use openlimits::exchange::ExchangeMarketData;
-use openlimits::model::GetPriceTickerRequest;
 
 #[tokio::test]
 #[ignore]
@@ -179,8 +179,13 @@ async fn get_order_history() {
 }
 
 async fn get_price(exchange: &Binance, pair: &str) -> Decimal {
-    let get_price_ticker_request = GetPriceTickerRequest { market_pair: pair.to_string() };
-    let ticker = exchange.get_price_ticker(&get_price_ticker_request).await.expect("Couldn't get ticker.");
+    let get_price_ticker_request = GetPriceTickerRequest {
+        market_pair: pair.to_string(),
+    };
+    let ticker = exchange
+        .get_price_ticker(&get_price_ticker_request)
+        .await
+        .expect("Couldn't get ticker.");
     ticker.price.expect("Couldn't get price.")
 }
 
@@ -214,7 +219,18 @@ async fn get_account_balances() {
     let resp = exchange
         .get_account_balances(None)
         .await
-        .expect("Couldn't get acount balances.");
+        .expect("Couldn't get account balances.");
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
+async fn get_account_fees() {
+    let exchange = init().await;
+
+    let resp = exchange
+        .get_account_fees()
+        .await
+        .expect("couldn't get account fees.");
     println!("{:?}", resp);
 }
 

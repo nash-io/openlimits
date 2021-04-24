@@ -233,6 +233,17 @@ async fn get_account_balances() {
 }
 
 #[tokio::test]
+async fn get_account_fees() {
+    let exchange = init().await;
+
+    let resp = exchange
+        .get_account_fees()
+        .await
+        .expect("couldn't get account fees.");
+    println!("{:?}", resp);
+}
+
+#[tokio::test]
 async fn get_trade_history() {
     let exchange = init().await;
     let req = TradeHistoryRequest {

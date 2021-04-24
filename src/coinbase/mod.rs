@@ -10,7 +10,7 @@ use crate::{
     exchange_info::ExchangeInfo,
     exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     model::{
-        AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
+        AccountFees, AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
@@ -160,6 +160,15 @@ impl From<model::Book<model::BookRecordL2>> for OrderBookResponse {
     }
 }
 
+impl From<model::Fees> for AccountFees {
+    fn from(fees: model::Fees) -> Self {
+        Self {
+            maker: fees.maker_fee_rate,
+            taker: fees.taker_fee_rate,
+        }
+    }
+}
+
 impl From<model::BookRecordL2> for AskBid {
     fn from(bids: model::BookRecordL2) -> Self {
         Self {
@@ -291,6 +300,10 @@ impl ExchangeAccount for Coinbase {
             .get_account(paginator.as_ref())
             .await
             .map(|v| v.into_iter().map(Into::into).collect())
+    }
+
+    async fn get_account_fees(&self) -> Result<AccountFees> {
+        self.client.get_fees().await.map(Into::into)
     }
 
     async fn get_order(&self, req: &GetOrderRequest) -> Result<Order> {

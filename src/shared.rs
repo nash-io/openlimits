@@ -1,5 +1,37 @@
 pub type Result<T> = std::result::Result<T, crate::errors::OpenLimitsError>;
 
+pub mod f32_to_decimal {
+    use std::fmt;
+
+    use rust_decimal::prelude::*;
+    use serde::{de, Deserialize, Deserializer, Serializer};
+
+    pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        T: fmt::Display,
+        S: Serializer,
+    {
+        serializer.collect_str(value)
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<Decimal, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum F32ToDecimal {
+            F32(f32),
+        }
+
+        let F32ToDecimal::F32(val) = F32ToDecimal::deserialize(deserializer)?;
+        Decimal::from_f32(val).ok_or(de::Error::custom(format!(
+            "Failed to convert {} to Decimal",
+            val
+        )))
+    }
+}
+
 pub mod string_to_decimal {
     use std::fmt;
 

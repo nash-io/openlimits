@@ -11,7 +11,7 @@ use crate::{
     model::websocket::OpenLimitsWebSocketMessage,
     model::{
         websocket::{Subscription, WebSocketResponse},
-        AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
+        AccountFees, AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
         GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
@@ -215,6 +215,14 @@ impl ExchangeAccount for Nash {
         }
 
         Ok(balances)
+    }
+
+    async fn get_account_fees(&self) -> Result<AccountFees> {
+        Err(OpenLimitsError::MissingImplementation(
+            MissingImplementationContent {
+                message: "'get_account_fees' for nash is not implemented".to_string(),
+            },
+        ))
     }
 
     async fn get_all_open_orders(&self) -> Result<Vec<Order>> {

@@ -3,10 +3,11 @@ use async_trait::async_trait;
 use crate::exchange_info::ExchangeInfoRetrieval;
 use crate::{
     model::{
-        Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
-        GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
-        OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
-        OrderCanceled, Paginator, Ticker, Trade, TradeHistoryRequest,
+        AccountFees, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
+        GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
+        GetPriceTickerRequest, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
+        OrderBookRequest, OrderBookResponse, OrderCanceled, Paginator, Ticker, Trade,
+        TradeHistoryRequest,
     },
     shared::Result,
 };
@@ -47,5 +48,6 @@ pub trait ExchangeAccount {
     async fn get_order_history(&self, req: &GetOrderHistoryRequest) -> Result<Vec<Order>>;
     async fn get_trade_history(&self, req: &TradeHistoryRequest) -> Result<Vec<Trade>>;
     async fn get_account_balances(&self, paginator: Option<Paginator>) -> Result<Vec<Balance>>;
+    async fn get_account_fees(&self) -> Result<AccountFees>;
     async fn get_order(&self, req: &GetOrderRequest) -> Result<Order>;
 }
