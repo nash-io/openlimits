@@ -1,4 +1,4 @@
-use crate::coinbase::model::OrderSide;
+use crate::exchange::coinbase::model::OrderSide;
 use crate::errors::OpenLimitsError;
 use crate::model::websocket::{OpenLimitsWebSocketMessage, Subscription, WebSocketResponse};
 use crate::model::{AskBid, OrderBookResponse};

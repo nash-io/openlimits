@@ -1,6 +1,6 @@
 use super::BaseClient;
 use crate::{
-    binance::model::{Success, UserDataStream},
+    exchange::binance::model::{Success, UserDataStream},
     shared::Result,
 };
 static USER_DATA_STREAM: &str = "/api/v3/userDataStream";

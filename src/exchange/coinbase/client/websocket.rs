@@ -12,15 +12,15 @@ use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 
 use crate::{
-    coinbase::model::websocket::{
+    exchange::coinbase::model::websocket::{
         Channel, CoinbaseSubscription, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd,
     },
     errors::OpenLimitsError,
     shared::Result,
 };
 
-use crate::coinbase::model::websocket::ChannelType;
-use crate::coinbase::CoinbaseParameters;
+use crate::exchange::coinbase::model::websocket::ChannelType;
+use crate::exchange::coinbase::CoinbaseParameters;
 use crate::exchange_ws::{ExchangeWs, Subscriptions};
 use futures::stream::BoxStream;
 use std::sync::Mutex;
@@ -38,6 +38,7 @@ enum Either<L, R> {
 
 type WSStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
 
+/// A websocket connection to Coinbase
 pub struct CoinbaseWebsocket {
     pub subscriptions: HashMap<CoinbaseSubscription, SplitStream<WSStream>>,
     pub parameters: CoinbaseParameters,

@@ -1,4 +1,4 @@
-use openlimits::coinbase::{
+use openlimits::exchange::coinbase::{
     client::websocket::CoinbaseWebsocket, model::websocket::CoinbaseSubscription,
     CoinbaseParameters,
 };

@@ -11,14 +11,6 @@ use crate::{
     shared::Result,
 };
 
-pub struct OpenLimits {}
-
-impl OpenLimits {
-    pub async fn instantiate<E: Exchange>(parameters: E::InitParams) -> Result<E> {
-        Ok(E::new(parameters).await?)
-    }
-}
-
 #[async_trait]
 pub trait Exchange: ExchangeInfoRetrieval + ExchangeAccount + ExchangeMarketData + Sized {
     type InitParams;

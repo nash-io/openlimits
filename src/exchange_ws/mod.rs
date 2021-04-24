@@ -1,3 +1,17 @@
+//! This module is used for websocket connections
+//! 
+//! # Example 
+//! A simple example of its uses is:
+//!
+//! ```
+//! 
+//! let client = OpenLimitsWs {
+//!     websocket: BinanceWebsocket::new(BinanceParameters::prod())
+//!                  .await
+//!                  .expect("Failed to create Client"),
+//! }
+//! ```
+
 use std::{
     any::Any,
     convert::{TryFrom, TryInto},

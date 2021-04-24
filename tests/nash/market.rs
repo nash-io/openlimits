@@ -1,13 +1,13 @@
 use nash_native_client::Environment;
 use openlimits::{
-    exchange::{ExchangeMarketData, OpenLimits},
-    exchange_info::ExchangeInfoRetrieval,
+    OpenLimits,
+    prelude::*,
     model::GetHistoricTradesRequest,
     model::Paginator,
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
-    nash::Nash,
-    nash::NashCredentials,
-    nash::NashParameters,
+    exchange::nash::Nash,
+    exchange::nash::NashCredentials,
+    exchange::nash::NashParameters,
 };
 
 use dotenv::dotenv;

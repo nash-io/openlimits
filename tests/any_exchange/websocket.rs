@@ -5,13 +5,13 @@
 use dotenv::dotenv;
 use nash_native_client::Environment;
 use openlimits::any_exchange::{AnyExchange, AnyWsExchange};
-use openlimits::binance::{Binance, BinanceCredentials, BinanceParameters};
-use openlimits::coinbase::client::websocket::CoinbaseWebsocket;
-use openlimits::coinbase::{Coinbase, CoinbaseCredentials, CoinbaseParameters};
-use openlimits::exchange::OpenLimits;
+use openlimits::exchange::binance::{Binance, BinanceCredentials, BinanceParameters};
+use openlimits::exchange::coinbase::client::websocket::CoinbaseWebsocket;
+use openlimits::exchange::coinbase::{Coinbase, CoinbaseCredentials, CoinbaseParameters};
+use openlimits::OpenLimits;
 use openlimits::exchange_ws::OpenLimitsWs;
-use openlimits::nash::{Nash, NashCredentials, NashParameters};
-use openlimits::shared::Result;
+use openlimits::exchange::nash::{Nash, NashCredentials, NashParameters};
+use openlimits::Result;
 use std::env;
 use tokio::time::Duration;
 

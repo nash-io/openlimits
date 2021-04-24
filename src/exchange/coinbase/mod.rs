@@ -1,13 +1,24 @@
+//! This module provides a connection to the Coinbase Exchange
+//! # Example
+//! ```
+//! use openlimits::exchanges::coinbase::Coinbase;
+//! use openlimits::prelude::*;
+//! 
+//! let mut coinbase = Coinabse::new(CoinbaseParameters::prod())
+//!                     .await
+//!                     .expect("Couldn't create coinbase client");
+//! ```
+
 pub mod client;
 pub mod model;
 mod transport;
 
 use crate::{
     errors::OpenLimitsError,
-    exchange::Exchange,
-    exchange::ExchangeAccount,
-    exchange::ExchangeMarketData,
-    exchange_info::ExchangeInfo,
+    exchange_traits::Exchange,
+    //exchange_traits::ExchangeAccount,
+    //exchange_traits::ExchangeMarketData,
+    //exchange_info::ExchangeInfo,
     exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
@@ -18,6 +29,7 @@ use crate::{
     },
     shared::{timestamp_to_naive_datetime, Result},
 };
+use crate::prelude::*;
 use async_trait::async_trait;
 use chrono::Duration;
 use client::BaseClient;

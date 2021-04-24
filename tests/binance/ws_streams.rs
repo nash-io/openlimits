@@ -1,6 +1,6 @@
 use futures::stream::StreamExt;
 use openlimits::{
-    binance::{BinanceParameters, BinanceWebsocket},
+    exchange::binance::{BinanceParameters, BinanceWebsocket},
     exchange_ws::{ExchangeWs, OpenLimitsWs},
     model::websocket::Subscription,
 };

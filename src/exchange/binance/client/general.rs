@@ -1,6 +1,6 @@
 use super::BaseClient;
 use crate::{
-    binance::model::{ExchangeInformation, ServerTime},
+    exchange::binance::model::{ExchangeInformation, ServerTime},
     shared::Result,
 };
 use serde_json::Value;

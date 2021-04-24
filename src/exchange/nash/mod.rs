@@ -1,11 +1,7 @@
+//! This module provides a connection to the Nash Exchange
+
 use crate::{
     errors::{MissingImplementationContent, OpenLimitsError},
-    exchange::Exchange,
-    exchange::ExchangeAccount,
-    exchange::ExchangeMarketData,
-    exchange_info::ExchangeInfo,
-    exchange_info::MarketPairHandle,
-    exchange_info::{ExchangeInfoRetrieval, MarketPair},
     exchange_ws::ExchangeWs,
     exchange_ws::Subscriptions,
     model::websocket::OpenLimitsWebSocketMessage,
@@ -18,6 +14,7 @@ use crate::{
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
     shared::{timestamp_to_utc_datetime, Result},
+    prelude::*,
 };
 use async_trait::async_trait;
 use chrono::Utc;
@@ -25,16 +22,19 @@ pub use nash_native_client::{Client, Environment};
 use rust_decimal::prelude::*;
 use std::convert::{TryFrom, TryInto};
 
+/// The main struct of the module
 pub struct Nash {
     transport: Client,
     exchange_info: ExchangeInfo,
 }
 
+/// This structure represents the Nash account credentials
 #[derive(Clone)]
 pub struct NashCredentials {
     pub secret: String,
     pub session: String,
 }
+
 
 pub struct NashParameters {
     pub affiliate_code: Option<String>,
@@ -773,6 +773,7 @@ use nash_protocol::types::{BuyOrSell, DateTimeRange};
 use std::{pin::Pin, task::Context, task::Poll};
 use tokio::time::Duration;
 
+/// This struct represents a websocket connection 
 pub struct NashWebsocket {
     pub client: Client,
 }

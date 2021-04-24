@@ -1,9 +1,8 @@
 use openlimits::{
-    binance::Binance,
-    binance::BinanceParameters,
-    exchange::Exchange,
-    exchange::{ExchangeMarketData, OpenLimits},
-    exchange_info::ExchangeInfoRetrieval,
+    OpenLimits,
+    exchange::binance::Binance,
+    exchange::binance::BinanceParameters,
+    prelude::*,
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
 };
 

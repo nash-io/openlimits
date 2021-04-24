@@ -1,5 +1,5 @@
 use crate::{
-    binance::{
+    exchange::binance::{
         model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
         BinanceParameters,
     },

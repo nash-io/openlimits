@@ -1,13 +1,13 @@
 use nash_native_client::Environment;
-use openlimits::shared::Result;
-use openlimits::{model::websocket::Subscription, nash::NashWebsocket};
+use openlimits::Result;
+use openlimits::{model::websocket::Subscription, exchange::nash::NashWebsocket};
 use tokio::time::Duration;
 
-use openlimits::binance::{BinanceParameters, BinanceWebsocket};
-use openlimits::coinbase::client::websocket::CoinbaseWebsocket;
-use openlimits::coinbase::CoinbaseParameters;
+use openlimits::exchange::binance::{BinanceParameters, BinanceWebsocket};
+use openlimits::exchange::coinbase::client::websocket::CoinbaseWebsocket;
+use openlimits::exchange::coinbase::CoinbaseParameters;
 use openlimits::exchange_ws::ExchangeWs;
-use openlimits::nash::NashParameters;
+use openlimits::exchange::nash::NashParameters;
 use openlimits::reconnectable_ws::ReconnectableWebsocket;
 use std::sync::mpsc::sync_channel;
 use std::sync::{Arc, Mutex};

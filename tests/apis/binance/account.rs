@@ -3,16 +3,14 @@ use rust_decimal::prelude::Decimal;
 use std::env;
 
 use openlimits::{
-    binance::{
+    exchange::binance::{
         model::{AllOrderReq, TimeInForce, TradeHistoryReq},
         Binance, BinanceCredentials, BinanceParameters,
     },
-    exchange::Exchange,
-    exchange_info::ExchangeInfoRetrieval,
+    prelude::*,
 };
-use openlimits::exchange::ExchangeMarketData;
 use openlimits::model::GetPriceTickerRequest;
-use openlimits::binance::model::Order;
+use openlimits::exchange::binance::model::Order;
 
 #[tokio::test]
 async fn get_account() {

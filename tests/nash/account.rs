@@ -2,15 +2,16 @@ use chrono::Duration;
 use dotenv::dotenv;
 use nash_native_client::Environment;
 use openlimits::{
-    exchange::{ExchangeAccount, OpenLimits},
+    OpenLimits,
+    prelude::*,
     model::OpenMarketOrderRequest,
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         TimeInForce, TradeHistoryRequest,
     },
-    nash::Nash,
-    nash::NashCredentials,
-    nash::NashParameters,
+    exchange::nash::Nash,
+    exchange::nash::NashCredentials,
+    exchange::nash::NashParameters,
 };
 use rust_decimal::prelude::{Decimal, FromStr};
 use std::env;

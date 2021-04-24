@@ -1,5 +1,5 @@
 use openlimits::{
-    binance::{
+    exchange::binance::{
         client::websocket::BinanceWebsocket, model::websocket::BinanceSubscription,
         BinanceParameters,
     },

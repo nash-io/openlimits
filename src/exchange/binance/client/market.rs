@@ -3,7 +3,7 @@ use serde_json::Value;
 
 use super::BaseClient;
 use crate::{
-    binance::model::{
+    exchange::binance::model::{
         BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
         SymbolPrice, Ticker,
     },

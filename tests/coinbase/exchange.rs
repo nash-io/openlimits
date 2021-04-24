@@ -1,7 +1,6 @@
-use openlimits::coinbase::{Coinbase, CoinbaseParameters};
-use openlimits::exchange::OpenLimits;
-use openlimits::exchange_info::ExchangeInfoRetrieval;
-use openlimits::exchange::Exchange;
+use openlimits::exchange::coinbase::{Coinbase, CoinbaseParameters};
+use openlimits::OpenLimits;
+use openlimits::prelude::*;
 
 #[tokio::test]
 async fn retrieve_pairs() {

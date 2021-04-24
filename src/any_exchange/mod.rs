@@ -4,17 +4,17 @@
 
 use std::convert::TryFrom;
 
-use crate::coinbase::client::websocket::CoinbaseWebsocket;
-use crate::coinbase::{Coinbase, CoinbaseParameters};
+use crate::exchange::coinbase::client::websocket::CoinbaseWebsocket;
+use crate::exchange::coinbase::{Coinbase, CoinbaseParameters};
 use crate::exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
 use crate::exchange_ws::{ExchangeWs, OpenLimitsWs, Subscriptions};
-use crate::nash::{Nash, NashParameters, NashWebsocket};
+use crate::exchange::nash::{Nash, NashParameters, NashWebsocket};
 use crate::{
-    binance::{Binance, BinanceParameters, BinanceWebsocket},
+    exchange::binance::{Binance, BinanceParameters, BinanceWebsocket},
     model::websocket::OpenLimitsWebSocketMessage,
 };
 use crate::{
-    exchange::{Exchange, ExchangeAccount, ExchangeMarketData},
+    prelude::*,
     model::websocket::WebSocketResponse,
 };
 use crate::{
@@ -30,6 +30,7 @@ use crate::{
 use async_trait::async_trait;
 use futures::stream::{BoxStream, StreamExt};
 
+/// Exchange parameters
 #[derive(Clone)]
 pub enum InitAnyExchange {
     Nash(NashParameters),
@@ -37,6 +38,7 @@ pub enum InitAnyExchange {
     Coinbase(CoinbaseParameters),
 }
 
+// Exchange types
 pub enum AnyExchange {
     Nash(Nash),
     Binance(Binance),
@@ -206,6 +208,7 @@ impl ExchangeMarketData for AnyExchange {
     }
 }
 
+/// Websockets client
 pub enum AnyWsExchange {
     Nash(OpenLimitsWs<NashWebsocket>),
     Binance(OpenLimitsWs<BinanceWebsocket>),

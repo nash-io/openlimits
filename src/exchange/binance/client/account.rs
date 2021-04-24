@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use super::BaseClient;
 use crate::{
-    binance::model::{
+    exchange::binance::model::{
         AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest, TimeInForce,
         TradeHistory, TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
         ORDER_TYPE_LIMIT_MAKER, ORDER_TYPE_MARKET,

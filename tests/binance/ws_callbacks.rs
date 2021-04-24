@@ -1,7 +1,7 @@
 use std::sync::mpsc::sync_channel;
 
 use openlimits::{
-    binance::{client::websocket::BinanceWebsocket, BinanceParameters},
+    exchange::binance::{client::websocket::BinanceWebsocket, BinanceParameters},
     exchange_ws::{ExchangeWs, OpenLimitsWs},
     model::websocket::Subscription,
 };

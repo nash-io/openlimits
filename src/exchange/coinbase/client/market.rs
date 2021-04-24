@@ -3,7 +3,7 @@ use std::fmt::Debug;
 
 use super::BaseClient;
 use crate::{
-    coinbase::model::{
+    exchange::coinbase::model::{
         Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade,
     },
     shared::Result,
