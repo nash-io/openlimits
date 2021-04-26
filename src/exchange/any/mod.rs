@@ -6,8 +6,8 @@ use std::convert::TryFrom;
 
 use crate::exchange::coinbase::client::websocket::CoinbaseWebsocket;
 use crate::exchange::coinbase::{Coinbase, CoinbaseParameters};
-use crate::exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
-use crate::exchange_ws::{ExchangeWs, OpenLimitsWs, Subscriptions};
+use crate::exchange::traits::info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
+use crate::exchange::traits::stream::{ExchangeWs, OpenLimitsWs, Subscriptions};
 use crate::exchange::nash::{Nash, NashParameters, NashWebsocket};
 use crate::{
     exchange::binance::{Binance, BinanceParameters, BinanceWebsocket},

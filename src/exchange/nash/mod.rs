@@ -1,26 +1,37 @@
 //! This module provides a connection to the Nash Exchange
 
-use crate::{
-    errors::{MissingImplementationContent, OpenLimitsError},
-    exchange_ws::ExchangeWs,
-    exchange_ws::Subscriptions,
-    model::websocket::OpenLimitsWebSocketMessage,
-    model::{
-        websocket::{Subscription, WebSocketResponse},
-        AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
-        GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
-        GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
-        Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
-        Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
-    },
-    shared::{timestamp_to_utc_datetime, Result},
-    prelude::*,
-};
+use std::{pin::Pin, task::Context, task::Poll};
+use std::convert::{TryFrom, TryInto};
+
 use async_trait::async_trait;
 use chrono::Utc;
+use futures::stream::{BoxStream, SelectAll, Stream, StreamExt};
 pub use nash_native_client::{Client, Environment};
+use nash_protocol::protocol::{
+    ResponseOrError,
+    subscriptions::{SubscriptionRequest, SubscriptionResponse},
+};
+use nash_protocol::protocol::subscriptions::updated_account_orders::SubscribeAccountOrders;
+use nash_protocol::types::{BuyOrSell, DateTimeRange};
 use rust_decimal::prelude::*;
-use std::convert::{TryFrom, TryInto};
+use tokio::time::Duration;
+
+use crate::{
+    errors::{MissingImplementationContent, OpenLimitsError},
+    model::{
+        AskBid,
+        Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
+        GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
+        Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
+        OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType, Paginator,
+        Side, Ticker, TimeInForce, Trade, TradeHistoryRequest, websocket::{Subscription, WebSocketResponse},
+    },
+    model::websocket::OpenLimitsWebSocketMessage,
+    prelude::*,
+    shared::{Result, timestamp_to_utc_datetime},
+};
+use crate::exchange::traits::stream::{ExchangeWs, Subscriptions};
+use crate::model::websocket::AccountOrders;
 
 /// The main struct of the module
 pub struct Nash {
@@ -762,18 +773,7 @@ impl From<&GetOrderRequest> for nash_protocol::protocol::get_account_order::GetA
     }
 }
 
-use crate::model::websocket::AccountOrders;
-use futures::stream::{BoxStream, SelectAll, Stream, StreamExt};
-use nash_protocol::protocol::subscriptions::updated_account_orders::SubscribeAccountOrders;
-use nash_protocol::protocol::{
-    subscriptions::{SubscriptionRequest, SubscriptionResponse},
-    ResponseOrError,
-};
-use nash_protocol::types::{BuyOrSell, DateTimeRange};
-use std::{pin::Pin, task::Context, task::Poll};
-use tokio::time::Duration;
-
-/// This struct represents a websocket connection 
+/// This struct represents a websocket connection
 pub struct NashWebsocket {
     pub client: Client,
 }

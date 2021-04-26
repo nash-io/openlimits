@@ -1,25 +1,25 @@
+use std::{convert::TryFrom, fmt::Display};
+use std::sync::Mutex;
+
+use async_trait::async_trait;
+use futures::{SinkExt, stream::BoxStream, StreamExt};
+use serde::{de, Deserialize, Serialize};
+use serde_json::Value;
+use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
+use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
+
 use crate::{
-    exchange::binance::{
-        model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
-        BinanceParameters,
-    },
     errors::OpenLimitsError,
-    exchange_ws::ExchangeWs,
-    exchange_ws::Subscriptions,
+    exchange::binance::{
+        BinanceParameters,
+        model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
+    },
     model::websocket::OpenLimitsWebSocketMessage,
     model::websocket::Subscription,
     model::websocket::WebSocketResponse,
     shared::Result,
 };
-
-use async_trait::async_trait;
-use futures::{stream::BoxStream, SinkExt, StreamExt};
-use serde::{de, Deserialize, Serialize};
-use serde_json::Value;
-use std::sync::Mutex;
-use std::{convert::TryFrom, fmt::Display};
-use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
-use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
+use crate::exchange::traits::stream::{ExchangeWs, Subscriptions};
 
 const WS_URL_PROD: &str = "wss://stream.binance.com:9443/stream";
 const WS_URL_SANDBOX: &str = "wss://testnet.binance.vision/stream";

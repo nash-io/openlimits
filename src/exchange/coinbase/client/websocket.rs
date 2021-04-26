@@ -21,7 +21,7 @@ use crate::{
 
 use crate::exchange::coinbase::model::websocket::ChannelType;
 use crate::exchange::coinbase::CoinbaseParameters;
-use crate::exchange_ws::{ExchangeWs, Subscriptions};
+use crate::exchange::traits::stream::{ExchangeWs, Subscriptions};
 use futures::stream::BoxStream;
 use std::sync::Mutex;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};

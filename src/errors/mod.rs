@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use std::fmt;
 use thiserror::Error;
 
+
+//TODO: Mover essa struct para dentro do modulo da Binance.
 #[derive(Serialize, Deserialize, Debug, Error)]
 pub struct BinanceContentError {
     pub code: i16,
@@ -19,6 +21,7 @@ impl fmt::Display for BinanceContentError {
     }
 }
 
+//TODO: Mover para modulo da Coinbase.
 #[derive(Serialize, Deserialize, Debug, Error)]
 pub struct CoinbaseContentError {
     pub message: String,

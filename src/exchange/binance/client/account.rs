@@ -1,18 +1,20 @@
-use serde_json::json;
 use std::collections::HashMap;
 
-use super::BaseClient;
+use rust_decimal::prelude::*;
+use serde_json::json;
+
 use crate::{
-    exchange::binance::model::{
-        AccountInformation, AllOrderReq, Balance, Order, OrderCanceled, OrderRequest, TimeInForce,
-        TradeHistory, TradeHistoryReq, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
-        ORDER_TYPE_LIMIT_MAKER, ORDER_TYPE_MARKET,
-    },
     errors::OpenLimitsError,
-    exchange_info::MarketPair,
+    exchange::binance::model::{
+        AccountInformation, AllOrderReq, Balance, Order, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
+        ORDER_TYPE_LIMIT_MAKER, ORDER_TYPE_MARKET, OrderCanceled, OrderRequest, TimeInForce,
+        TradeHistory, TradeHistoryReq,
+    },
     shared::Result,
 };
-use rust_decimal::prelude::*;
+use crate::exchange::traits::info::MarketPair;
+
+use super::BaseClient;
 
 impl BaseClient {
     // Account Information

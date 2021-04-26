@@ -1,6 +1,9 @@
 use async_trait::async_trait;
 
-use crate::exchange_info::ExchangeInfoRetrieval;
+use info::ExchangeInfoRetrieval;
+
+//TODO: Separar traits nesse modulo como a info/mod.rs
+
 use crate::{
     model::{
         Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
@@ -10,6 +13,9 @@ use crate::{
     },
     shared::Result,
 };
+
+pub mod info;
+pub mod stream;
 
 #[async_trait]
 pub trait Exchange: ExchangeInfoRetrieval + ExchangeAccount + ExchangeMarketData + Sized {

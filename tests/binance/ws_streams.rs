@@ -1,9 +1,10 @@
 use futures::stream::StreamExt;
+
 use openlimits::{
     exchange::binance::{BinanceParameters, BinanceWebsocket},
-    exchange_ws::{ExchangeWs, OpenLimitsWs},
     model::websocket::Subscription,
 };
+use openlimits::exchange::traits::stream::{ExchangeWs, OpenLimitsWs};
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn orderbook() {

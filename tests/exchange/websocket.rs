@@ -4,12 +4,12 @@
 
 use dotenv::dotenv;
 use nash_native_client::Environment;
-use openlimits::any_exchange::{AnyExchange, AnyWsExchange};
+use openlimits::exchange::any::{AnyExchange, AnyWsExchange};
 use openlimits::exchange::binance::{Binance, BinanceCredentials, BinanceParameters};
 use openlimits::exchange::coinbase::client::websocket::CoinbaseWebsocket;
 use openlimits::exchange::coinbase::{Coinbase, CoinbaseCredentials, CoinbaseParameters};
 use openlimits::OpenLimits;
-use openlimits::exchange_ws::OpenLimitsWs;
+use openlimits::exchange::traits::stream::OpenLimitsWs;
 use openlimits::exchange::nash::{Nash, NashCredentials, NashParameters};
 use openlimits::Result;
 use std::env;

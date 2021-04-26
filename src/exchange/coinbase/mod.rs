@@ -9,17 +9,19 @@
 //!                     .expect("Couldn't create coinbase client");
 //! ```
 
-pub mod client;
-pub mod model;
-mod transport;
+use std::convert::TryFrom;
+
+use async_trait::async_trait;
+use chrono::Duration;
+
+use client::BaseClient;
+use transport::Transport;
 
 use crate::{
     errors::OpenLimitsError,
-    exchange_traits::Exchange,
-    //exchange_traits::ExchangeAccount,
-    //exchange_traits::ExchangeMarketData,
-    //exchange_info::ExchangeInfo,
-    exchange_info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle},
+    //traits::ExchangeAccount,
+    //traits::ExchangeMarketData,
+    //info::ExchangeInfo,
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
@@ -27,14 +29,15 @@ use crate::{
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
-    shared::{timestamp_to_naive_datetime, Result},
+    shared::{Result, timestamp_to_naive_datetime},
 };
+use crate::exchange::traits::info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
+use crate::exchange::traits::Exchange;
 use crate::prelude::*;
-use async_trait::async_trait;
-use chrono::Duration;
-use client::BaseClient;
-use std::convert::TryFrom;
-use transport::Transport;
+
+pub mod client;
+pub mod model;
+mod transport;
 
 #[derive(Clone)]
 pub struct Coinbase {

@@ -6,7 +6,7 @@ use tokio::time::Duration;
 use openlimits::exchange::binance::{BinanceParameters, BinanceWebsocket};
 use openlimits::exchange::coinbase::client::websocket::CoinbaseWebsocket;
 use openlimits::exchange::coinbase::CoinbaseParameters;
-use openlimits::exchange_ws::ExchangeWs;
+use openlimits::exchange::traits::stream::ExchangeWs;
 use openlimits::exchange::nash::NashParameters;
 use openlimits::reconnectable_ws::ReconnectableWebsocket;
 use std::sync::mpsc::sync_channel;

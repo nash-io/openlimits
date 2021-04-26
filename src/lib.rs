@@ -9,19 +9,14 @@
 #![warn(missing_copy_implementations)]
 #![warn(missing_debug_implementations)]
 
-pub mod exchange;
-pub mod reconnectable_ws;
-pub mod model;
-pub mod prelude;
-pub mod exchange_ws;
-pub mod any_exchange;
-mod errors;
-mod exchange_traits;
-mod exchange_info;
-pub(crate) mod shared;
-
 use crate::prelude::*;
 pub use crate::shared::Result;
+
+pub mod exchange;
+pub mod model;
+pub mod prelude;
+pub mod errors;
+pub(crate) mod shared;
 
 pub struct OpenLimits {}
 

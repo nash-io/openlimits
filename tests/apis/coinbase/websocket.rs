@@ -2,7 +2,7 @@ use openlimits::exchange::coinbase::{
     client::websocket::CoinbaseWebsocket, model::websocket::CoinbaseSubscription,
     CoinbaseParameters,
 };
-use openlimits::exchange_ws::ExchangeWs;
+use openlimits::exchange::traits::stream::ExchangeWs;
 use openlimits::model::websocket::{OpenLimitsWebSocketMessage, WebSocketResponse};
 use std::sync::mpsc::sync_channel;
 use std::time::Duration;

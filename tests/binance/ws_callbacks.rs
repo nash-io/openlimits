@@ -1,10 +1,10 @@
 use std::sync::mpsc::sync_channel;
 
 use openlimits::{
-    exchange::binance::{client::websocket::BinanceWebsocket, BinanceParameters},
-    exchange_ws::{ExchangeWs, OpenLimitsWs},
+    exchange::binance::{BinanceParameters, client::websocket::BinanceWebsocket},
     model::websocket::Subscription,
 };
+use openlimits::exchange::traits::stream::{ExchangeWs, OpenLimitsWs};
 
 async fn test_subscription_callback(websocket: OpenLimitsWs<BinanceWebsocket>, sub: Subscription) {
     let (tx, rx) = sync_channel(0);

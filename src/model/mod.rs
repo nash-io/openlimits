@@ -7,6 +7,8 @@ use serde::{
 };
 use std::fmt;
 
+//TODO Separar structs em modulos.
+
 #[cfg(feature = "python")]
 pub mod python;
 
