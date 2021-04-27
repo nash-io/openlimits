@@ -33,8 +33,12 @@ use async_trait::async_trait;
 pub use client::websocket::BinanceWebsocket;
 use model::KlineSummaries;
 use transport::Transport;
-
 use client::BaseClient;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::HashMap;
+use std::fmt;
+use thiserror::Error;
 
 /// The main struct of the binance module
 #[derive(Clone)]
@@ -44,14 +48,14 @@ pub struct Binance {
 }
 
 /// This struct represents the credentials and receives the api key and api secret as parameters.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BinanceCredentials {
     pub api_key: String,
     pub api_secret: String,
 }
 
 /// This struct represents the type of environment that will be used and receives a boolean and the credentials as parameters.
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct BinanceParameters {
     pub sandbox: bool,
     pub credentials: Option<BinanceCredentials>,
@@ -72,6 +76,21 @@ impl BinanceParameters {
             sandbox: false,
             ..Default::default()
         }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Error)]
+pub struct BinanceContentError {
+    pub code: i16,
+    pub msg: String,
+
+    #[serde(flatten)]
+    extra: HashMap<String, Value>,
+}
+
+impl fmt::Display for BinanceContentError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "error code: {} msg: {}", self.code, self.msg)
     }
 }
 

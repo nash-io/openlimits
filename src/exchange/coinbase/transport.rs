@@ -1,5 +1,6 @@
 use crate::{
-    errors::{CoinbaseContentError, OpenLimitsError},
+    exchange::coinbase::CoinbaseContentError,
+    errors::OpenLimitsError,
     shared::Result,
 };
 
@@ -14,7 +15,7 @@ use url::Url;
 
 type HmacSha256 = Hmac<Sha256>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Transport {
     api_secret: Option<String>,
     client: reqwest::Client,

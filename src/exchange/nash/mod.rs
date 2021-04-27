@@ -46,7 +46,6 @@ pub struct NashCredentials {
     pub session: String,
 }
 
-
 pub struct NashParameters {
     pub affiliate_code: Option<String>,
     pub credentials: Option<NashCredentials>,

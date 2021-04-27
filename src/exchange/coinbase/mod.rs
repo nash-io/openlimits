@@ -10,18 +10,15 @@
 //! ```
 
 use std::convert::TryFrom;
-
 use async_trait::async_trait;
 use chrono::Duration;
-
 use client::BaseClient;
 use transport::Transport;
-
+use serde::{Deserialize, Serialize};
+use std::fmt;
+use thiserror::Error;
 use crate::{
     errors::OpenLimitsError,
-    //traits::ExchangeAccount,
-    //traits::ExchangeMarketData,
-    //info::ExchangeInfo,
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
@@ -71,6 +68,17 @@ impl CoinbaseParameters {
             sandbox: false,
             ..Default::default()
         }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Error)]
+pub struct CoinbaseContentError {
+    pub message: String,
+}
+
+impl fmt::Display for CoinbaseContentError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "error message: {}", self.message)
     }
 }
 
