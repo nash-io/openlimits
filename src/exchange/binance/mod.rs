@@ -36,53 +36,6 @@ pub struct Binance {
     client: BaseClient,
 }
 
-// /// This struct represents the credentials and receives the api key and api secret as parameters.
-// #[derive(Clone, Debug)]
-// pub struct BinanceCredentials {
-//     pub api_key: String,
-//     pub api_secret: String,
-// }
-
-// /// This struct represents the type of environment that will be used and receives a boolean and the credentials as parameters.
-// #[derive(Default, Clone, Debug)]
-// pub struct BinanceParameters {
-//     pub sandbox: bool,
-//     pub credentials: Option<BinanceCredentials>,
-// }
-
-// impl BinanceParameters {
-//     /// Sandbox environment
-//     pub fn sandbox() -> Self {
-//         Self {
-//             sandbox: true,
-//             ..Default::default()
-//         }
-//     }
-
-//     /// Production environment
-//     pub fn prod() -> Self {
-//         Self {
-//             sandbox: false,
-//             ..Default::default()
-//         }
-//     }
-// }
-
-// #[derive(Serialize, Deserialize, Debug, Error)]
-// pub struct BinanceContentError {
-//     pub code: i16,
-//     pub msg: String,
-
-//     #[serde(flatten)]
-//     extra: HashMap<String, Value>,
-// }
-
-// impl fmt::Display for BinanceContentError {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(f, "error code: {} msg: {}", self.code, self.msg)
-//     }
-// }
-
 #[async_trait]
 impl Exchange for Binance {
     type InitParams = BinanceParameters;
