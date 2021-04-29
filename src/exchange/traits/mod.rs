@@ -1,49 +1,10 @@
-use async_trait::async_trait;
-
-use info::ExchangeInfoRetrieval;
-
-//TODO: Separar traits nesse modulo como a info/mod.rs
-
-use crate::{
-    model::{
-        Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
-        GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
-        OpenLimitOrderRequest, OpenMarketOrderRequest, Order, OrderBookRequest, OrderBookResponse,
-        OrderCanceled, Paginator, Ticker, Trade, TradeHistoryRequest,
-    },
-    shared::Result,
-};
-
+mod exchange_account;
+mod exchange_market_data;
+mod exchange;
 pub mod info;
 pub mod stream;
 
-#[async_trait]
-pub trait Exchange: ExchangeInfoRetrieval + ExchangeAccount + ExchangeMarketData + Sized {
-    type InitParams;
-    type InnerClient;
-    async fn new(params: Self::InitParams) -> Result<Self>;
-    fn inner_client(&self) -> Option<&Self::InnerClient>;
-}
+pub use exchange_account::ExchangeAccount;
+pub use exchange_market_data::ExchangeMarketData;
+pub use exchange::Exchange;
 
-#[async_trait]
-pub trait ExchangeMarketData {
-    async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse>;
-    async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker>;
-    async fn get_historic_rates(&self, req: &GetHistoricRatesRequest) -> Result<Vec<Candle>>;
-    async fn get_historic_trades(&self, req: &GetHistoricTradesRequest) -> Result<Vec<Trade>>;
-}
-
-#[async_trait]
-pub trait ExchangeAccount {
-    async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order>;
-    async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order>;
-    async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order>;
-    async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order>;
-    async fn cancel_order(&self, req: &CancelOrderRequest) -> Result<OrderCanceled>;
-    async fn cancel_all_orders(&self, req: &CancelAllOrdersRequest) -> Result<Vec<OrderCanceled>>;
-    async fn get_all_open_orders(&self) -> Result<Vec<Order>>;
-    async fn get_order_history(&self, req: &GetOrderHistoryRequest) -> Result<Vec<Order>>;
-    async fn get_trade_history(&self, req: &TradeHistoryRequest) -> Result<Vec<Trade>>;
-    async fn get_account_balances(&self, paginator: Option<Paginator>) -> Result<Vec<Balance>>;
-    async fn get_order(&self, req: &GetOrderRequest) -> Result<Order>;
-}
