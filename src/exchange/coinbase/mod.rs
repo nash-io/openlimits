@@ -14,9 +14,6 @@ use async_trait::async_trait;
 use chrono::Duration;
 use client::BaseClient;
 use transport::Transport;
-use serde::{Deserialize, Serialize};
-use std::fmt;
-use thiserror::Error;
 use crate::{
     errors::OpenLimitsError,
     model::{
@@ -35,6 +32,13 @@ use crate::prelude::*;
 pub mod client;
 pub mod model;
 mod transport;
+mod coinbase_content_error;
+mod coinbase_credentials;
+mod coinbase_parameters;
+
+pub use coinbase_content_error::CoinbaseContentError;
+pub use coinbase_credentials::CoinbaseCredentials;
+pub use coinbase_parameters::CoinbaseParameters;
 
 #[derive(Clone)]
 pub struct Coinbase {
@@ -42,45 +46,45 @@ pub struct Coinbase {
     client: BaseClient,
 }
 
-#[derive(Clone)]
-pub struct CoinbaseCredentials {
-    pub api_key: String,
-    pub api_secret: String,
-    pub passphrase: String,
-}
+// #[derive(Clone)]
+// pub struct CoinbaseCredentials {
+//     pub api_key: String,
+//     pub api_secret: String,
+//     pub passphrase: String,
+// }
 
-#[derive(Default, Clone)]
-pub struct CoinbaseParameters {
-    pub sandbox: bool,
-    pub credentials: Option<CoinbaseCredentials>,
-}
+// #[derive(Default, Clone)]
+// pub struct CoinbaseParameters {
+//     pub sandbox: bool,
+//     pub credentials: Option<CoinbaseCredentials>,
+// }
 
-impl CoinbaseParameters {
-    pub fn sandbox() -> Self {
-        Self {
-            sandbox: true,
-            ..Default::default()
-        }
-    }
+// impl CoinbaseParameters {
+//     pub fn sandbox() -> Self {
+//         Self {
+//             sandbox: true,
+//             ..Default::default()
+//         }
+//     }
 
-    pub fn prod() -> Self {
-        Self {
-            sandbox: false,
-            ..Default::default()
-        }
-    }
-}
+//     pub fn prod() -> Self {
+//         Self {
+//             sandbox: false,
+//             ..Default::default()
+//         }
+//     }
+// }
 
-#[derive(Serialize, Deserialize, Debug, Error)]
-pub struct CoinbaseContentError {
-    pub message: String,
-}
+// #[derive(Serialize, Deserialize, Debug, Error)]
+// pub struct CoinbaseContentError {
+//     pub message: String,
+// }
 
-impl fmt::Display for CoinbaseContentError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "error message: {}", self.message)
-    }
-}
+// impl fmt::Display for CoinbaseContentError {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         write!(f, "error message: {}", self.message)
+//     }
+// }
 
 #[async_trait]
 impl Exchange for Coinbase {
