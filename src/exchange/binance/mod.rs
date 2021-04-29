@@ -1,21 +1,11 @@
-//! This module provides a connection to the Binance Exchange
-//! # Example
-//! ```
-//! use openlimits::exchanges::binance::Binance;
-//! use openlimits::prelude::*;
-//! 
-//! let mut binance = Binance::new(BinanceParameters::prod())
-//!                     .await
-//!                     .expect("Couldn't create binance client");
-//! ```
-//! 
-//! 
-
+mod binance_content_error;
+mod binance_credentials;
+mod binance_parameters;
+mod transport;
 pub mod client;
 pub mod model;
-mod transport;
-use std::convert::TryFrom;
 
+use std::convert::TryFrom;
 use crate::{
     exchange::binance::model::{websocket::TradeMessage, SymbolFilter, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET},
     errors::OpenLimitsError,
@@ -30,15 +20,14 @@ use crate::{
     prelude::*,
 };
 use async_trait::async_trait;
-pub use client::websocket::BinanceWebsocket;
 use model::KlineSummaries;
 use transport::Transport;
 use client::BaseClient;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::collections::HashMap;
-use std::fmt;
-use thiserror::Error;
+
+pub use client::websocket::BinanceWebsocket;
+pub use binance_content_error::BinanceContentError;
+pub use binance_credentials::BinanceCredentials;
+pub use binance_parameters::BinanceParameters;
 
 /// The main struct of the binance module
 #[derive(Clone)]
@@ -47,52 +36,52 @@ pub struct Binance {
     client: BaseClient,
 }
 
-/// This struct represents the credentials and receives the api key and api secret as parameters.
-#[derive(Clone, Debug)]
-pub struct BinanceCredentials {
-    pub api_key: String,
-    pub api_secret: String,
-}
+// /// This struct represents the credentials and receives the api key and api secret as parameters.
+// #[derive(Clone, Debug)]
+// pub struct BinanceCredentials {
+//     pub api_key: String,
+//     pub api_secret: String,
+// }
 
-/// This struct represents the type of environment that will be used and receives a boolean and the credentials as parameters.
-#[derive(Default, Clone, Debug)]
-pub struct BinanceParameters {
-    pub sandbox: bool,
-    pub credentials: Option<BinanceCredentials>,
-}
+// /// This struct represents the type of environment that will be used and receives a boolean and the credentials as parameters.
+// #[derive(Default, Clone, Debug)]
+// pub struct BinanceParameters {
+//     pub sandbox: bool,
+//     pub credentials: Option<BinanceCredentials>,
+// }
 
-impl BinanceParameters {
-    /// Sandbox environment
-    pub fn sandbox() -> Self {
-        Self {
-            sandbox: true,
-            ..Default::default()
-        }
-    }
+// impl BinanceParameters {
+//     /// Sandbox environment
+//     pub fn sandbox() -> Self {
+//         Self {
+//             sandbox: true,
+//             ..Default::default()
+//         }
+//     }
 
-    /// Production environment
-    pub fn prod() -> Self {
-        Self {
-            sandbox: false,
-            ..Default::default()
-        }
-    }
-}
+//     /// Production environment
+//     pub fn prod() -> Self {
+//         Self {
+//             sandbox: false,
+//             ..Default::default()
+//         }
+//     }
+// }
 
-#[derive(Serialize, Deserialize, Debug, Error)]
-pub struct BinanceContentError {
-    pub code: i16,
-    pub msg: String,
+// #[derive(Serialize, Deserialize, Debug, Error)]
+// pub struct BinanceContentError {
+//     pub code: i16,
+//     pub msg: String,
 
-    #[serde(flatten)]
-    extra: HashMap<String, Value>,
-}
+//     #[serde(flatten)]
+//     extra: HashMap<String, Value>,
+// }
 
-impl fmt::Display for BinanceContentError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "error code: {} msg: {}", self.code, self.msg)
-    }
-}
+// impl fmt::Display for BinanceContentError {
+//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+//         write!(f, "error code: {} msg: {}", self.code, self.msg)
+//     }
+// }
 
 #[async_trait]
 impl Exchange for Binance {
@@ -188,16 +177,6 @@ impl ExchangeInfoRetrieval for Binance {
 
 #[async_trait]
 impl ExchangeMarketData for Binance {
-    /// # Example
-    /// ```
-    /// let mut binance = Binance::new(BinanceParameters::prod())
-    ///                     .await
-    ///                     .expect("Couldn't create binance client");
-    /// 
-    /// binance.order_book(&OrderBookRequest {market_pair: "BTCEUR".to_string()})
-    ///   .await
-    ///   .expect("Couldn't get binance order book");
-    /// 
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.client
             .get_depth(req.market_pair.as_str(), None)
