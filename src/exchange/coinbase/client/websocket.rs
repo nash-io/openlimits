@@ -1,30 +1,26 @@
 use async_trait::async_trait;
 use std::{collections::HashMap, pin::Pin, task::Poll};
-
 use futures::{
     stream::{SplitStream, Stream},
     SinkExt, StreamExt,
 };
 use serde::{Deserialize, Serialize};
 use tokio::net::TcpStream;
-
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
-
 use crate::{
     exchange::coinbase::model::websocket::{
         Channel, CoinbaseSubscription, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd,
     },
     errors::OpenLimitsError,
-    shared::Result,
 };
-
 use crate::exchange::coinbase::model::websocket::ChannelType;
 use crate::exchange::coinbase::CoinbaseParameters;
 use crate::exchange::traits::stream::{ExchangeWs, Subscriptions};
 use futures::stream::BoxStream;
 use std::sync::Mutex;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
+use super::shared::Result;
 
 const WS_URL_PROD: &str = "wss://ws-feed.pro.coinbase.com";
 const WS_URL_SANDBOX: &str = "wss://ws-feed-public.sandbox.pro.coinbase.com";

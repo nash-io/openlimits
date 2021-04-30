@@ -1,9 +1,9 @@
-use crate::shared::string_to_decimal;
-use crate::shared::string_to_opt_decimal;
 use serde::Deserialize;
 use serde::Serialize;
 use rust_decimal::prelude::Decimal;
 use super::TimeInForce;
+use super::shared::string_to_decimal;
+use super::shared::string_to_opt_decimal;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]

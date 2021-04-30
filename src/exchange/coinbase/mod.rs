@@ -1,14 +1,3 @@
-//! This module provides a connection to the Coinbase Exchange
-//! # Example
-//! ```
-//! use openlimits::exchanges::coinbase::Coinbase;
-//! use openlimits::prelude::*;
-//! 
-//! let mut coinbase = Coinabse::new(CoinbaseParameters::prod())
-//!                     .await
-//!                     .expect("Couldn't create coinbase client");
-//! ```
-
 use std::convert::TryFrom;
 use async_trait::async_trait;
 use chrono::Duration;
@@ -23,11 +12,12 @@ use crate::{
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
-    shared::{Result, timestamp_to_naive_datetime},
 };
 use crate::exchange::traits::info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
 use crate::exchange::traits::Exchange;
 use crate::prelude::*;
+use super::shared::Result;
+use super::shared::timestamp_to_naive_datetime;
 
 pub mod client;
 pub mod model;
@@ -39,52 +29,13 @@ mod coinbase_parameters;
 pub use coinbase_content_error::CoinbaseContentError;
 pub use coinbase_credentials::CoinbaseCredentials;
 pub use coinbase_parameters::CoinbaseParameters;
+pub use super::shared;
 
 #[derive(Clone)]
 pub struct Coinbase {
     exchange_info: ExchangeInfo,
     client: BaseClient,
 }
-
-// #[derive(Clone)]
-// pub struct CoinbaseCredentials {
-//     pub api_key: String,
-//     pub api_secret: String,
-//     pub passphrase: String,
-// }
-
-// #[derive(Default, Clone)]
-// pub struct CoinbaseParameters {
-//     pub sandbox: bool,
-//     pub credentials: Option<CoinbaseCredentials>,
-// }
-
-// impl CoinbaseParameters {
-//     pub fn sandbox() -> Self {
-//         Self {
-//             sandbox: true,
-//             ..Default::default()
-//         }
-//     }
-
-//     pub fn prod() -> Self {
-//         Self {
-//             sandbox: false,
-//             ..Default::default()
-//         }
-//     }
-// }
-
-// #[derive(Serialize, Deserialize, Debug, Error)]
-// pub struct CoinbaseContentError {
-//     pub message: String,
-// }
-
-// impl fmt::Display for CoinbaseContentError {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(f, "error message: {}", self.message)
-//     }
-// }
 
 #[async_trait]
 impl Exchange for Coinbase {

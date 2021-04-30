@@ -7,7 +7,7 @@ use crate::{
         Ticker, Trade,
     },
 };
-use crate::shared::Result;
+use super::shared::Result;
 
 #[async_trait]
 pub trait ExchangeMarketData {

@@ -11,7 +11,7 @@ use crate::exchange::binance::BinanceWebsocket;
 use crate::model::websocket::OpenLimitsWebSocketMessage;
 use crate::model::websocket::WebSocketResponse;
 use crate::model::websocket::Subscription;
-use crate::shared::Result;
+use super::shared::Result;
 use super::InitAnyExchange;
 
 /// Websockets client

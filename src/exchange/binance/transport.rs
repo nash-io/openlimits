@@ -8,12 +8,9 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use sha2::Sha256;
 use url::Url;
-
-use crate::{
-    exchange::binance::BinanceContentError,
-    errors::OpenLimitsError,
-    shared::Result,
-};
+use crate::exchange::binance::BinanceContentError;
+use crate::errors::OpenLimitsError;
+use super::shared::Result;
 
 type HmacSha256 = Hmac<Sha256>;
 

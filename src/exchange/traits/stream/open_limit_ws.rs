@@ -2,7 +2,7 @@ use derive_more::Constructor;
 use futures::stream::BoxStream;
 use crate::model::websocket::WebSocketResponse;
 use crate::model::websocket::Subscription;
-use crate::shared::Result;
+use super::shared::Result;
 use super::CallbackHandle;
 use super::ExchangeWs;
 use super::Subscriptions;

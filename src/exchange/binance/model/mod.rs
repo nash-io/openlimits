@@ -81,3 +81,4 @@ pub use trade_history::TradeHistory;
 pub use trade_history_req::TradeHistoryReq;
 pub use transaction::Transaction;
 pub use user_data_stream::UserDataStream;
+pub use super::shared;

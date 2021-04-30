@@ -31,4 +31,5 @@ pub use mini_ticker::MiniTicker;
 pub use ticker::Ticker;
 pub use trade_message::TradeMessage;
 pub use user_order_update::UserOrderUpdate;
+pub use super::shared;
 

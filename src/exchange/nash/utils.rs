@@ -1,10 +1,10 @@
 use nash_native_client::Client;
-use crate::shared::Result;
+use std::convert::TryFrom;
 use crate::model::Paginator;
 use crate::errors::OpenLimitsError;
-use crate::shared::timestamp_to_utc_datetime;
-use std::convert::TryFrom;
 use super::NashParameters;
+use super::shared::Result;
+use super::shared::timestamp_to_utc_datetime;
 
 pub async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
     let client = match params.credentials {
@@ -42,7 +42,7 @@ pub async fn client_from_params_failable(params: NashParameters) -> Result<Clien
 
 pub fn try_split_paginator(
     paginator: Option<Paginator>,
-) -> crate::shared::Result<(
+) -> Result<(
     Option<String>,
     Option<i64>,
     Option<nash_protocol::types::DateTimeRange>,

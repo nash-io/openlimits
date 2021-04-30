@@ -1,8 +1,8 @@
-use crate::shared::string_to_decimal;
 use serde::Deserialize;
 use serde::Serialize;
 use rust_decimal::prelude::Decimal;
 use super::OrderTimeInForceResponse;
+use super::shared::string_to_decimal;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]

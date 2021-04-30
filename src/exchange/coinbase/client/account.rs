@@ -1,6 +1,4 @@
 use rust_decimal::prelude::*;
-
-use crate::{shared::Result};
 use crate::exchange::{
     coinbase::model::{
         Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
@@ -9,8 +7,8 @@ use crate::exchange::{
     },
 };
 use crate::exchange::traits::info::MarketPair;
-
 use super::BaseClient;
+use super::shared::Result;
 
 impl BaseClient {
     pub async fn get_account(&self, paginator: Option<&Paginator>) -> Result<Vec<Account>> {

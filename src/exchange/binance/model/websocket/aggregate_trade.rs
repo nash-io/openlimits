@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
-use crate::shared::string_to_decimal;
 use rust_decimal::prelude::Decimal;
+use super::shared::string_to_decimal;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]

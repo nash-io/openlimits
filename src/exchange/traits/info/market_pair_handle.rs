@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::sync::RwLock;
 use crate::errors::OpenLimitsError;
-use crate::shared::Result;
+use super::shared::Result;
 use super::MarketPair;
 
 

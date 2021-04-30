@@ -1,5 +1,3 @@
-use crate::shared::naive_datetime_from_string;
-use crate::shared::string_to_decimal;
 use serde::Deserialize;
 use serde::Serialize;
 use chrono::naive::NaiveDateTime;
@@ -8,6 +6,8 @@ use super::OrderSide;
 use super::OrderType;
 use super::OrderStatus;
 use super::OrderStop;
+use super::shared::string_to_decimal;
+use super::shared::naive_datetime_from_string;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Order {

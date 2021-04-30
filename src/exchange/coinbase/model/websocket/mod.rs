@@ -3,7 +3,7 @@ use crate::model::websocket::OpenLimitsWebSocketMessage;
 use crate::model::websocket::WebSocketResponse;
 use crate::model::AskBid;
 use crate::model::OrderBookResponse;
-use crate::shared::Result;
+use super::shared::Result;
 use std::convert::{TryFrom, TryInto};
 
 use super::OrderSide;
@@ -51,6 +51,7 @@ pub use stop_type::StopType;
 pub use subscribe_cmd::SubscribeCmd;
 pub use subscribe::Subscribe;
 pub use ticker::Ticker;
+pub use super::shared;
 
 impl TryFrom<CoinbaseWebsocketMessage> for WebSocketResponse<CoinbaseWebsocketMessage> {
     type Error = OpenLimitsError;

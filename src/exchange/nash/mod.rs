@@ -11,6 +11,7 @@ pub use nash_parameters::NashParameters;
 pub use nash_websocket::NashWebsocket;
 pub use subscription_response_wrapper::SubscriptionResponseWrapper;
 pub use utils::client_from_params_failable;
+pub use super::shared;
 
 use std::convert::{TryFrom, TryInto};
 use async_trait::async_trait;
@@ -31,7 +32,6 @@ use crate::{
         Side, Ticker, TimeInForce, Trade, TradeHistoryRequest, websocket::{Subscription, WebSocketResponse},
     },
     model::websocket::OpenLimitsWebSocketMessage,
-    shared::{Result, timestamp_to_utc_datetime},
 };
 use crate::model::websocket::AccountOrders;
 use crate::exchange::traits::info::ExchangeInfo;
@@ -42,6 +42,7 @@ use crate::exchange::traits::ExchangeAccount;
 use crate::exchange::traits::info::MarketPair;
 use crate::exchange::traits::info::MarketPairHandle;
 use utils::try_split_paginator;
+use super::shared::{Result, timestamp_to_utc_datetime};
 
 pub struct Nash {
     transport: Client,
@@ -463,7 +464,7 @@ impl TryFrom<&TradeHistoryRequest>
     for nash_protocol::protocol::list_account_trades::ListAccountTradesRequest
 {
     type Error = OpenLimitsError;
-    fn try_from(req: &TradeHistoryRequest) -> crate::shared::Result<Self> {
+    fn try_from(req: &TradeHistoryRequest) -> super::shared::Result<Self> {
         let (before, limit, range) = try_split_paginator(req.paginator.clone())?;
 
         Ok(Self {
@@ -532,7 +533,7 @@ impl TryFrom<&GetHistoricRatesRequest>
     for nash_protocol::protocol::list_candles::ListCandlesRequest
 {
     type Error = OpenLimitsError;
-    fn try_from(req: &GetHistoricRatesRequest) -> crate::shared::Result<Self> {
+    fn try_from(req: &GetHistoricRatesRequest) -> super::shared::Result<Self> {
         let (before, limit, range) = try_split_paginator(req.paginator.clone())?;
 
         Ok(Self {
@@ -554,7 +555,7 @@ impl TryFrom<&GetHistoricTradesRequest>
     for nash_protocol::protocol::list_trades::ListTradesRequest
 {
     type Error = OpenLimitsError;
-    fn try_from(req: &GetHistoricTradesRequest) -> crate::shared::Result<Self> {
+    fn try_from(req: &GetHistoricTradesRequest) -> super::shared::Result<Self> {
         let market = req.market_pair.clone();
         let (before, limit, _) = try_split_paginator(req.paginator.clone())?;
         //FIXME: Some issues with the graphql protocol for the market to be non nil
@@ -568,7 +569,7 @@ impl TryFrom<&GetHistoricTradesRequest>
 
 impl TryFrom<Interval> for nash_protocol::types::CandleInterval {
     type Error = OpenLimitsError;
-    fn try_from(interval: Interval) -> crate::shared::Result<Self> {
+    fn try_from(interval: Interval) -> super::shared::Result<Self> {
         match interval {
             Interval::OneMinute => Ok(nash_protocol::types::CandleInterval::OneMinute),
             Interval::FiveMinutes => Ok(nash_protocol::types::CandleInterval::FiveMinute),
@@ -616,7 +617,7 @@ impl TryFrom<&GetOrderHistoryRequest>
     for nash_protocol::protocol::list_account_orders::ListAccountOrdersRequest
 {
     type Error = OpenLimitsError;
-    fn try_from(req: &GetOrderHistoryRequest) -> crate::shared::Result<Self> {
+    fn try_from(req: &GetOrderHistoryRequest) -> super::shared::Result<Self> {
         let (before, limit, range) = try_split_paginator(req.paginator.clone())?;
 
         Ok(Self {
@@ -679,7 +680,7 @@ impl From<nash_protocol::types::OrderStatus> for OrderStatus {
 
 impl TryFrom<OrderStatus> for nash_protocol::types::OrderStatus {
     type Error = OpenLimitsError;
-    fn try_from(status: OrderStatus) -> crate::shared::Result<Self> {
+    fn try_from(status: OrderStatus) -> super::shared::Result<Self> {
         Ok(match status {
             OrderStatus::Filled => nash_protocol::types::OrderStatus::Filled,
             OrderStatus::Open => nash_protocol::types::OrderStatus::Open,

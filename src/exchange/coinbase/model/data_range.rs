@@ -1,7 +1,7 @@
-use crate::shared::opt_naive_datetime_from_string;
 use serde::Deserialize;
 use serde::Serialize;
 use chrono::naive::NaiveDateTime;
+use super::shared::opt_naive_datetime_from_string;
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug)]
 pub struct DateRange {

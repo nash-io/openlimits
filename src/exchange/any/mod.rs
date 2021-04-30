@@ -9,3 +9,4 @@ mod init_any_exchange;
 pub use any_exchange::AnyExchange;
 pub use any_ws_exchange::AnyWsExchange;
 pub use init_any_exchange::InitAnyExchange;
+pub use super::shared;

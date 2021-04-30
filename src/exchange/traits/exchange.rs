@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use crate::shared::Result;
+use super::shared::Result;
 use super::info::ExchangeInfoRetrieval;
 use super::ExchangeAccount;
 use super::ExchangeMarketData;

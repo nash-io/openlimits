@@ -7,7 +7,7 @@ use crate::{
         OrderCanceled, Paginator, Trade, TradeHistoryRequest,
     },
 };
-use crate::shared::Result;
+use super::shared::Result;
 
 #[async_trait]
 pub trait ExchangeAccount {

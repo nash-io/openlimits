@@ -8,7 +8,7 @@ use std::fmt::Debug;
 use crate::errors::OpenLimitsError;
 use crate::model::websocket::WebSocketResponse;
 use crate::model::websocket::Subscription;
-use crate::shared::Result;
+use super::shared::Result;
 use super::Subscriptions;
 use super::CallbackHandle;
 

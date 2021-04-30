@@ -60,5 +60,6 @@ pub use paginator::Paginator;
 pub use product::Product;
 pub use ticker::Ticker;
 pub use trade::Trade;
+pub use super::shared;
 
 

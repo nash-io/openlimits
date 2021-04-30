@@ -1,4 +1,4 @@
-use crate::shared::Result;
+use super::shared::Result;
 use super::ExchangeInfo;
 use super::MarketPairHandle;
 

@@ -15,7 +15,7 @@ use crate::model::{
     OrderBookRequest, OrderBookResponse, OrderCanceled, Paginator, Ticker, Trade,
     TradeHistoryRequest,
 };
-use crate::shared::Result;
+use super::shared::Result;
 use super::InitAnyExchange;
 
 

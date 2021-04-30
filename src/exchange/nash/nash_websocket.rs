@@ -5,11 +5,11 @@ pub use nash_native_client::{Client, Environment};
 use nash_protocol::protocol::subscriptions::SubscriptionRequest;
 use nash_protocol::protocol::ResponseOrError;
 use crate::errors::OpenLimitsError;
-use crate::shared::Result;
 use crate::exchange::traits::stream::{ExchangeWs, Subscriptions};
 use super::NashParameters;
 use super::SubscriptionResponseWrapper;
 use super::utils::*;
+use super::shared::Result;
 
 /// This struct represents a websocket connection
 pub struct NashWebsocket {

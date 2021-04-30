@@ -9,4 +9,5 @@ pub use exchange_info::ExchangeInfo;
 pub use market_pair_handle::MarketPairHandle;
 pub use market_pair::MarketPair;
 pub use utils::*;
+pub use super::shared;
 

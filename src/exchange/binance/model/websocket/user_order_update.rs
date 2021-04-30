@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 use rust_decimal::prelude::Decimal;
-use crate::shared::string_to_decimal;
+use super::shared::string_to_decimal;
 use super::OrderExecType;
 use super::OrderRejectReason;
 use super::OrderStatus;

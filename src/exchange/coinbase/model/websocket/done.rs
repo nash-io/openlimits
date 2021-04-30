@@ -1,8 +1,8 @@
-use crate::shared::string_to_decimal;
 use rust_decimal::prelude::Decimal;
 use serde::Deserialize;
 use super::OrderSide;
 use super::Reason;
+use super::shared::string_to_decimal;
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]

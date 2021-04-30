@@ -1,10 +1,7 @@
-mod binance_content_error;
-mod binance_credentials;
-mod binance_parameters;
-mod transport;
-pub mod client;
-pub mod model;
-
+use async_trait::async_trait;
+use model::KlineSummaries;
+use transport::Transport;
+use client::BaseClient;
 use std::convert::TryFrom;
 use crate::{
     exchange::binance::model::{websocket::TradeMessage, SymbolFilter, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET},
@@ -16,18 +13,22 @@ use crate::{
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest, Transaction,
     },
-    shared::Result,
     prelude::*,
 };
-use async_trait::async_trait;
-use model::KlineSummaries;
-use transport::Transport;
-use client::BaseClient;
+use super::shared::Result;
+
+mod binance_content_error;
+mod binance_credentials;
+mod binance_parameters;
+mod transport;
+pub mod client;
+pub mod model;
 
 pub use client::websocket::BinanceWebsocket;
 pub use binance_content_error::BinanceContentError;
 pub use binance_credentials::BinanceCredentials;
 pub use binance_parameters::BinanceParameters;
+pub use super::shared;
 
 /// The main struct of the binance module
 #[derive(Clone)]
