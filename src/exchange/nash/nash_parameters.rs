@@ -2,6 +2,7 @@ use tokio::time::Duration;
 pub use nash_native_client::{Client, Environment};
 use super::NashCredentials;
 
+/// This struct represents the parameters
 pub struct NashParameters {
     pub affiliate_code: Option<String>,
     pub credentials: Option<NashCredentials>,

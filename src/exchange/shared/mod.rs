@@ -1,3 +1,5 @@
+//! This module cointains some auxiliar functions that are used in the exchange module
+
 pub type Result<T> = std::result::Result<T, crate::errors::OpenLimitsError>;
 
 pub mod string_to_decimal {

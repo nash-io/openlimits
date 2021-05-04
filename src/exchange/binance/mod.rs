@@ -1,3 +1,5 @@
+//! This module provides functionality for communicating with the binance API.
+
 use async_trait::async_trait;
 use model::KlineSummaries;
 use transport::Transport;
@@ -33,8 +35,8 @@ pub use super::shared;
 /// The main struct of the binance module
 #[derive(Clone)]
 pub struct Binance {
-    exchange_info: ExchangeInfo,
-    client: BaseClient,
+    pub exchange_info: ExchangeInfo,
+    pub client: BaseClient,
 }
 
 #[async_trait]

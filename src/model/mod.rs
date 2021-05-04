@@ -1,3 +1,5 @@
+//! This module provides models that are used in the exchange module
+
 mod ask_bid;
 mod balance;
 mod candle;

@@ -43,9 +43,9 @@ impl Exchange for AnyExchange {
             }
         }
     }
-    // not particularly useful to access the inner client with this type. could wrap the inner
-    // client reference in an enum, but that would introduce lifetimes all the way down due to
-    // https://users.rust-lang.org/t/how-to-specify-lifetime-for-associated-type/5736
+    /// not particularly useful to access the inner client with this type. could wrap the inner
+    /// client reference in an enum, but that would introduce lifetimes all the way down due to
+    /// https://users.rust-lang.org/t/how-to-specify-lifetime-for-associated-type/5736
     fn inner_client(&self) -> Option<&Self::InnerClient> {
         None
     }

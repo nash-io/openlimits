@@ -1,3 +1,5 @@
+//! This module cointains the traits that are used in the exchange module.
+
 mod exchange_account;
 mod exchange_market_data;
 mod exchange;

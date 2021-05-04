@@ -1,13 +1,23 @@
+/// Used for subscriptions
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum BinanceSubscription {
-    UserData(String),            // listen key
-    AggregateTrade(String),      // symbol
-    Trade(String),               // symbol
-    Candlestick(String, String), // (symbol, interval)
-    MiniTicker(String),          // symbol
+    /// Listen key
+    UserData(String),   
+    /// Symbol         
+    AggregateTrade(String),      
+    /// Symbol
+    Trade(String),  
+    /// (Symbol, Interval)             
+    Candlestick(String, String), 
+    /// Symbol
+    MiniTicker(String),          
     MiniTickerAll,
-    Ticker(String), // symbol
+    /// Symbol
+    Ticker(String), 
     TickerAll,
-    OrderBook(String, i64),     // (symbol, depth)
-    Depth(String, Option<u16>), // (symbol, interval)
+    /// (Symbol, Depth)
+    OrderBook(String, i64), 
+    /// (Symbol, Interval)
+    Depth(String, Option<u16>), 
 }

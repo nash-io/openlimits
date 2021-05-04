@@ -1,3 +1,6 @@
+//! This module provides functionality for communicating with the coinbase API.
+
+
 use std::convert::TryFrom;
 use async_trait::async_trait;
 use chrono::Duration;
@@ -33,8 +36,8 @@ pub use super::shared;
 
 #[derive(Clone)]
 pub struct Coinbase {
-    exchange_info: ExchangeInfo,
-    client: BaseClient,
+    pub exchange_info: ExchangeInfo,
+    pub client: BaseClient,
 }
 
 #[async_trait]

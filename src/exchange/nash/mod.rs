@@ -1,4 +1,5 @@
-//! This module provides a connection to the Nash Exchange
+//! This module provides functionality for communicating with the binance API.
+
 
 mod nash_credentials;
 mod nash_parameters;
@@ -45,8 +46,8 @@ use utils::try_split_paginator;
 use super::shared::{Result, timestamp_to_utc_datetime};
 
 pub struct Nash {
-    transport: Client,
-    exchange_info: ExchangeInfo,
+    pub transport: Client,
+    pub exchange_info: ExchangeInfo,
 }
 
 #[async_trait]
