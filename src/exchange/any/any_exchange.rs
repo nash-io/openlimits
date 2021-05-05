@@ -18,8 +18,7 @@ use crate::model::{
 use super::shared::Result;
 use super::InitAnyExchange;
 
-
-/// Exchange types
+/// Exchanges avaliables: Nash, Binance and Coinbase
 pub enum AnyExchange {
     Nash(Nash),
     Binance(Binance),

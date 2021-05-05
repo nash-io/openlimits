@@ -4,6 +4,7 @@ use super::OrderSide;
 use super::shared::string_to_decimal;
 use super::shared::string_to_opt_decimal;
 
+/// This enum represents a ticker
 #[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
 #[serde(rename_all = "camelCase")]

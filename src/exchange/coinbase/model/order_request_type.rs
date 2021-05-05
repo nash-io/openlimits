@@ -4,6 +4,7 @@ use rust_decimal::prelude::Decimal;
 use super::OrderTimeInForce;
 use super::OrderRequestMarketType;
 
+/// This struct represents a order type request
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "type")]

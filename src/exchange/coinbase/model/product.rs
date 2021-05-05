@@ -3,6 +3,7 @@ use serde::Serialize;
 use rust_decimal::prelude::Decimal;
 use super::shared::string_to_decimal;
 
+/// This struct represents a product
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Product {
     pub id: String,

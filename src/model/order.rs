@@ -7,7 +7,7 @@ use super::OrderType;
 use super::Side;
 use super::Trade;
 
-
+/// This struct represents an order
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
 pub struct Order {
     pub id: String,

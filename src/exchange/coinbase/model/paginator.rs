@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 
+/// This struct represents a paginator
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Paginator {
     #[serde(skip_serializing_if = "Option::is_none")]

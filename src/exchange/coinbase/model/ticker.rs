@@ -5,6 +5,7 @@ use rust_decimal::prelude::Decimal;
 use super::shared::string_to_decimal;
 use super::shared::naive_datetime_from_string;
 
+/// This struct represents a ticker
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Ticker {
     pub trade_id: i64,

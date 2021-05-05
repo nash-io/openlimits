@@ -1,3 +1,4 @@
+//! This module provides models that are used in the coinbase module
 mod account;
 mod book_level;
 mod book_record_l1;

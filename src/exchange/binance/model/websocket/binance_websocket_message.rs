@@ -9,6 +9,7 @@ use super::Ticker;
 use super::TradeMessage;
 use super::UserOrderUpdate;
 
+/// This enum represents the types of websocket messages
 #[derive(Debug, Clone, Serialize)]
 pub enum BinanceWebsocketMessage {
     UserOrderUpdate(UserOrderUpdate),

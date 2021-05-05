@@ -4,6 +4,7 @@ use super::shared::string_to_decimal;
 
 use rust_decimal::prelude::Decimal;
 
+/// This struct represents a ticker
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Ticker {

@@ -2,6 +2,7 @@ use chrono::Duration;
 use serde::Deserialize;
 use serde::Serialize;
 
+/// This enum represents a time interval
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum Interval {
     #[serde(rename = "1m")]

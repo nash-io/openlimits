@@ -9,6 +9,7 @@ use super::OrderType;
 use super::Side;
 use super::TimeInForce;
 
+/// This struct represents the user order update
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct UserOrderUpdate {

@@ -6,6 +6,7 @@ use std::fmt;
 use thiserror::Error;
 
 
+/// This struct represents a binance content error
 #[derive(Serialize, Deserialize, Debug, Error)]
 pub struct BinanceContentError {
     pub code: i16,

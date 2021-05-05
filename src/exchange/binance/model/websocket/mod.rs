@@ -1,3 +1,5 @@
+//! Websocket model
+
 use super::AskBid;
 use super::Kline;
 use super::OrderBook;

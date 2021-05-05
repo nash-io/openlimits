@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 
+/// This struct represents a paginator
 #[derive(Serialize, Deserialize, Clone, Debug, Default)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub struct Paginator {

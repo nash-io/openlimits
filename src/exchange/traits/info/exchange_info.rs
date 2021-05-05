@@ -7,6 +7,7 @@ use super::ExchangeInfoRetrieval;
 use super::MarketPairHandle;
 use super::MarketPair;
 
+/// This struct represents informations about the exchange
 #[derive(Clone)]
 pub struct ExchangeInfo {
     pairs: Arc<RwLock<HashMap<String, Arc<RwLock<MarketPair>>>>>,

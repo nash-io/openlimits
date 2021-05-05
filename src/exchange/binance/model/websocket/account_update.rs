@@ -2,6 +2,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use super::AccountUpdateBalance;
 
+/// This struct represents the account update
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AccountUpdate {

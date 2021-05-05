@@ -5,6 +5,7 @@ use serde::Serialize;
 use super::Liquidity;
 use super::Side;
 
+/// This struct represents a trade
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]
 pub struct Trade {
     pub id: String,

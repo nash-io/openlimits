@@ -14,7 +14,7 @@ use crate::model::websocket::Subscription;
 use super::shared::Result;
 use super::InitAnyExchange;
 
-/// Websockets client
+/// Websockets clients, this enum provides a websocket communication with the exchanges
 pub enum AnyWsExchange {
     Nash(OpenLimitsWs<NashWebsocket>),
     Binance(OpenLimitsWs<BinanceWebsocket>),

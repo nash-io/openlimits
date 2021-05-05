@@ -3,6 +3,7 @@ use serde::Serialize;
 use rust_decimal::prelude::Decimal;
 use super::shared::string_to_decimal;
 
+/// This struct represents an account
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Account {
     pub id: String,

@@ -4,6 +4,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use super::TimeInForce;
 
+/// This struct represents an open limit order
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct OpenLimitOrderRequest {
     pub market_pair: String,

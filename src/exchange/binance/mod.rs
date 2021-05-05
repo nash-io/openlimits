@@ -1,4 +1,14 @@
 //! This module provides functionality for communicating with the binance API.
+//! # Example
+//! ```
+//! use openlimits::exchange::binance::Binance;
+//! use openlimits::exchange::binance::BinanceParameters;
+//! use openlimits::prelude::*;
+//! 
+//! let mut binance = Binance::new(BinanceParameters::prod())
+//!                        .await
+//!                        .expect("Couldn't create binance client");
+//! ```
 
 use async_trait::async_trait;
 use model::KlineSummaries;

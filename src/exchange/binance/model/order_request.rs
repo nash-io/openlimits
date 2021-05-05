@@ -5,6 +5,7 @@ use super::TimeInForce;
 use super::shared::string_to_decimal;
 use super::shared::string_to_opt_decimal;
 
+/// This struct represents an order request
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderRequest {

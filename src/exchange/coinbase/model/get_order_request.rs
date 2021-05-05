@@ -2,6 +2,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use super::Paginator;
 
+/// This structs a request of an oder
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct GetOrderRequest {
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -4,6 +4,7 @@ use super::SubscribeCmd;
 use super::Channel;
 use super::Auth;
 
+/// This struct represents a subscribe
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Subscribe {
     #[serde(rename = "type")]

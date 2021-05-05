@@ -3,6 +3,7 @@ use serde::Serialize;
 use rust_decimal::prelude::Decimal;
 use super::shared::string_to_decimal;
 
+/// This struct represents a ticker
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Ticker {

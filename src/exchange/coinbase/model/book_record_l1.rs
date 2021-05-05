@@ -4,6 +4,7 @@ use rust_decimal::prelude::Decimal;
 use super::BookLevel;
 use super::shared::string_to_decimal;
 
+/// This struct represents a level 1 book record
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BookRecordL1 {
     #[serde(with = "string_to_decimal")]

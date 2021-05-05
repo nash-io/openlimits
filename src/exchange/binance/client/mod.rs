@@ -1,5 +1,4 @@
 //! This module is used to make calls to api and connect to the websockets
-
 mod account;
 mod general;
 mod market;

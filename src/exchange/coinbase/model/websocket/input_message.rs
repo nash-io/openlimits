@@ -10,6 +10,7 @@ use super::Change;
 use super::Channel;
 use super::Ticker;
 
+/// This enum represents the types of input messages
 #[derive(Deserialize, Debug)]
 #[serde(tag = "type")]
 #[serde(rename_all = "snake_case")]

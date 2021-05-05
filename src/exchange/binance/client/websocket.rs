@@ -29,6 +29,7 @@ enum Either<L, R> {
     Right(R),
 }
 
+/// This struct is used for websocket communications with binance exchange
 pub struct BinanceWebsocket {
     parameters: BinanceParameters,
     disconnection_senders: Mutex<Vec<UnboundedSender<()>>>,

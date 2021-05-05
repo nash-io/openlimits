@@ -3,6 +3,7 @@ use serde::Serialize;
 use thiserror::Error;
 use std::fmt;
 
+/// This struct represents the coinbase content errors
 #[derive(Serialize, Deserialize, Debug, Error)]
 pub struct CoinbaseContentError {
     pub message: String,

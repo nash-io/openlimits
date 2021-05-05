@@ -5,6 +5,7 @@ use rust_decimal::prelude::Decimal;
 use super::shared::string_to_decimal;
 use super::shared::naive_datetime_from_string;
 
+/// This struct represents a fill order
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Fill {
     pub trade_id: u64,

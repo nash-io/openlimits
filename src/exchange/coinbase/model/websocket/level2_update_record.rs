@@ -3,6 +3,7 @@ use serde::Deserialize;
 use super::OrderSide;
 use super::shared::string_to_decimal;
 
+/// This struct represents the level 2 update record
 #[derive(Deserialize, Debug, Clone)]
 pub struct Level2UpdateRecord {
     pub side: OrderSide,

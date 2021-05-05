@@ -2,6 +2,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use super::Kline;
 
+/// This struct represents a candlestick message
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct CandlestickMessage {

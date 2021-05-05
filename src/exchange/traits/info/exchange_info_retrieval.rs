@@ -3,6 +3,7 @@ use super::shared::Result;
 use super::MarketPairHandle;
 use super::MarketPair;
 
+/// This struct represents the information retrieval
 #[async_trait]
 pub trait ExchangeInfoRetrieval: Sync {
     async fn get_pair(&self, name: &str) -> Result<MarketPairHandle>;

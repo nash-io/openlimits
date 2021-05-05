@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use serde::Serialize;
 
+/// This struct represents a cancel order
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderCanceled {

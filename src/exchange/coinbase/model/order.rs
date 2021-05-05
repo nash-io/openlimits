@@ -9,6 +9,7 @@ use super::OrderStop;
 use super::shared::string_to_decimal;
 use super::shared::naive_datetime_from_string;
 
+/// This struct represents an order
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Order {
     pub id: String,

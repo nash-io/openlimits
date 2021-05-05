@@ -4,6 +4,7 @@ use rust_decimal::prelude::Decimal;
 use super::OrderTimeInForceResponse;
 use super::shared::string_to_decimal;
 
+/// This enum represents the order types
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(tag = "type")]

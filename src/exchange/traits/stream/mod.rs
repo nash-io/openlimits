@@ -1,3 +1,17 @@
+//! Used to instatiate websockets 
+//! # Example
+//! ```
+//! use openlimits::traits::stream::OpenLimitWs;
+//! use openlimits::exchange::binance::BinanceWebsocket;
+//! use openlimits::exchange::binance::BinanceParameters;
+//! 
+//! let mut binance_websocket = OpenLimitsWs {
+//!     websocket: BinanceWebsocket::new(BinanceParameters::prod())
+//!         .await
+//!         .expect("Failed to create Client"),
+//! };
+//! ```
+
 use std::convert::TryFrom;
 use crate::errors::OpenLimitsError;
 use crate::model::websocket::WebSocketResponse;

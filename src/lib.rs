@@ -39,17 +39,6 @@
 //! Nash](https://nash.io) is dedicating a maintainer and initial rewards for external contributors that close issues. 
 //! Look for the wiki [rewards table](https://github.com/nash-io/openlimits/wiki/Rewards-sizes) and for reward size labels on open issues.
 
-#![deny(unstable_features)]
-#![allow(clippy::too_many_arguments)]
-#![warn(missing_docs)]
-#![warn(trivial_casts)]
-#![warn(trivial_numeric_casts)]
-#![warn(unused_import_braces)]
-#![warn(unused_qualifications)]
-#![warn(unsafe_code)]
-#![warn(missing_copy_implementations)]
-#![warn(missing_debug_implementations)]
-
 use crate::prelude::*;
 use crate::exchange::shared::Result;
 
@@ -58,6 +47,7 @@ pub mod model;
 pub mod prelude;
 mod errors;
 
+/// Can be used to initiate exchanges
 pub struct OpenLimits {}
 
 impl OpenLimits {

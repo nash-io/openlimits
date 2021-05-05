@@ -1,4 +1,14 @@
 //! This module provides functionality for communicating with the coinbase API.
+//! # Example
+//! ```
+//! use openlimits::exchange::coinbase::Coinbase;
+//! use openlimits::exchange::coinbase::CoinbaseParameters;
+//! use openlimits::prelude::*;
+//! 
+//! let mut coinbase = Coinbase::new(CoinbaseParameters::prod())
+//!                        .await
+//!                        .expect("Couldn't create coinbase client");
+//! ```
 
 
 use std::convert::TryFrom;

@@ -4,6 +4,7 @@ use serde::de;
 use std::fmt;
 use super::TimeInForce;
 
+/// This struct uses the time in force enum
 pub struct TimeInForceVisitor;
 
 impl<'de> Visitor<'de> for TimeInForceVisitor {

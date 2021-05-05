@@ -7,6 +7,7 @@ use super::Match;
 use super::InputMessage;
 use super::Full;
 
+/// This enum represents a coinbase websocket message
 #[derive(Debug, Clone)]
 pub enum CoinbaseWebsocketMessage {
     Subscriptions {

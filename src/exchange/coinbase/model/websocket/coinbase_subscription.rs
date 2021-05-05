@@ -1,6 +1,6 @@
 use crate::model::websocket::Subscription;
 
-
+/// This enum represents a coinbase subscription
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum CoinbaseSubscription {
     Heartbeat(String),

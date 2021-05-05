@@ -1,3 +1,4 @@
+//! This module provides informations about the exchanges
 mod exchange_info_retrieval;
 mod exchange_info;
 mod market_pair_handle;

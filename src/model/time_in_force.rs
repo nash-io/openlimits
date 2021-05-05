@@ -5,6 +5,7 @@ use serde::Serialize;
 use serde::Serializer;
 use super::TimeInForceVisitor;
 
+/// This enum represents time in force
 #[derive(Clone, Debug, PartialEq, Copy)]
 pub enum TimeInForce {
     GoodTillCancelled,

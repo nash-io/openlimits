@@ -1,4 +1,4 @@
-//! This module provides functionality for communicating with the binance API.
+//! This module provides functionality for communicating with the nash API.
 
 
 mod nash_credentials;
@@ -45,6 +45,7 @@ use crate::exchange::traits::info::MarketPairHandle;
 use utils::try_split_paginator;
 use super::shared::{Result, timestamp_to_utc_datetime};
 
+/// This struct is the main struct of this module and it is used for communications with the nash exchange 
 pub struct Nash {
     pub transport: Client,
     pub exchange_info: ExchangeInfo,
