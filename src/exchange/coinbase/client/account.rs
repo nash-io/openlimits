@@ -84,7 +84,7 @@ impl BaseClient {
                 size: size.round_dp(pair.base_increment.normalize().scale()),
                 price: price.round_dp_with_strategy(
                     pair.quote_increment.normalize().scale(),
-                    RoundingStrategy::RoundDown,
+                    RoundingStrategy::ToZero,
                 ),
                 post_only,
                 time_in_force: Some(time_in_force),
@@ -116,7 +116,7 @@ impl BaseClient {
                 size: size.round_dp(pair.base_increment.normalize().scale()),
                 price: price.round_dp_with_strategy(
                     pair.quote_increment.normalize().scale(),
-                    RoundingStrategy::RoundUp,
+                    RoundingStrategy::AwayFromZero,
                 ),
                 post_only,
                 time_in_force: Some(time_in_force),
