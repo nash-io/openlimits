@@ -97,7 +97,7 @@ impl BaseClient {
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
             price: Some(price.round_dp_with_strategy(
                 pair.quote_increment.normalize().scale(),
-                RoundingStrategy::RoundDown,
+                RoundingStrategy::ToZero,
             )),
             order_side: ORDER_SIDE_BUY.to_string(),
             order_type,
@@ -132,7 +132,7 @@ impl BaseClient {
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
             price: Some(price.round_dp_with_strategy(
                 pair.quote_increment.normalize().scale(),
-                RoundingStrategy::RoundUp,
+                RoundingStrategy::AwayFromZero,
             )),
             order_side: ORDER_SIDE_SELL.to_string(),
             order_type,
