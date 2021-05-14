@@ -11,7 +11,7 @@ use openlimits::exchange::coinbase::{Coinbase, CoinbaseCredentials, CoinbasePara
 use openlimits::OpenLimits;
 use openlimits::exchange::traits::stream::OpenLimitsWs;
 use openlimits::exchange::nash::{Nash, NashCredentials, NashParameters};
-use openlimits::Result;
+use openlimits::exchange::shared::Result;
 use std::env;
 use tokio::time::Duration;
 

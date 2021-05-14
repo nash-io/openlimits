@@ -1,21 +1,29 @@
-//! This module provides a connection to the Binance Exchange
+//! This module provides functionality for communicating with the binance API.
 //! # Example
 //! ```
-//! use openlimits::exchanges::binance::Binance;
+//! use openlimits::exchange::binance::Binance;
+//! use openlimits::exchange::binance::BinanceParameters;
 //! use openlimits::prelude::*;
-//! 
-//! let mut binance = Binance::new(BinanceParameters::prod())
-//!                     .await
-//!                     .expect("Couldn't create binance client");
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!     let binance = Binance::new(BinanceParameters::prod())
+//!                         .await
+//!                         .expect("Couldn't create binance client");
+
+//!     let order_book = binance.order_book(&OrderBookRequest {market_pair: "BTCEUR".to_string()})
+//!                         .await
+//!                         .expect("Couldn't get order book");
+
+//!     println!("{:?}", order_book);
+//! }
 //! ```
-//! 
-//! 
 
-pub mod client;
-pub mod model;
-mod transport;
+use async_trait::async_trait;
+use model::KlineSummaries;
+use transport::Transport;
+use client::BaseClient;
 use std::convert::TryFrom;
-
 use crate::{
     exchange::binance::model::{websocket::TradeMessage, SymbolFilter, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET},
     errors::OpenLimitsError,
@@ -26,53 +34,28 @@ use crate::{
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest, Transaction,
     },
-    shared::Result,
     prelude::*,
 };
-use async_trait::async_trait;
-pub use client::websocket::BinanceWebsocket;
-use model::KlineSummaries;
-use transport::Transport;
+use super::shared::Result;
 
-use client::BaseClient;
+mod binance_content_error;
+mod binance_credentials;
+mod binance_parameters;
+mod transport;
+pub mod client;
+pub mod model;
+
+pub use client::websocket::BinanceWebsocket;
+pub use binance_content_error::BinanceContentError;
+pub use binance_credentials::BinanceCredentials;
+pub use binance_parameters::BinanceParameters;
+pub use super::shared;
 
 /// The main struct of the binance module
 #[derive(Clone)]
 pub struct Binance {
-    exchange_info: ExchangeInfo,
-    client: BaseClient,
-}
-
-/// This struct represents the credentials and receives the api key and api secret as parameters.
-#[derive(Clone)]
-pub struct BinanceCredentials {
-    pub api_key: String,
-    pub api_secret: String,
-}
-
-/// This struct represents the type of environment that will be used and receives a boolean and the credentials as parameters.
-#[derive(Default, Clone)]
-pub struct BinanceParameters {
-    pub sandbox: bool,
-    pub credentials: Option<BinanceCredentials>,
-}
-
-impl BinanceParameters {
-    /// Sandbox environment
-    pub fn sandbox() -> Self {
-        Self {
-            sandbox: true,
-            ..Default::default()
-        }
-    }
-
-    /// Production environment
-    pub fn prod() -> Self {
-        Self {
-            sandbox: false,
-            ..Default::default()
-        }
-    }
+    pub exchange_info: ExchangeInfo,
+    pub client: BaseClient,
 }
 
 #[async_trait]
@@ -169,16 +152,6 @@ impl ExchangeInfoRetrieval for Binance {
 
 #[async_trait]
 impl ExchangeMarketData for Binance {
-    /// # Example
-    /// ```
-    /// let mut binance = Binance::new(BinanceParameters::prod())
-    ///                     .await
-    ///                     .expect("Couldn't create binance client");
-    /// 
-    /// binance.order_book(&OrderBookRequest {market_pair: "BTCEUR".to_string()})
-    ///   .await
-    ///   .expect("Couldn't get binance order book");
-    /// 
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.client
             .get_depth(req.market_pair.as_str(), None)

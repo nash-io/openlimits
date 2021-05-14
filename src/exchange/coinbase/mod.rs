@@ -1,27 +1,32 @@
-//! This module provides a connection to the Coinbase Exchange
+//! This module provides functionality for communicating with the coinbase API.
 //! # Example
 //! ```
-//! use openlimits::exchanges::coinbase::Coinbase;
+//! use openlimits::exchange::coinbase::Coinbase;
+//! use openlimits::exchange::coinbase::CoinbaseParameters;
 //! use openlimits::prelude::*;
-//! 
-//! let mut coinbase = Coinabse::new(CoinbaseParameters::prod())
-//!                     .await
-//!                     .expect("Couldn't create coinbase client");
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!     let coinbase = Coinbase::new(CoinbaseParameters::prod())
+//!                         .await
+//!                         .expect("Couldn't create coinbase client");
+
+//!     let order_book = coinbase.order_book(&OrderBookRequest {market_pair: "BTC-EUR".to_string()})
+//!                         .await
+//!                         .expect("Couldn't get order book");
+
+//!     println!("{:?}", order_book);
+//! }
 //! ```
 
-use std::convert::TryFrom;
 
+use std::convert::TryFrom;
 use async_trait::async_trait;
 use chrono::Duration;
-
 use client::BaseClient;
 use transport::Transport;
-
 use crate::{
     errors::OpenLimitsError,
-    //traits::ExchangeAccount,
-    //traits::ExchangeMarketData,
-    //info::ExchangeInfo,
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
@@ -29,49 +34,29 @@ use crate::{
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
-    shared::{Result, timestamp_to_naive_datetime},
 };
 use crate::exchange::traits::info::{ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
 use crate::exchange::traits::Exchange;
 use crate::prelude::*;
+use super::shared::Result;
+use super::shared::timestamp_to_naive_datetime;
 
 pub mod client;
 pub mod model;
 mod transport;
+mod coinbase_content_error;
+mod coinbase_credentials;
+mod coinbase_parameters;
+
+pub use coinbase_content_error::CoinbaseContentError;
+pub use coinbase_credentials::CoinbaseCredentials;
+pub use coinbase_parameters::CoinbaseParameters;
+pub use super::shared;
 
 #[derive(Clone)]
 pub struct Coinbase {
-    exchange_info: ExchangeInfo,
-    client: BaseClient,
-}
-
-#[derive(Clone)]
-pub struct CoinbaseCredentials {
-    pub api_key: String,
-    pub api_secret: String,
-    pub passphrase: String,
-}
-
-#[derive(Default, Clone)]
-pub struct CoinbaseParameters {
-    pub sandbox: bool,
-    pub credentials: Option<CoinbaseCredentials>,
-}
-
-impl CoinbaseParameters {
-    pub fn sandbox() -> Self {
-        Self {
-            sandbox: true,
-            ..Default::default()
-        }
-    }
-
-    pub fn prod() -> Self {
-        Self {
-            sandbox: false,
-            ..Default::default()
-        }
-    }
+    pub exchange_info: ExchangeInfo,
+    pub client: BaseClient,
 }
 
 #[async_trait]

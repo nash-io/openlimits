@@ -1,21 +1,27 @@
-//! This module provides a connection to the Nash Exchange
+//! This module provides functionality for communicating with the nash API.
 
-use std::{pin::Pin, task::Context, task::Poll};
+
+mod nash_credentials;
+mod nash_parameters;
+mod nash_websocket;
+mod subscription_response_wrapper;
+mod utils;
+
+pub use nash_credentials::NashCredentials;
+pub use nash_parameters::NashParameters;
+pub use nash_websocket::NashWebsocket;
+pub use subscription_response_wrapper::SubscriptionResponseWrapper;
+pub use utils::client_from_params_failable;
+pub use super::shared;
+
 use std::convert::{TryFrom, TryInto};
-
 use async_trait::async_trait;
 use chrono::Utc;
-use futures::stream::{BoxStream, SelectAll, Stream, StreamExt};
-pub use nash_native_client::{Client, Environment};
-use nash_protocol::protocol::{
-    ResponseOrError,
-    subscriptions::{SubscriptionRequest, SubscriptionResponse},
-};
+use nash_native_client::Client;
+use nash_protocol::protocol::subscriptions::SubscriptionResponse;
 use nash_protocol::protocol::subscriptions::updated_account_orders::SubscribeAccountOrders;
 use nash_protocol::types::{BuyOrSell, DateTimeRange};
 use rust_decimal::prelude::*;
-use tokio::time::Duration;
-
 use crate::{
     errors::{MissingImplementationContent, OpenLimitsError},
     model::{
@@ -27,84 +33,22 @@ use crate::{
         Side, Ticker, TimeInForce, Trade, TradeHistoryRequest, websocket::{Subscription, WebSocketResponse},
     },
     model::websocket::OpenLimitsWebSocketMessage,
-    prelude::*,
-    shared::{Result, timestamp_to_utc_datetime},
 };
-use crate::exchange::traits::stream::{ExchangeWs, Subscriptions};
 use crate::model::websocket::AccountOrders;
+use crate::exchange::traits::info::ExchangeInfo;
+use crate::exchange::traits::info::ExchangeInfoRetrieval;
+use crate::exchange::traits::Exchange;
+use crate::exchange::traits::ExchangeMarketData;
+use crate::exchange::traits::ExchangeAccount;
+use crate::exchange::traits::info::MarketPair;
+use crate::exchange::traits::info::MarketPairHandle;
+use utils::try_split_paginator;
+use super::shared::{Result, timestamp_to_utc_datetime};
 
-/// The main struct of the module
+/// This struct is the main struct of this module and it is used for communications with the nash exchange 
 pub struct Nash {
-    transport: Client,
-    exchange_info: ExchangeInfo,
-}
-
-/// This structure represents the Nash account credentials
-#[derive(Clone)]
-pub struct NashCredentials {
-    pub secret: String,
-    pub session: String,
-}
-
-
-pub struct NashParameters {
-    pub affiliate_code: Option<String>,
-    pub credentials: Option<NashCredentials>,
-    pub client_id: u64,
-    pub environment: Environment,
-    pub timeout: Duration,
-    pub sign_states_loop_interval: Option<Duration>,
-}
-
-impl Clone for NashParameters {
-    fn clone(&self) -> Self {
-        NashParameters {
-            affiliate_code: self.affiliate_code.clone(),
-            credentials: self.credentials.clone(),
-            client_id: self.client_id,
-            environment: match self.environment {
-                Environment::Production => Environment::Production,
-                Environment::Sandbox => Environment::Sandbox,
-                Environment::Dev(s) => Environment::Dev(s),
-            },
-            timeout: self.timeout,
-            sign_states_loop_interval: self.sign_states_loop_interval,
-        }
-    }
-}
-
-async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
-    let client = match params.credentials {
-        Some(credentials) => {
-            Client::from_keys(
-                &credentials.secret,
-                &credentials.session,
-                params.affiliate_code,
-                false,
-                params.client_id,
-                params.environment,
-                params.timeout,
-            )
-            .await?
-        }
-        None => {
-            Client::from_keys_path(
-                None,
-                None,
-                false,
-                params.client_id,
-                params.environment,
-                params.timeout,
-            )
-            .await?
-        }
-    };
-
-    if let Some(interval) = params.sign_states_loop_interval {
-        client.start_background_sign_states_loop(interval);
-    }
-
-    Ok(client)
+    pub transport: Client,
+    pub exchange_info: ExchangeInfo,
 }
 
 #[async_trait]
@@ -372,6 +316,65 @@ impl Nash {
             amount: format!("{}", req.size),
         }
     }
+
+    async fn list_markets(
+        &self,
+    ) -> Result<nash_protocol::protocol::list_markets::ListMarketsResponse> {
+        let response = self
+            .transport
+            .run(nash_protocol::protocol::list_markets::ListMarketsRequest)
+            .await?;
+        if let Some(err) = response.error() {
+            Err(OpenLimitsError::NashProtocolError(
+                // FIXME: handle this better in both nash protocol and openlimits
+                nash_protocol::errors::ProtocolError::coerce_static_from_str(&format!(
+                    "{:#?}",
+                    err
+                )),
+            ))
+        } else {
+            Ok(response
+                .consume_response()
+                .expect("Couldn't consume response.")) // safe unwrap
+        }
+    }
+}
+
+#[async_trait]
+impl ExchangeInfoRetrieval for Nash {
+    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
+        Ok(self
+            .list_markets()
+            .await?
+            .markets
+            .iter()
+            .map(|(symbol, v)| MarketPair {
+                symbol: symbol.to_string(),
+                base: v.asset_a.asset.name().to_string(),
+                quote: v.asset_b.asset.name().to_string(),
+                base_increment: Decimal::new(1, v.asset_a.precision),
+                quote_increment: Decimal::new(1, v.asset_b.precision),
+                min_base_trade_size: Some(
+                    Decimal::from_str(&format!("{}", &v.min_trade_size_a.amount.value))
+                        .expect("Couldn't create Decimal from string."),
+                ),
+                min_quote_trade_size: Some(
+                    Decimal::from_str(&format!("{}", &v.min_trade_size_b.amount.value))
+                        .expect("Couldn't create Decimal from string."),
+                ),
+            })
+            .collect())
+    }
+
+    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
+        self.exchange_info
+            .refresh(self as &dyn ExchangeInfoRetrieval)
+            .await
+    }
+
+    async fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
+        self.exchange_info.get_pair(name)
+    }
 }
 
 impl From<&OrderBookRequest> for nash_protocol::protocol::orderbook::OrderbookRequest {
@@ -463,7 +466,7 @@ impl TryFrom<&TradeHistoryRequest>
     for nash_protocol::protocol::list_account_trades::ListAccountTradesRequest
 {
     type Error = OpenLimitsError;
-    fn try_from(req: &TradeHistoryRequest) -> crate::shared::Result<Self> {
+    fn try_from(req: &TradeHistoryRequest) -> super::shared::Result<Self> {
         let (before, limit, range) = try_split_paginator(req.paginator.clone())?;
 
         Ok(Self {
@@ -532,7 +535,7 @@ impl TryFrom<&GetHistoricRatesRequest>
     for nash_protocol::protocol::list_candles::ListCandlesRequest
 {
     type Error = OpenLimitsError;
-    fn try_from(req: &GetHistoricRatesRequest) -> crate::shared::Result<Self> {
+    fn try_from(req: &GetHistoricRatesRequest) -> super::shared::Result<Self> {
         let (before, limit, range) = try_split_paginator(req.paginator.clone())?;
 
         Ok(Self {
@@ -550,42 +553,11 @@ impl TryFrom<&GetHistoricRatesRequest>
     }
 }
 
-fn try_split_paginator(
-    paginator: Option<Paginator>,
-) -> crate::shared::Result<(
-    Option<String>,
-    Option<i64>,
-    Option<nash_protocol::types::DateTimeRange>,
-)> {
-    Ok(match paginator {
-        Some(paginator) => (
-            paginator.before,
-            match paginator.limit {
-                Some(v) => Some(i64::try_from(v).map_err(|_| {
-                    OpenLimitsError::InvalidParameter(
-                        "Couldn't convert paginator limit to i64".to_string(),
-                    )
-                })?),
-                None => None,
-            },
-            if paginator.start_time.is_some() && paginator.end_time.is_some() {
-                Some(nash_protocol::types::DateTimeRange {
-                    start: paginator.start_time.map(timestamp_to_utc_datetime).unwrap(),
-                    stop: paginator.end_time.map(timestamp_to_utc_datetime).unwrap(),
-                })
-            } else {
-                None
-            },
-        ),
-        None => (None, None, None),
-    })
-}
-
 impl TryFrom<&GetHistoricTradesRequest>
     for nash_protocol::protocol::list_trades::ListTradesRequest
 {
     type Error = OpenLimitsError;
-    fn try_from(req: &GetHistoricTradesRequest) -> crate::shared::Result<Self> {
+    fn try_from(req: &GetHistoricTradesRequest) -> super::shared::Result<Self> {
         let market = req.market_pair.clone();
         let (before, limit, _) = try_split_paginator(req.paginator.clone())?;
         //FIXME: Some issues with the graphql protocol for the market to be non nil
@@ -599,7 +571,7 @@ impl TryFrom<&GetHistoricTradesRequest>
 
 impl TryFrom<Interval> for nash_protocol::types::CandleInterval {
     type Error = OpenLimitsError;
-    fn try_from(interval: Interval) -> crate::shared::Result<Self> {
+    fn try_from(interval: Interval) -> super::shared::Result<Self> {
         match interval {
             Interval::OneMinute => Ok(nash_protocol::types::CandleInterval::OneMinute),
             Interval::FiveMinutes => Ok(nash_protocol::types::CandleInterval::FiveMinute),
@@ -647,7 +619,7 @@ impl TryFrom<&GetOrderHistoryRequest>
     for nash_protocol::protocol::list_account_orders::ListAccountOrdersRequest
 {
     type Error = OpenLimitsError;
-    fn try_from(req: &GetOrderHistoryRequest) -> crate::shared::Result<Self> {
+    fn try_from(req: &GetOrderHistoryRequest) -> super::shared::Result<Self> {
         let (before, limit, range) = try_split_paginator(req.paginator.clone())?;
 
         Ok(Self {
@@ -710,7 +682,7 @@ impl From<nash_protocol::types::OrderStatus> for OrderStatus {
 
 impl TryFrom<OrderStatus> for nash_protocol::types::OrderStatus {
     type Error = OpenLimitsError;
-    fn try_from(status: OrderStatus) -> crate::shared::Result<Self> {
+    fn try_from(status: OrderStatus) -> super::shared::Result<Self> {
         Ok(match status {
             OrderStatus::Filled => nash_protocol::types::OrderStatus::Filled,
             OrderStatus::Open => nash_protocol::types::OrderStatus::Open,
@@ -770,70 +742,6 @@ impl From<&GetOrderRequest> for nash_protocol::protocol::get_account_order::GetA
         Self {
             order_id: req.id.clone(),
         }
-    }
-}
-
-/// This struct represents a websocket connection
-pub struct NashWebsocket {
-    pub client: Client,
-}
-
-impl Stream for NashWebsocket {
-    type Item = std::result::Result<
-        ResponseOrError<nash_protocol::protocol::subscriptions::SubscriptionResponse>,
-        nash_protocol::errors::ProtocolError,
-    >;
-
-    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        self.client.poll_next_unpin(cx)
-    }
-}
-
-#[async_trait]
-impl ExchangeWs for NashWebsocket {
-    type InitParams = NashParameters;
-
-    type Subscription = SubscriptionRequest;
-    type Response = SubscriptionResponseWrapper;
-
-    async fn new(params: Self::InitParams) -> Result<Self> {
-        Ok(Self {
-            client: client_from_params_failable(params).await?,
-        })
-    }
-
-    async fn disconnect(&self) {
-        self.client.disconnect().await;
-    }
-
-    async fn create_stream_specific(
-        &self,
-        subscriptions: Subscriptions<Self::Subscription>,
-    ) -> Result<BoxStream<'static, Result<Self::Response>>> {
-        let mut streams = SelectAll::new();
-
-        for subscription in subscriptions.into_iter() {
-            let stream = self.client.subscribe_protocol(subscription).await?;
-            streams.push(tokio_stream::wrappers::UnboundedReceiverStream::new(stream));
-        }
-
-        let s = streams.map(|message| match message {
-            Ok(msg) => match msg {
-                ResponseOrError::Response(resp) => Ok(SubscriptionResponseWrapper(resp.data)),
-                ResponseOrError::Error(resp) => {
-                    let f = resp
-                        .errors
-                        .iter()
-                        .map(|f| f.message.clone())
-                        .collect::<Vec<String>>()
-                        .join("\n");
-                    Err(OpenLimitsError::NotParsableResponse(f))
-                }
-            },
-            Err(_) => Err(OpenLimitsError::SocketError()),
-        });
-
-        Ok(s.boxed())
     }
 }
 
@@ -919,34 +827,6 @@ impl From<Subscription> for nash_protocol::protocol::subscriptions::Subscription
     }
 }
 
-#[derive(Debug)]
-pub struct SubscriptionResponseWrapper(SubscriptionResponse);
-
-impl Clone for SubscriptionResponseWrapper {
-    fn clone(&self) -> Self {
-        match &self.0 {
-            SubscriptionResponse::Orderbook(o) => {
-                SubscriptionResponseWrapper(SubscriptionResponse::Orderbook(o.clone()))
-            }
-            SubscriptionResponse::Trades(t) => {
-                SubscriptionResponseWrapper(SubscriptionResponse::Trades(t.clone()))
-            }
-            SubscriptionResponse::Ticker(ticker) => {
-                SubscriptionResponseWrapper(SubscriptionResponse::Ticker(ticker.clone()))
-            }
-            SubscriptionResponse::AccountBalances(balances) => {
-                SubscriptionResponseWrapper(SubscriptionResponse::AccountBalances(balances.clone()))
-            }
-            SubscriptionResponse::AccountOrders(orders) => {
-                SubscriptionResponseWrapper(SubscriptionResponse::AccountOrders(orders.clone()))
-            }
-            SubscriptionResponse::AccountTrades(trades) => {
-                SubscriptionResponseWrapper(SubscriptionResponse::AccountTrades(trades.clone()))
-            }
-        }
-    }
-}
-
 impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResponseWrapper> {
     type Error = OpenLimitsError;
 
@@ -997,66 +877,5 @@ impl From<TimeInForce> for nash_protocol::types::OrderCancellationPolicy {
                 nash_protocol::types::OrderCancellationPolicy::GoodTilTime(expire_time)
             }
         }
-    }
-}
-
-impl Nash {
-    async fn list_markets(
-        &self,
-    ) -> Result<nash_protocol::protocol::list_markets::ListMarketsResponse> {
-        let response = self
-            .transport
-            .run(nash_protocol::protocol::list_markets::ListMarketsRequest)
-            .await?;
-        if let Some(err) = response.error() {
-            Err(OpenLimitsError::NashProtocolError(
-                // FIXME: handle this better in both nash protocol and openlimits
-                nash_protocol::errors::ProtocolError::coerce_static_from_str(&format!(
-                    "{:#?}",
-                    err
-                )),
-            ))
-        } else {
-            Ok(response
-                .consume_response()
-                .expect("Couldn't consume response.")) // safe unwrap
-        }
-    }
-}
-
-#[async_trait]
-impl ExchangeInfoRetrieval for Nash {
-    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
-        Ok(self
-            .list_markets()
-            .await?
-            .markets
-            .iter()
-            .map(|(symbol, v)| MarketPair {
-                symbol: symbol.to_string(),
-                base: v.asset_a.asset.name().to_string(),
-                quote: v.asset_b.asset.name().to_string(),
-                base_increment: Decimal::new(1, v.asset_a.precision),
-                quote_increment: Decimal::new(1, v.asset_b.precision),
-                min_base_trade_size: Some(
-                    Decimal::from_str(&format!("{}", &v.min_trade_size_a.amount.value))
-                        .expect("Couldn't create Decimal from string."),
-                ),
-                min_quote_trade_size: Some(
-                    Decimal::from_str(&format!("{}", &v.min_trade_size_b.amount.value))
-                        .expect("Couldn't create Decimal from string."),
-                ),
-            })
-            .collect())
-    }
-
-    async fn refresh_market_info(&self) -> Result<Vec<MarketPairHandle>> {
-        self.exchange_info
-            .refresh(self as &dyn ExchangeInfoRetrieval)
-            .await
-    }
-
-    async fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
-        self.exchange_info.get_pair(name)
     }
 }

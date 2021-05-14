@@ -1,6 +1,5 @@
 use serde_json::json;
 use serde_json::Value;
-
 use super::BaseClient;
 use crate::{
     exchange::binance::model::{
@@ -8,9 +7,9 @@ use crate::{
         SymbolPrice, Ticker,
     },
     errors::OpenLimitsError,
-    shared::Result,
 };
 use rust_decimal::prelude::Decimal;
+use super::shared::Result;
 
 // Market Data endpoints
 impl BaseClient {

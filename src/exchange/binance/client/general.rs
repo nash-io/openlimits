@@ -1,9 +1,9 @@
 use super::BaseClient;
 use crate::{
-    exchange::binance::model::{ExchangeInformation, ServerTime},
-    shared::Result,
+    exchange::binance::model::{ExchangeInformation, ServerTime}
 };
 use serde_json::Value;
+use super::shared::Result;
 
 impl BaseClient {
     // Test connectivity

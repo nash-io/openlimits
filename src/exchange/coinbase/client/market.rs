@@ -1,13 +1,12 @@
 use serde::Deserialize;
 use std::fmt::Debug;
-
-use super::BaseClient;
 use crate::{
     exchange::coinbase::model::{
         Book, BookLevel, Candle, CandleRequestParams, Paginator, Product, Ticker, Trade,
     },
-    shared::Result,
 };
+use super::shared::Result;
+use super::BaseClient;
 
 impl BaseClient {
     pub async fn products(&self) -> Result<Vec<Product>> {

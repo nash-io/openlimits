@@ -1,8 +1,3 @@
-use crate::{
-    errors::{CoinbaseContentError, OpenLimitsError},
-    shared::Result,
-};
-
 use hmac::{Hmac, Mac, NewMac};
 use reqwest::header;
 use reqwest::{Method, RequestBuilder, Response, StatusCode};
@@ -11,10 +6,13 @@ use serde::Serialize;
 use sha2::Sha256;
 use std::time::SystemTime;
 use url::Url;
+use crate::exchange::coinbase::CoinbaseContentError;
+use crate::errors::OpenLimitsError;
+use super::shared::Result;
 
 type HmacSha256 = Hmac<Sha256>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Transport {
     api_secret: Option<String>,
     client: reqwest::Client,

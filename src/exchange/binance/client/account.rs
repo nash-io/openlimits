@@ -1,20 +1,17 @@
 use std::collections::HashMap;
-
 use rust_decimal::prelude::*;
 use serde_json::json;
-
 use crate::{
     errors::OpenLimitsError,
     exchange::binance::model::{
         AccountInformation, AllOrderReq, Balance, Order, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
         ORDER_TYPE_LIMIT_MAKER, ORDER_TYPE_MARKET, OrderCanceled, OrderRequest, TimeInForce,
         TradeHistory, TradeHistoryReq,
-    },
-    shared::Result,
+    }
 };
 use crate::exchange::traits::info::MarketPair;
-
 use super::BaseClient;
+use super::shared::Result;
 
 impl BaseClient {
     // Account Information
@@ -100,7 +97,7 @@ impl BaseClient {
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
             price: Some(price.round_dp_with_strategy(
                 pair.quote_increment.normalize().scale(),
-                RoundingStrategy::RoundDown,
+                RoundingStrategy::ToZero,
             )),
             order_side: ORDER_SIDE_BUY.to_string(),
             order_type,
@@ -135,7 +132,7 @@ impl BaseClient {
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
             price: Some(price.round_dp_with_strategy(
                 pair.quote_increment.normalize().scale(),
-                RoundingStrategy::RoundUp,
+                RoundingStrategy::AwayFromZero,
             )),
             order_side: ORDER_SIDE_SELL.to_string(),
             order_type,

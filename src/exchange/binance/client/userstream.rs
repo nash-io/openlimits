@@ -1,18 +1,18 @@
 use super::BaseClient;
-use crate::{
-    exchange::binance::model::{Success, UserDataStream},
-    shared::Result,
-};
+use crate::exchange::binance::model::Success;
+use crate::exchange::binance::model::UserDataStream;
+use super::shared::Result;
+
 static USER_DATA_STREAM: &str = "/api/v3/userDataStream";
 
 impl BaseClient {
-    // User Stream
+    /// User Stream
     pub async fn user_stream_start(&self) -> Result<UserDataStream> {
         let user_data_stream = self.transport.post::<_, ()>(USER_DATA_STREAM, None).await?;
         Ok(user_data_stream)
     }
 
-    // Current open orders on a symbol
+    /// Current open orders on a symbol
     pub async fn user_stream_keep_alive(&self, listen_key: &str) -> Result<Success> {
         let success = self
             .transport

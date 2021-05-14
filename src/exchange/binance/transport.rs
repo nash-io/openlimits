@@ -8,17 +8,15 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use sha2::Sha256;
 use url::Url;
-
-use crate::{
-    errors::{BinanceContentError, OpenLimitsError},
-    shared::Result,
-};
+use crate::exchange::binance::BinanceContentError;
+use crate::errors::OpenLimitsError;
+use super::shared::Result;
 
 type HmacSha256 = Hmac<Sha256>;
 
 static RECV_WINDOW: usize = 7000;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Transport {
     credential: Option<(String, String)>,
     client: reqwest::Client,

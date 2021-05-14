@@ -1,5 +1,6 @@
 pub type Result<T> = std::result::Result<T, crate::errors::OpenLimitsError>;
 
+/// Converts a string to decimal
 pub mod string_to_decimal {
     use std::fmt;
 
@@ -29,6 +30,7 @@ pub mod string_to_decimal {
     }
 }
 
+/// Converts a string to an decimal option type
 pub mod string_to_opt_decimal {
     use rust_decimal::prelude::*;
     use serde::{Deserialize, Deserializer, Serializer};
@@ -60,6 +62,7 @@ pub mod string_to_opt_decimal {
     }
 }
 
+/// Converts naive datetime from string
 pub mod naive_datetime_from_string {
     use chrono::naive::NaiveDateTime;
     use serde::{Deserialize, Deserializer, Serializer};
@@ -93,6 +96,7 @@ pub mod naive_datetime_from_string {
     }
 }
 
+/// Converts naive datetime option from string
 pub mod opt_naive_datetime_from_string {
     use chrono::naive::NaiveDateTime;
     use serde::{Deserialize, Deserializer, Serializer};
@@ -127,6 +131,7 @@ pub mod opt_naive_datetime_from_string {
     }
 }
 
+/// Convertes timestamp to naive datetime
 pub fn timestamp_to_naive_datetime(timestamp: u64) -> chrono::naive::NaiveDateTime {
     let seconds = (timestamp / 1000) as i64;
     let nanos = ((timestamp % 1000) * 1_000_000) as u32;
@@ -134,6 +139,7 @@ pub fn timestamp_to_naive_datetime(timestamp: u64) -> chrono::naive::NaiveDateTi
     chrono::NaiveDateTime::from_timestamp(seconds, nanos)
 }
 
+/// Converts timestamp to utc datetime
 pub fn timestamp_to_utc_datetime(timestamp: u64) -> chrono::DateTime<chrono::Utc> {
     let d = timestamp_to_naive_datetime(timestamp);
     chrono::DateTime::<chrono::Utc>::from_utc(d, chrono::Utc)

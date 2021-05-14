@@ -1,13 +1,11 @@
 use std::{convert::TryFrom, fmt::Display};
 use std::sync::Mutex;
-
 use async_trait::async_trait;
 use futures::{SinkExt, stream::BoxStream, StreamExt};
 use serde::{de, Deserialize, Serialize};
 use serde_json::Value;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
-
 use crate::{
     errors::OpenLimitsError,
     exchange::binance::{
@@ -17,9 +15,9 @@ use crate::{
     model::websocket::OpenLimitsWebSocketMessage,
     model::websocket::Subscription,
     model::websocket::WebSocketResponse,
-    shared::Result,
 };
 use crate::exchange::traits::stream::{ExchangeWs, Subscriptions};
+use super::shared::Result;
 
 const WS_URL_PROD: &str = "wss://stream.binance.com:9443/stream";
 const WS_URL_SANDBOX: &str = "wss://testnet.binance.vision/stream";
@@ -31,6 +29,7 @@ enum Either<L, R> {
     Right(R),
 }
 
+/// This struct is used for websocket communications with binance exchange
 pub struct BinanceWebsocket {
     parameters: BinanceParameters,
     disconnection_senders: Mutex<Vec<UnboundedSender<()>>>,
