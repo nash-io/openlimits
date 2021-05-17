@@ -4,8 +4,7 @@ use openlimits::prelude::*;
 
 #[tokio::test]
 async fn retrieve_pairs() {
-    // let exchange = init().await;
-    let exchange = Coinbase::new(CoinbaseParameters::prod()).await.expect("Couldn't create exchange.");
+    let exchange = init().await;
     let result = exchange.retrieve_pairs().await.expect("Couldn't retrieve pairs");
     println!("{:#?}", result);
 }

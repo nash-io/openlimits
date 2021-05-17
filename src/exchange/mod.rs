@@ -1,4 +1,4 @@
-//! This module contains all Exchanges implemented
+//! This module contains all the implemented exchanges.
 
 pub mod binance;
 pub mod coinbase;

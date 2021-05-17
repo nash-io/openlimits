@@ -1,8 +1,7 @@
 use derive_more::Constructor;
 use serde::Deserialize;
 use serde::Serialize;
-use super::Paginator;
-use super::Interval;
+use crate::model::{Paginator, Interval};
 
 /// This struct represents the historic of the rates
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]

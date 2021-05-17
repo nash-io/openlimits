@@ -1,8 +1,7 @@
 use derive_more::Constructor;
 use serde::Deserialize;
 use serde::Serialize;
-use super::OrderStatus;
-use super::Paginator;
+use crate::model::{OrderStatus, Paginator};
 
 /// This struct represents the historic of the orders
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug)]

@@ -2,7 +2,7 @@ use derive_more::Constructor;
 use rust_decimal::prelude::Decimal;
 use serde::Deserialize;
 use serde::Serialize;
-use super::TimeInForce;
+use crate::model::TimeInForce;
 
 /// This struct represents an open limit order
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]

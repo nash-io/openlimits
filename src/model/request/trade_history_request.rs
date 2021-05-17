@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use serde::Serialize;
-use super::Paginator;
+use crate::model::Paginator;
 
 /// This struct represents the trade history
 #[derive(Serialize, Deserialize, Default)]

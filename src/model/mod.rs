@@ -1,21 +1,11 @@
 //! This module provides models that are used in the exchange module
 
+mod request;
 mod ask_bid;
 mod balance;
 mod candle;
-mod cancel_all_order_request;
-mod cancel_order_request;
-mod get_historic_rates_request;
-mod get_historic_trades_request;
-mod get_order_history_request;
-mod get_order_request;
-mod get_price_ticker_request;
 mod interval;
 mod liquidity;
-mod open_limit_order_request;
-mod open_market_order_request;
-mod order_book_request;
-mod order_book_response;
 mod order_canceled;
 mod order_status;
 mod order_type;
@@ -25,26 +15,15 @@ mod side;
 mod ticker;
 mod time_in_force_visitor;
 mod time_in_force;
-mod trade_history_request;
 mod trade;
 mod transaction;
 
+pub use request::*;
 pub use ask_bid::AskBid;
 pub use balance::Balance;
 pub use candle::Candle;
-pub use cancel_all_order_request::CancelAllOrdersRequest;
-pub use cancel_order_request::CancelOrderRequest;
-pub use get_historic_rates_request::GetHistoricRatesRequest;
-pub use get_historic_trades_request::GetHistoricTradesRequest;
-pub use get_order_history_request::GetOrderHistoryRequest;
-pub use get_order_request::GetOrderRequest;
-pub use get_price_ticker_request::GetPriceTickerRequest;
 pub use interval::Interval;
 pub use liquidity::Liquidity;
-pub use open_limit_order_request::OpenLimitOrderRequest;
-pub use open_market_order_request::OpenMarketOrderRequest;
-pub use order_book_request::OrderBookRequest;
-pub use order_book_response::OrderBookResponse;
 pub use order_canceled::OrderCanceled;
 pub use order_status::OrderStatus;
 pub use order_type::OrderType;
@@ -54,7 +33,6 @@ pub use side::Side;
 pub use ticker::Ticker;
 pub use time_in_force_visitor::TimeInForceVisitor;
 pub use time_in_force::TimeInForce;
-pub use trade_history_request::TradeHistoryRequest;
 pub use trade::Trade;
 pub use transaction::Transaction;
 

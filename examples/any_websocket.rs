@@ -1,8 +1,6 @@
 use openlimits::exchange::any::AnyWsExchange;
 use openlimits::exchange::any::InitAnyExchange;
 use openlimits::exchange::binance::BinanceParameters;
-use openlimits::exchange::traits::stream::OpenLimitsWs;
-use openlimits::exchange::binance::BinanceWebsocket;
 use openlimits::prelude::*;
 use openlimits::model::websocket::OpenLimitsWebSocketMessage::OrderBook;
 use openlimits::model::websocket::Subscription::OrderBookUpdates;
