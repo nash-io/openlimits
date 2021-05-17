@@ -2,10 +2,11 @@ use dotenv::dotenv;
 use std::env;
 
 use openlimits::{
-    coinbase::Coinbase,
-    coinbase::CoinbaseCredentials,
-    coinbase::CoinbaseParameters,
-    exchange::{ExchangeAccount, OpenLimits},
+    OpenLimits,
+    exchange::coinbase::Coinbase,
+    exchange::coinbase::CoinbaseCredentials,
+    exchange::coinbase::CoinbaseParameters,
+    prelude::*,
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         OpenMarketOrderRequest, TimeInForce, TradeHistoryRequest,

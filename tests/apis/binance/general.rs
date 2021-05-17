@@ -1,6 +1,6 @@
 use openlimits::{
-    binance::{Binance, BinanceParameters},
-    exchange::Exchange,
+    exchange::binance::{Binance, BinanceParameters},
+    prelude::*,
 };
 
 #[tokio::test]

@@ -1,5 +1,5 @@
 use super::websocket::{OpenLimitsWebSocketMessage, Subscription};
-use crate::any_exchange::InitAnyExchange;
+use crate::exchange::any::InitAnyExchange;
 use crate::binance::{BinanceCredentials, BinanceParameters};
 use crate::coinbase::{CoinbaseCredentials, CoinbaseParameters};
 use crate::model::{Interval, Paginator, TimeInForce};
@@ -316,7 +316,7 @@ impl IntoPy<PyObject> for OpenLimitsWebSocketMessage {
 
 // Rust to Python... (Responses)
 
-use super::super::exchange_info::MarketPair;
+use crate::exchange::traits::info::MarketPair;
 use super::{
     AskBid, Balance, Candle, Liquidity, Order, OrderBookResponse, OrderCanceled, OrderStatus,
     OrderType, Side, Ticker, Trade,

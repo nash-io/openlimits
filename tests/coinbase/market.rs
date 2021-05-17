@@ -1,9 +1,8 @@
 use openlimits::{
-    coinbase::Coinbase,
-    coinbase::CoinbaseParameters,
-    exchange::Exchange,
-    exchange::{ExchangeMarketData, OpenLimits},
-    exchange_info::ExchangeInfoRetrieval,
+    OpenLimits,
+    exchange::coinbase::Coinbase,
+    exchange::coinbase::CoinbaseParameters,
+    prelude::*,
     model::{GetHistoricRatesRequest, GetPriceTickerRequest, Interval, OrderBookRequest},
 };
 

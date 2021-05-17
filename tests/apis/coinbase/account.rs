@@ -3,12 +3,11 @@ use rust_decimal::prelude::Decimal;
 use std::env;
 
 use openlimits::{
-    coinbase::{
+    exchange::coinbase::{
         model::{CancelAfter, GetFillsReq, GetOrderRequest, OrderTimeInForce},
         Coinbase, CoinbaseCredentials, CoinbaseParameters,
     },
-    exchange::Exchange,
-    exchange_info::ExchangeInfoRetrieval,
+    prelude::*,
 };
 
 #[tokio::test]

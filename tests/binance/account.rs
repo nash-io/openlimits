@@ -2,17 +2,17 @@ use dotenv::dotenv;
 use std::env;
 
 use openlimits::{
-    binance::Binance,
-    binance::BinanceCredentials,
-    binance::BinanceParameters,
-    exchange::{ExchangeAccount, OpenLimits},
+    OpenLimits,
+    exchange::binance::Binance,
+    exchange::binance::BinanceCredentials,
+    exchange::binance::BinanceParameters,
+    prelude::*,
     model::{
         CancelAllOrdersRequest, CancelOrderRequest, GetOrderHistoryRequest, OpenLimitOrderRequest,
         OpenMarketOrderRequest, TimeInForce, TradeHistoryRequest,
     },
 };
 use rust_decimal::prelude::Decimal;
-use openlimits::exchange::ExchangeMarketData;
 use openlimits::model::GetPriceTickerRequest;
 
 #[tokio::test]
