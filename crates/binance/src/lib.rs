@@ -1,55 +1,43 @@
 //! This module provides functionality for communicating with the binance API.
-//! # Example
-//! ```
-//! use openlimits::exchange::binance::Binance;
-//! use openlimits::exchange::binance::BinanceParameters;
-//! use openlimits::prelude::*;
-//!
-//! #[tokio::main]
-//! async fn main() {
-//!     let binance = Binance::new(BinanceParameters::prod())
-//!                         .await
-//!                         .expect("Couldn't create binance client");
 
-//!     let order_book = binance.order_book(&OrderBookRequest {market_pair: "BTCEUR".to_string()})
-//!                         .await
-//!                         .expect("Couldn't get order book");
+pub mod model;
 
-//!     println!("{:?}", order_book);
-//! }
-//! ```
+pub use exchange::shared;
 
 use async_trait::async_trait;
 use model::KlineSummaries;
 use transport::Transport;
 use client::BaseClient;
 use std::convert::TryFrom;
-use crate::{
-    exchange::binance::model::{websocket::TradeMessage, SymbolFilter, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET},
+use model::{websocket::TradeMessage, SymbolFilter, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET};
+use exchange::{
     errors::OpenLimitsError,
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
-        GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
+        GetPriceTickerRequest, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest, Transaction,
-    },
-    prelude::*,
+    }
 };
-use super::shared::Result;
+
+use exchange::Result;
 
 mod binance_content_error;
 mod binance_credentials;
 mod binance_parameters;
 mod transport;
+
+pub use binance_content_error::*;
+pub use binance_credentials::*;
+pub use binance_parameters::*;
+pub use transport::*;
+
 pub mod client;
-pub mod model;
 
 pub use client::websocket::BinanceWebsocket;
-pub use binance_content_error::BinanceContentError;
-pub use binance_credentials::BinanceCredentials;
-pub use binance_parameters::BinanceParameters;
-pub use super::shared;
+use exchange::traits::info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
+use exchange::traits::{Exchange, ExchangeMarketData, ExchangeAccount};
 
 /// The main struct of the binance module
 #[derive(Clone)]
@@ -487,28 +475,6 @@ impl From<&GetHistoricRatesRequest> for model::KlineParams {
     }
 }
 
-impl From<Interval> for &str {
-    fn from(interval: Interval) -> Self {
-        match interval {
-            Interval::OneMinute => "1m",
-            Interval::ThreeMinutes => "3m",
-            Interval::FiveMinutes => "5m",
-            Interval::FifteenMinutes => "15m",
-            Interval::ThirtyMinutes => "30m",
-            Interval::OneHour => "1h",
-            Interval::TwoHours => "2h",
-            Interval::FourHours => "4h",
-            Interval::SixHours => "6h",
-            Interval::EightHours => "8h",
-            Interval::TwelveHours => "12h",
-            Interval::OneDay => "1d",
-            Interval::ThreeDays => "3d",
-            Interval::OneWeek => "1w",
-            Interval::OneMonth => "1M",
-        }
-    }
-}
-
 impl From<model::KlineSummary> for Candle {
     fn from(kline_summary: model::KlineSummary) -> Self {
         Self {
@@ -551,15 +517,6 @@ impl From<Paginator> for model::Paginator {
     }
 }
 
-impl From<String> for Side {
-    fn from(side: String) -> Self {
-        if side == "buy" {
-            Side::Buy
-        } else {
-            Side::Sell
-        }
-    }
-}
 
 impl From<model::OrderStatus> for OrderStatus {
     fn from(status: model::OrderStatus) -> OrderStatus {

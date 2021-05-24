@@ -14,10 +14,12 @@ impl fmt::Display for MissingImplementationContent {
 }
 
 #[derive(Error, Debug)]
-pub enum Error {
+pub enum OpenLimitsError {
+    #[error("")]
+    Generic(Box<dyn std::error::Error + Send + Sync>),
     #[error("")]
     NoMarketPair,
-    #[error("")]
+    #[error(transparent)]
     MissingImplementation(#[from] MissingImplementationContent),
     #[error("")]
     AssetNotFound(),
@@ -38,6 +40,10 @@ pub enum Error {
     #[error("")]
     GetTimestampFailed(),
     #[error(transparent)]
+    ReqError(#[from] reqwest::Error),
+    #[error(transparent)]
+    InvalidHeaderError(#[from] reqwest::header::InvalidHeaderValue),
+    #[error(transparent)]
     InvalidPayloadSignature(#[from] serde_urlencoded::ser::Error),
     #[error(transparent)]
     IoError(#[from] std::io::Error),
@@ -50,6 +56,8 @@ pub enum Error {
     #[error(transparent)]
     UrlParserError(#[from] url::ParseError),
     #[error(transparent)]
+    Tungstenite(#[from] tokio_tungstenite::tungstenite::Error),
+    #[error(transparent)]
     TimestampError(#[from] std::time::SystemTimeError),
     #[error("")]
     UnkownResponse(String),
@@ -60,3 +68,5 @@ pub enum Error {
     #[error("")]
     InvalidParameter(String),
 }
+
+pub type Result<T> = std::result::Result<T, crate::errors::OpenLimitsError>;

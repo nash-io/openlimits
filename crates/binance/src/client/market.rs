@@ -1,13 +1,11 @@
 use serde_json::json;
 use serde_json::Value;
 use super::BaseClient;
-use crate::{
-    exchange::binance::model::{
-        BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
-        SymbolPrice, Ticker,
-    },
-    errors::OpenLimitsError,
+use crate::model::{
+    BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
+    SymbolPrice, Ticker,
 };
+pub use exchange::OpenLimitsError;
 use rust_decimal::prelude::Decimal;
 use super::shared::Result;
 

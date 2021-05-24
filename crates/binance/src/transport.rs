@@ -8,8 +8,8 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 use sha2::Sha256;
 use url::Url;
-use crate::exchange::binance::BinanceContentError;
-use crate::errors::OpenLimitsError;
+use crate::BinanceContentError;
+use exchange::OpenLimitsError;
 use super::shared::Result;
 
 type HmacSha256 = Hmac<Sha256>;
@@ -254,7 +254,7 @@ impl Transport {
             StatusCode::BAD_REQUEST => {
                 let error: BinanceContentError = response.json().await?;
 
-                Err(OpenLimitsError::BinanceError(error))
+                Err(OpenLimitsError::Generic(Box::new(error)))
             }
             s => Err(OpenLimitsError::UnkownResponse(format!(
                 "Received response: {:?}",

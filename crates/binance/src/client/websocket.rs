@@ -6,17 +6,17 @@ use serde::{de, Deserialize, Serialize};
 use serde_json::Value;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
-use crate::{
-    errors::OpenLimitsError,
-    exchange::binance::{
-        BinanceParameters,
-        model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
-    },
+use exchange::errors::OpenLimitsError;
+pub use crate::{
+    BinanceParameters,
+    model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
+};
+pub use exchange::{
     model::websocket::OpenLimitsWebSocketMessage,
     model::websocket::Subscription,
     model::websocket::WebSocketResponse,
 };
-use crate::exchange::traits::stream::{ExchangeWs, Subscriptions};
+use exchange::traits::stream::{ExchangeWs, Subscriptions};
 use super::shared::Result;
 
 const WS_URL_PROD: &str = "wss://stream.binance.com:9443/stream";

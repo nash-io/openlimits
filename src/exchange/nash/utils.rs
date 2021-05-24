@@ -1,10 +1,6 @@
 use nash_native_client::Client;
-use std::convert::TryFrom;
-use crate::model::Paginator;
-use crate::errors::OpenLimitsError;
 use super::NashParameters;
 use super::shared::Result;
-use super::shared::timestamp_to_utc_datetime;
 
 pub async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
     let client = match params.credentials {
@@ -38,35 +34,4 @@ pub async fn client_from_params_failable(params: NashParameters) -> Result<Clien
     }
 
     Ok(client)
-}
-
-pub fn try_split_paginator(
-    paginator: Option<Paginator>,
-) -> Result<(
-    Option<String>,
-    Option<i64>,
-    Option<nash_protocol::types::DateTimeRange>,
-)> {
-    Ok(match paginator {
-        Some(paginator) => (
-            paginator.before,
-            match paginator.limit {
-                Some(v) => Some(i64::try_from(v).map_err(|_| {
-                    OpenLimitsError::InvalidParameter(
-                        "Couldn't convert paginator limit to i64".to_string(),
-                    )
-                })?),
-                None => None,
-            },
-            if paginator.start_time.is_some() && paginator.end_time.is_some() {
-                Some(nash_protocol::types::DateTimeRange {
-                    start: paginator.start_time.map(timestamp_to_utc_datetime).unwrap(),
-                    stop: paginator.end_time.map(timestamp_to_utc_datetime).unwrap(),
-                })
-            } else {
-                None
-            },
-        ),
-        None => (None, None, None),
-    })
 }

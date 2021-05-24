@@ -9,16 +9,16 @@ pub mod string_to_decimal {
     use serde::{de, Deserialize, Deserializer, Serializer};
 
     pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        T: fmt::Display,
-        S: Serializer,
+        where
+            T: fmt::Display,
+            S: Serializer,
     {
         serializer.collect_str(value)
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Decimal, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         #[serde(untagged)]
@@ -36,8 +36,8 @@ pub mod string_to_opt_decimal {
     use serde::{Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(value: &Option<Decimal>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         if let Some(value) = value {
             return serializer.collect_str(&value);
@@ -46,8 +46,8 @@ pub mod string_to_opt_decimal {
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Decimal>, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         #[serde(untagged)]
@@ -68,16 +68,16 @@ pub mod naive_datetime_from_string {
     use std::fmt;
 
     pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        T: fmt::Display,
-        S: Serializer,
+        where
+            T: fmt::Display,
+            S: Serializer,
     {
         serializer.collect_str(value)
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<NaiveDateTime, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         #[serde(untagged)]
@@ -100,8 +100,8 @@ pub mod opt_naive_datetime_from_string {
     use serde::{Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(value: &Option<NaiveDateTime>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         if let Some(value) = value {
             return serializer.collect_str(&value);
@@ -110,8 +110,8 @@ pub mod opt_naive_datetime_from_string {
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<NaiveDateTime>, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
         #[serde(untagged)]

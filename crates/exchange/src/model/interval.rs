@@ -1,6 +1,8 @@
 use chrono::Duration;
 use serde::Deserialize;
 use serde::Serialize;
+use std::convert::TryFrom;
+use crate::{OpenLimitsError, Result};
 
 /// This enum represents a time interval
 #[derive(Serialize, Deserialize, Clone, Copy, Debug, PartialEq)]
@@ -62,3 +64,44 @@ impl Interval {
         self.into()
     }
 }
+
+impl TryFrom<Interval> for u32 {
+    type Error = OpenLimitsError;
+    fn try_from(value: Interval) -> Result<Self> {
+        match value {
+            Interval::OneMinute => Ok(60),
+            Interval::FiveMinutes => Ok(300),
+            Interval::FifteenMinutes => Ok(900),
+            Interval::OneHour => Ok(3600),
+            Interval::SixHours => Ok(21600),
+            Interval::OneDay => Ok(86400),
+            _ => Err(OpenLimitsError::MissingParameter(format!(
+                "{:?} is not supported in Coinbase",
+                value,
+            ))),
+        }
+    }
+}
+
+impl From<Interval> for &str {
+    fn from(interval: Interval) -> Self {
+        match interval {
+            Interval::OneMinute => "1m",
+            Interval::ThreeMinutes => "3m",
+            Interval::FiveMinutes => "5m",
+            Interval::FifteenMinutes => "15m",
+            Interval::ThirtyMinutes => "30m",
+            Interval::OneHour => "1h",
+            Interval::TwoHours => "2h",
+            Interval::FourHours => "4h",
+            Interval::SixHours => "6h",
+            Interval::EightHours => "8h",
+            Interval::TwelveHours => "12h",
+            Interval::OneDay => "1d",
+            Interval::ThreeDays => "3d",
+            Interval::OneWeek => "1w",
+            Interval::OneMonth => "1M",
+        }
+    }
+}
+

@@ -8,3 +8,14 @@ pub enum Side {
     Buy,
     Sell,
 }
+
+// FIXME: Should be changed to TryFrom.
+impl From<String> for Side {
+    fn from(side: String) -> Self {
+        if side.to_lowercase() == "buy" {
+            Side::Buy
+        } else {
+            Side::Sell
+        }
+    }
+}

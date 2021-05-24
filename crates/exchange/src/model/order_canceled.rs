@@ -7,3 +7,10 @@ use serde::Serialize;
 pub struct OrderCanceled {
     pub id: String,
 }
+
+// TODO: Verify this.
+impl From<String> for OrderCanceled {
+    fn from(id: String) -> Self {
+        Self { id }
+    }
+}
