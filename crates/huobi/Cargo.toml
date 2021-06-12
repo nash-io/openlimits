@@ -1,0 +1,28 @@
+[package]
+name = "huobi"
+version = "0.1.0"
+authors = ["Danilo Guanabara <danguafer@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+nash-ws = { path = "../../../nash-ws" }
+cross-async = { path = "../cross-async" }
+exchange = { path = "../exchange" }
+messaging = { path = "../messaging" }
+libflate = "1.0.3"
+async-trait = "0.1"
+serde = { version = "1.0.123", features=["derive"] }
+serde_json = "1.0.61"
+uuid = { version = "0.8.2", features = ["serde", "v4"] }
+futures = "0.3.12"
+futures-util = "0.3.12"
+async-channel = "1.5.1"
+rust_decimal = "1.10.1"
+
+[dev-dependencies]
+cross-test = "0.1.6"
+
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+wasm-bindgen-test = "0.3.20"

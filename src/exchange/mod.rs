@@ -1,8 +1,9 @@
 //! This module contains all the implemented exchanges.
 
-pub mod binance;
+pub use binance;
 pub mod coinbase;
 pub mod nash;
-pub mod traits;
-pub mod any;
-pub mod shared;
+pub use exchange::traits;
+pub use exchange::shared;
+pub use exchange::model;
+pub use exchange::errors;

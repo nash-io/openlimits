@@ -2,6 +2,6 @@ extern crate openlimits;
 
 mod exchange;
 mod apis;
-mod binance;
+// mod binance;
 mod coinbase;
 mod nash;
