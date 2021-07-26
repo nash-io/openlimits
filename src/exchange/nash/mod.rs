@@ -448,7 +448,7 @@ impl From<nash_protocol::protocol::place_order::PlaceOrderResponse> for Order {
     fn from(resp: nash_protocol::protocol::place_order::PlaceOrderResponse) -> Self {
         Self {
             id: resp.order_id,
-            market_pair: resp.market_name,
+            market_pair: resp.market.name,
             client_order_id: None,
             created_at: Some(resp.placed_at.timestamp_millis() as u64),
             order_type: resp.order_type.into(),
