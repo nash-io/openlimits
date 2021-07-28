@@ -1,9 +1,10 @@
 use super::websocket::{OpenLimitsWebSocketMessage, Subscription};
 use crate::exchange::any::InitAnyExchange;
-use crate::binance::{BinanceCredentials, BinanceParameters};
-use crate::coinbase::{CoinbaseCredentials, CoinbaseParameters};
+use crate::exchange::binance::{BinanceCredentials, BinanceParameters};
+use crate::exchange::coinbase::{CoinbaseCredentials, CoinbaseParameters};
+use crate::exchange::nash::{NashCredentials, NashParameters};
+use crate::Environment;
 use crate::model::{Interval, Paginator, TimeInForce};
-use crate::nash::{Environment, NashCredentials, NashParameters};
 use pyo3::exceptions::PyException;
 use pyo3::prelude::{FromPyObject, IntoPy, PyObject, PyResult, Python, ToPyObject};
 use pyo3::types::PyDict;
