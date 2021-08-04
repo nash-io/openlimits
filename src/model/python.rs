@@ -196,7 +196,7 @@ impl<'a> FromPyObject<'a> for NashParameters {
         let environment = match (&env_str[..], dev_url) {
             ("sandbox", _) => Ok(Environment::Sandbox),
             ("production", _) => Ok(Environment::Production),
-            ("dev", dev_url) => Ok(Environment::Dev(&Box::leak(dev_url.to_string().into_boxed_str()))),
+            ("dev", Some(dev_url)) => Ok(Environment::Dev(&Box::leak(dev_url.to_string().into_boxed_str()))),
             _ => Err(PyException::new_err("not a valid nash environment")),
         }?;
         let timeout: u64 = py_dict
