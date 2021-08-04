@@ -295,7 +295,7 @@ impl Nash {
         buy_or_sell: nash_protocol::types::BuyOrSell,
     ) -> nash_protocol::protocol::place_order::LimitOrderRequest {
         nash_protocol::protocol::place_order::LimitOrderRequest {
-            client_order_id: None,
+            client_order_id: req.client_order_id.clone(),
             cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(
                 req.time_in_force,
             ),
@@ -311,7 +311,7 @@ impl Nash {
         req: &OpenMarketOrderRequest,
     ) -> nash_protocol::protocol::place_order::MarketOrderRequest {
         nash_protocol::protocol::place_order::MarketOrderRequest {
-            client_order_id: None,
+            client_order_id: req.client_order_id.clone(),
             market: req.market_pair.clone(),
             amount: format!("{}", req.size),
         }

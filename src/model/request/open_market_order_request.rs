@@ -6,6 +6,7 @@ use serde::Serialize;
 /// This struct represents an open market order
 #[derive(Serialize, Deserialize, Clone, Constructor, Debug, Default, PartialEq)]
 pub struct OpenMarketOrderRequest {
+    pub client_order_id: Option<String>,
     pub market_pair: String,
     pub size: Decimal,
 }
