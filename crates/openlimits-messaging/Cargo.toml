@@ -1,6 +1,6 @@
 [package]
 name = "openlimits-messaging"
-version = "0.1.0"
+version = "0.1.1-alpha.0"
 authors = ["Danilo Guanabara <danguafer@gmail.com>"]
 edition = "2018"
 description = "The messaging system of OpenLimits."
