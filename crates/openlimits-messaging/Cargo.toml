@@ -1,7 +1,7 @@
 [package]
 name = "openlimits-messaging"
 version = "0.1.1-alpha.0"
-authors = ["Danilo Guanabara <danguafer@gmail.com>"]
+authors = ["Danilo Guanabara <danilo@sensorial.systems>"]
 edition = "2018"
 description = "The messaging system of OpenLimits."
 license = "BSD-2-Clause"
