@@ -1,6 +1,6 @@
 [package]
 name = "openlimits"
-version = "0.1.12-alpha.0"
+version = "0.1.22-alpha.0"
 authors = ["steffel <2143646+steffenix@users.noreply.github.com>", "Ethan Fast <ethan@nash.io>", "Danilo Guanabara <danilo@nash.io>"]
 edition = "2018"
 description = "A open source Rust high performance cryptocurrency trading API with support for multiple exchanges and language wrappers. Focused in safety, correctness and speed."
@@ -28,7 +28,7 @@ hex = "0.4.2"
 hmac = "0.8.1"
 log = "0.4.8"
 reqwest = { version = "0.11", features = ["json", "blocking"] }
-rust_decimal = "1.7.0"
+rust_decimal = "1.14.3"
 sugar = "0.2.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -41,10 +41,8 @@ tungstenite = "0.12"
 sha2 = "0.9.1"
 url = "2.1.1"
 derive_more = "0.99"
-#nash-protocol = { version = "=0.1.26", default-features = false, features = ["rustcrypto"] }
-#nash-native-client = { version = "=0.1.21", default-features = false, features = ["rustcrypto"] }
-nash-protocol = { path = "../nash-rust/nash-protocol", default-features = false, features = ["rustcrypto"] }
-nash-native-client = { path = "../nash-rust/nash-native-client", default-features = false, features = ["rustcrypto"] }
+nash-protocol = { version = "0.1", default-features = false, features = ["rustcrypto"] }
+nash-native-client = { version = "0.1", default-features = false, features = ["rustcrypto"] }
 pyo3 = { version = "0.12.3", optional = true }
-binance = { path = "crates/binance" }
-exchange = { path = "crates/exchange" }
+openlimits-binance = { version = "0.1" }
+openlimits-exchange = { version = "0.1" }

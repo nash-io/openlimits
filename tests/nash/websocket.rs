@@ -66,6 +66,7 @@ async fn test_account_subscription_callback(
 
     let exchange = init_exchange().await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         time_in_force: TimeInForce::GoodTillCancelled,
         price: Decimal::from_str("0.01").expect("Couldn't parse string."),
         size: Decimal::from_str("0.1").expect("Couldn't parse string."),

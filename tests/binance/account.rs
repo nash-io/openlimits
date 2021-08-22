@@ -22,6 +22,7 @@ async fn limit_buy() {
     let exchange = init().await;
     let price = get_price(&exchange, pair_text).await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         price,
         size: Decimal::new(1, 1),
         market_pair: String::from(pair_text),
@@ -37,6 +38,7 @@ async fn limit_sell() {
     let exchange = init().await;
     let price = get_price(&exchange, "BNBBTC").await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         price,
         post_only: false,
         size: Decimal::new(1, 1),
@@ -60,6 +62,7 @@ async fn post_only() {
     exchange.cancel_all_orders(&req).await.expect("Couldn't cancel all orders.");*/
 
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         price: Decimal::new(1, 3),
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
@@ -78,6 +81,7 @@ async fn post_only() {
 async fn market_buy() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
+        client_order_id: None,
         size: Decimal::new(1, 2),
         market_pair: String::from("BNBBUSD"),
     };
@@ -92,6 +96,7 @@ async fn market_buy() {
 async fn market_sell() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
+        client_order_id: None,
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
     };
@@ -107,6 +112,7 @@ async fn market_sell() {
 async fn cancel_order() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         price: Decimal::new(1, 3),
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
@@ -135,6 +141,7 @@ async fn cancel_order() {
 async fn cancel_all_orders() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         price: Decimal::new(1, 3),
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),
@@ -189,6 +196,7 @@ async fn get_all_open_orders() {
     let exchange = init().await;
     let price = get_price(&exchange, "BNBBTC").await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         price,
         size: Decimal::new(1, 1),
         market_pair: String::from("BNBBTC"),

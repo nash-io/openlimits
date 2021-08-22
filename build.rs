@@ -32,8 +32,10 @@ fn main() {
         .join("rustlib")
         .join(toolchain_triple)
         .join("lib");
-    std::fs::copy(dll_path, target_path.join("gmp.dll")).expect("Couldn't copy dll");
-    std::fs::copy(lib_path, target_path.join("gmp.lib")).expect("Couldn't copy lib");
+    let from_dll = target_path.join("gmp.dll");
+    let from_lib = target_path.join("gmp.lib");
+    std::fs::copy(dll_path, from_dll).expect(&format!("Couldn't copy dll from {}", from_dll.to_string()));
+    std::fs::copy(lib_path, from_lib).expect(&format!("Couldn't copy lib from {}", from_lib.to_string()));
 }
 
 #[cfg(not(target_os = "windows"))]

@@ -22,6 +22,7 @@ use std::time::Duration as NativeDuration;
 async fn _limit_buy() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         time_in_force: TimeInForce::GoodTillCancelled,
         price: Decimal::from_str("100.46").expect("Couldn't parse string."),
         size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
@@ -40,6 +41,7 @@ async fn _limit_buy() {
 async fn _limit_buy_ioc() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         time_in_force: TimeInForce::ImmediateOrCancelled,
         price: Decimal::from_str("414.46").expect("Couldn't parse string."),
         size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
@@ -58,6 +60,7 @@ async fn _limit_buy_ioc() {
 async fn _limit_buy_fok() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         time_in_force: TimeInForce::FillOrKill,
         price: Decimal::from_str("414.46").expect("Couldn't parse string."),
         size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
@@ -76,6 +79,7 @@ async fn _limit_buy_fok() {
 async fn limit_buy_ggt() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         time_in_force: TimeInForce::GoodTillTime(Duration::hours(2)),
         price: Decimal::from_str("414.46").expect("Couldn't parse string."),
         size: Decimal::from_str("0.02000").expect("Couldn't parse string."),
@@ -94,6 +98,7 @@ async fn limit_buy_ggt() {
 async fn _market_buy() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
+        client_order_id: None,
         size: Decimal::from_str("10.0").expect("Couldn't parse string."),
         market_pair: String::from("usdc_eth"),
     };
@@ -109,6 +114,7 @@ async fn _market_buy() {
 async fn _market_sell() {
     let exchange = init().await;
     let req = OpenMarketOrderRequest {
+        client_order_id: None,
         size: Decimal::from_str("0.02").expect("Couldn't parse string."),
         market_pair: String::from("eth_usdc"),
     };
@@ -124,6 +130,7 @@ async fn _market_sell() {
 async fn _limit_sell() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         time_in_force: TimeInForce::GoodTillTime(Duration::hours(2)),
         price: Decimal::from_str("800.46").expect("Couldn't parse string."),
         size: Decimal::from_str("0.02").expect("Couldn't parse string."),
@@ -142,6 +149,7 @@ async fn _limit_sell() {
 async fn _cancel_order() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         time_in_force: TimeInForce::GoodTillCancelled,
         price: Decimal::from_str("200.46").expect("Couldn't parse string."),
         size: Decimal::from_str("0.0300").expect("Couldn't parse string."),
@@ -169,6 +177,7 @@ async fn _cancel_order() {
 async fn _cancel_all_orders() {
     let exchange = init().await;
     let req = OpenLimitOrderRequest {
+        client_order_id: None,
         time_in_force: TimeInForce::GoodTillCancelled,
         price: Decimal::from_str("200.46").expect("Couldn't parse string."),
         size: Decimal::from_str("0.10000").expect("Couldn't parse string."),
@@ -212,6 +221,7 @@ async fn get_order_history() {
 // async fn get_all_open_orders() {
 //     let mut exchange = init().await;
 //     let req = OpenLimitOrderRequest {
+//         client_order_id: None,
 //         time_in_force: TimeInForce::GoodTillCancelled,
 //         price: Decimal::new(1, 1),
 //         size: Decimal::new(2, 2),
