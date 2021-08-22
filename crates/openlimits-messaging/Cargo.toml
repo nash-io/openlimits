@@ -3,6 +3,10 @@ name = "openlimits-messaging"
 version = "0.1.0"
 authors = ["Danilo Guanabara <danguafer@gmail.com>"]
 edition = "2018"
+description = "The messaging system of OpenLimits."
+license = "BSD-2-Clause"
+repository = "https://github.com/nash-io/openlimits"
+keywords = ["cryptocurrency", "exchange", "openlimits", "api"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
