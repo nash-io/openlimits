@@ -59,7 +59,7 @@ async fn post_only() {
     /*let req = CancelAllOrdersRequest {
         market_pair: Some("BNBBTC".to_string()),
     };
-    exchange.cancel_all_orders(&req).await.expect("Couldn't cancel all orders.");*/
+    openlimits-exchange.cancel_all_orders(&req).await.expect("Couldn't cancel all orders.");*/
 
     let req = OpenLimitOrderRequest {
         client_order_id: None,

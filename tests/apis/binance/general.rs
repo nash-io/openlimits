@@ -42,6 +42,6 @@ async fn get_exchange_info() {
         .expect("Couldn't get inner client.")
         .get_exchange_info()
         .await
-        .expect("Couldn't get exchange info.");
+        .expect("Couldn't get openlimits-exchange info.");
     println!("{:?}", resp);
 }

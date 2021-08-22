@@ -79,13 +79,13 @@ async fn retrieve_pairs() {
 
 // #[tokio::test]
 // async fn get_historic_rates_invalid_interval() {
-//     let mut exchange = init().await;
+//     let mut openlimits-exchange = init().await;
 //     let req = GetHistoricRatesRequest {
 //         market_pair: "eth_btc".to_string(),
 //         interval: Interval::TwoHours,
 //         paginator: None,
 //     };
-//     let resp = exchange.get_historic_rates(&req).await;
+//     let resp = openlimits-exchange.get_historic_rates(&req).await;
 //     assert!(resp.is_err());
 // }
 

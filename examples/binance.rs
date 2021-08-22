@@ -6,7 +6,7 @@ use openlimits::prelude::*;
 async fn main() {
     let binance = Binance::new(BinanceParameters::prod())
                         .await
-                        .expect("Couldn't create binance client");
+                        .expect("Couldn't create openlimits-binance client");
 
     let order_book = binance.order_book(&OrderBookRequest {market_pair: "BTCEUR".to_string()})
                         .await

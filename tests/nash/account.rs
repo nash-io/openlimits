@@ -219,7 +219,7 @@ async fn get_order_history() {
 
 // #[tokio::test]
 // async fn get_all_open_orders() {
-//     let mut exchange = init().await;
+//     let mut openlimits-exchange = init().await;
 //     let req = OpenLimitOrderRequest {
 //         client_order_id: None,
 //         time_in_force: TimeInForce::GoodTillCancelled,
@@ -227,9 +227,9 @@ async fn get_order_history() {
 //         size: Decimal::new(2, 2),
 //         market_pair: String::from("eth_btc"),
 //     };
-//     exchange.limit_sell(&req).await.expect("Couldn't limit sell.");
+//     openlimits-exchange.limit_sell(&req).await.expect("Couldn't limit sell.");
 
-//     let resp = exchange.get_all_open_orders().await.expect("Couldn't get all open orders.");
+//     let resp = openlimits-exchange.get_all_open_orders().await.expect("Couldn't get all open orders.");
 //     println!("{:?}", resp);
 // }
 

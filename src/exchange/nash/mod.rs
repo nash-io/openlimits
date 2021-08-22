@@ -39,7 +39,7 @@ use crate::exchange::traits::info::MarketPair;
 use crate::exchange::traits::info::MarketPairHandle;
 use super::shared::Result;
 
-/// This struct is the main struct of this module and it is used for communications with the nash exchange 
+/// This struct is the main struct of this module and it is used for communications with the nash openlimits-exchange
 pub struct Nash {
     pub transport: Client,
     pub exchange_info: ExchangeInfo,
