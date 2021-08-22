@@ -1,1 +1,1 @@
-pub use messaging::{Subscriber, Requester};
+pub use openlimits_messaging::{Subscriber, Requester};
