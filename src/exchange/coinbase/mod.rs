@@ -30,7 +30,7 @@ use crate::{
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
         GetHistoricRatesRequest, GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest,
-        GetPriceTickerRequest, Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
+        GetPriceTickerRequest, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest,
         Order, OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType,
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
@@ -300,12 +300,6 @@ impl ExchangeAccount for Coinbase {
     }
 }
 
-impl From<String> for OrderCanceled {
-    fn from(id: String) -> Self {
-        Self { id }
-    }
-}
-
 impl From<model::Account> for Balance {
     fn from(account: model::Account) -> Self {
         Self {
@@ -363,24 +357,6 @@ impl From<model::Candle> for Candle {
             open: candle.open,
             close: candle.close,
             volume: candle.volume,
-        }
-    }
-}
-
-impl TryFrom<Interval> for u32 {
-    type Error = OpenLimitsError;
-    fn try_from(value: Interval) -> Result<Self> {
-        match value {
-            Interval::OneMinute => Ok(60),
-            Interval::FiveMinutes => Ok(300),
-            Interval::FifteenMinutes => Ok(900),
-            Interval::OneHour => Ok(3600),
-            Interval::SixHours => Ok(21600),
-            Interval::OneDay => Ok(86400),
-            _ => Err(OpenLimitsError::MissingParameter(format!(
-                "{:?} is not supported in Coinbase",
-                value,
-            ))),
         }
     }
 }

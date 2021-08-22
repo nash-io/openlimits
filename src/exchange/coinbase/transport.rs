@@ -264,8 +264,7 @@ impl Transport {
             }
             StatusCode::BAD_REQUEST => {
                 let error: CoinbaseContentError = response.json().await?;
-
-                Err(OpenLimitsError::CoinbaseError(error))
+                Err(OpenLimitsError::Generic(Box::new(error)))
             }
             s => {
                 let text = response.text().await?;

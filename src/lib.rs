@@ -38,13 +38,13 @@
 //! Nash](https://nash.io) is dedicating a maintainer and initial rewards for external contributors that close issues. 
 //! Look for the wiki [rewards table](https://github.com/nash-io/openlimits/wiki/Rewards-sizes) and for reward size labels on open issues.
 
+pub mod exchange;
+pub mod prelude;
+
 use crate::prelude::*;
 use crate::exchange::shared::Result;
-
-pub mod exchange;
-pub mod model;
-pub mod prelude;
-pub mod errors;
+pub use crate::exchange::errors;
+pub use crate::exchange::model;
 
 /// Can be used to initiate exchanges
 pub struct OpenLimits {}

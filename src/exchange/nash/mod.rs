@@ -16,25 +16,20 @@ pub use super::shared;
 
 use std::convert::{TryFrom, TryInto};
 use async_trait::async_trait;
-use chrono::Utc;
 use nash_native_client::Client;
 use nash_protocol::protocol::subscriptions::SubscriptionResponse;
-use nash_protocol::protocol::subscriptions::updated_account_orders::SubscribeAccountOrders;
-use nash_protocol::types::{BuyOrSell, DateTimeRange};
 use rust_decimal::prelude::*;
 use crate::{
-    errors::{MissingImplementationContent, OpenLimitsError},
+    errors::OpenLimitsError,
     model::{
-        AskBid,
         Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
         GetHistoricTradesRequest, GetOrderHistoryRequest, GetOrderRequest, GetPriceTickerRequest,
-        Interval, Liquidity, OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
-        OrderBookRequest, OrderBookResponse, OrderCanceled, OrderStatus, OrderType, Paginator,
-        Side, Ticker, TimeInForce, Trade, TradeHistoryRequest, websocket::{Subscription, WebSocketResponse},
+        OpenLimitOrderRequest, OpenMarketOrderRequest, Order,
+        OrderBookRequest, OrderBookResponse, OrderCanceled, Paginator,
+        Ticker, Trade, TradeHistoryRequest, websocket::WebSocketResponse,
     },
     model::websocket::OpenLimitsWebSocketMessage,
 };
-use crate::model::websocket::AccountOrders;
 use crate::exchange::traits::info::ExchangeInfo;
 use crate::exchange::traits::info::ExchangeInfoRetrieval;
 use crate::exchange::traits::Exchange;
@@ -42,8 +37,7 @@ use crate::exchange::traits::ExchangeMarketData;
 use crate::exchange::traits::ExchangeAccount;
 use crate::exchange::traits::info::MarketPair;
 use crate::exchange::traits::info::MarketPairHandle;
-use utils::try_split_paginator;
-use super::shared::{Result, timestamp_to_utc_datetime};
+use super::shared::Result;
 
 /// This struct is the main struct of this module and it is used for communications with the nash exchange 
 pub struct Nash {
@@ -285,8 +279,8 @@ impl Nash {
         match resp {
             Ok(resp) => resp
                 .response_or_error()
-                .map_err(OpenLimitsError::NashProtocolError),
-            Err(err) => Err(OpenLimitsError::NashProtocolError(err)),
+                .map_err(|error| OpenLimitsError::Generic(Box::new(error))),
+            Err(error) => Err(OpenLimitsError::Generic(Box::new(error))),
         }
     }
 
@@ -325,13 +319,7 @@ impl Nash {
             .run(nash_protocol::protocol::list_markets::ListMarketsRequest)
             .await?;
         if let Some(err) = response.error() {
-            Err(OpenLimitsError::NashProtocolError(
-                // FIXME: handle this better in both nash protocol and openlimits
-                nash_protocol::errors::ProtocolError::coerce_static_from_str(&format!(
-                    "{:#?}",
-                    err
-                )),
-            ))
+            Err(OpenLimitsError::Generic(Box::new(err.clone())))
         } else {
             Ok(response
                 .consume_response()
@@ -858,24 +846,6 @@ impl TryFrom<SubscriptionResponseWrapper> for WebSocketResponse<SubscriptionResp
             SubscriptionResponse::AccountBalances(resp) => Ok(WebSocketResponse::Raw(
                 SubscriptionResponseWrapper(SubscriptionResponse::AccountBalances(resp)),
             )),
-        }
-    }
-}
-
-impl From<TimeInForce> for nash_protocol::types::OrderCancellationPolicy {
-    fn from(tif: TimeInForce) -> Self {
-        match tif {
-            TimeInForce::GoodTillCancelled => {
-                nash_protocol::types::OrderCancellationPolicy::GoodTilCancelled
-            }
-            TimeInForce::FillOrKill => nash_protocol::types::OrderCancellationPolicy::FillOrKill,
-            TimeInForce::ImmediateOrCancelled => {
-                nash_protocol::types::OrderCancellationPolicy::ImmediateOrCancel
-            }
-            TimeInForce::GoodTillTime(duration) => {
-                let expire_time = Utc::now() + duration;
-                nash_protocol::types::OrderCancellationPolicy::GoodTilTime(expire_time)
-            }
         }
     }
 }
