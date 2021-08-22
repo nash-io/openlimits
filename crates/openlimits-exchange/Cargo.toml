@@ -14,7 +14,7 @@ rust_decimal = "1.10.2"
 serde = { version = "1.0.123", features = ["derive"] }
 serde_json = "1.0.62"
 thiserror = "1.0.23"
-messaging = { path = "../openlimits-messaging" }
+openlimits-messaging = "0.1"
 derive_more = "0.99.11"
 url = "2.2.0"
 serde_urlencoded = "0.7.0"
