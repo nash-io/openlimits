@@ -2,7 +2,7 @@
 
 pub mod model;
 
-pub use exchange::shared;
+pub use openlimits_exchange::shared;
 
 use async_trait::async_trait;
 use model::KlineSummaries;
@@ -10,7 +10,7 @@ use transport::Transport;
 use client::BaseClient;
 use std::convert::TryFrom;
 use model::{websocket::TradeMessage, SymbolFilter, ORDER_TYPE_LIMIT, ORDER_TYPE_MARKET};
-use exchange::{
+use openlimits_exchange::{
     errors::OpenLimitsError,
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
@@ -21,7 +21,7 @@ use exchange::{
     }
 };
 
-use exchange::Result;
+use openlimits_exchange::Result;
 
 mod binance_content_error;
 mod binance_credentials;
@@ -36,8 +36,8 @@ pub use transport::*;
 pub mod client;
 
 pub use client::websocket::BinanceWebsocket;
-use exchange::traits::info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
-use exchange::traits::{Exchange, ExchangeMarketData, ExchangeAccount};
+use openlimits_exchange::traits::info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
+use openlimits_exchange::traits::{Exchange, ExchangeMarketData, ExchangeAccount};
 
 /// The main struct of the openlimits-binance module
 #[derive(Clone)]

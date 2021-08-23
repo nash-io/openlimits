@@ -5,7 +5,7 @@ use crate::model::{
     BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
     SymbolPrice, Ticker,
 };
-pub use exchange::OpenLimitsError;
+pub use openlimits_exchange::OpenLimitsError;
 use rust_decimal::prelude::Decimal;
 use super::shared::Result;
 

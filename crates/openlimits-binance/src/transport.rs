@@ -9,7 +9,7 @@ use serde::Serialize;
 use sha2::Sha256;
 use url::Url;
 use crate::BinanceContentError;
-use exchange::OpenLimitsError;
+use openlimits_exchange::OpenLimitsError;
 use super::shared::Result;
 
 type HmacSha256 = Hmac<Sha256>;
