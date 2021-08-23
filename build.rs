@@ -34,8 +34,8 @@ fn main() {
         .join("lib");
     let from_dll = target_path.join("gmp.dll");
     let from_lib = target_path.join("gmp.lib");
-    std::fs::copy(dll_path, from_dll).expect(&format!("Couldn't copy dll from {}", from_dll.to_string()));
-    std::fs::copy(lib_path, from_lib).expect(&format!("Couldn't copy lib from {}", from_lib.to_string()));
+    std::fs::copy(dll_path, &from_dll).expect(&format!("Couldn't copy dll from {}", from_dll.display()));
+    std::fs::copy(lib_path, &from_lib).expect(&format!("Couldn't copy lib from {}", from_lib.display()));
 }
 
 #[cfg(not(target_os = "windows"))]
