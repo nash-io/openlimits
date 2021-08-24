@@ -29,6 +29,7 @@ tokio-tungstenite = { version = "0.13", features = ["tls"] }
 tokio = "1.6.0"
 
 [build-dependencies]
-ligen =       { path = "../../../../sensorial/systems/ligen/ligen" }
-ligen-c =     { path = "../../../../sensorial/systems/ligen/ligen-c" }
-ligen-cmake = { path = "../../../../sensorial/systems/ligen/ligen-cmake" }
+ligen        = { path = "../../../../sensorial/systems/ligen/ligen" }
+ligen-c      = { path = "../../../../sensorial/systems/ligen/generators/ligen-c" }
+ligen-csharp = { path = "../../../../sensorial/systems/ligen/generators/ligen-csharp" }
+ligen-cmake  = { path = "../../../../sensorial/systems/ligen/generators/ligen-cmake" }
