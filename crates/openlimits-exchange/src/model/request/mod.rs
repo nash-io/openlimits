@@ -1,5 +1,7 @@
 //! This module contains all the request response pairs.
 
+ligen_macro::ignore!();
+
 mod cancel_all_order_request;
 mod cancel_order_request;
 mod get_historic_rates_request;

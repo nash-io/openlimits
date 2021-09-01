@@ -1,3 +1,5 @@
+ligen_macro::ignore!();
+
 use derive_more::Constructor;
 use rust_decimal::prelude::Decimal;
 use serde::Deserialize;

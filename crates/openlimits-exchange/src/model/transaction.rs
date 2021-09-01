@@ -1,3 +1,5 @@
+ligen_macro::ignore!();
+
 use derive_more::Constructor;
 use serde::Deserialize;
 use serde::Serialize;

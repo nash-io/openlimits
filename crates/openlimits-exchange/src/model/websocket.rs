@@ -1,3 +1,5 @@
+ligen_macro::ignore!();
+
 use super::{OrderBookResponse, Trade};
 use crate::model::{OrderStatus, OrderType, Side};
 use serde::{Deserialize, Serialize};

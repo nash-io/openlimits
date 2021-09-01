@@ -1,3 +1,5 @@
+ligen_macro::ignore!();
+
 use chrono::Duration;
 use serde::Deserialize;
 use serde::Serialize;

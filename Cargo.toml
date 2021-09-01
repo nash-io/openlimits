@@ -45,8 +45,3 @@ derive_more = "0.99"
 pyo3 = { version = "0.12.3", optional = true }
 openlimits-binance = { version = "0.1" }
 openlimits-exchange = { version = "0.1" }
-
-[build-dependencies]
-ligen = { path = "../../sensorial/systems/ligen/ligen" }
-ligen-c = { path = "../../sensorial/systems/ligen/ligen-c" }
-ligen-cmake = { path = "../../sensorial/systems/ligen/ligen-cmake" }

@@ -1,3 +1,5 @@
+ligen_macro::ignore!();
+
 use chrono::Duration;
 use serde::de::Visitor;
 use serde::de;
