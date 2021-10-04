@@ -1,0 +1,19 @@
+[package]
+name = "openlimitssharp"
+version = "0.1.0"
+authors = ["kjr <mig@jankjr.dk>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "openlimits_sharp"
+crate-type = ["cdylib"]
+
+[dependencies]
+tokio = { version = "0.2.22", features = ["full"] }
+chrono = { version = "0.4.11" }
+futures-util = "0.3"
+thiserror = "1.0.22"
+rust_decimal = "1.7.0"
+openlimits = { path = "../../../" }

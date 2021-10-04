@@ -8,6 +8,9 @@ license = "BSD-2-Clause"
 repository = "https://github.com/nash-io/openlimits"
 keywords = ["cryptocurrency", "exchange", "openlimits", "api"]
 
+[[example]]
+name = "orderbook"
+path = "examples/rust/orderbook.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

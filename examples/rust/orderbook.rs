@@ -21,8 +21,8 @@ async fn main() {
             println!("{:#?}", err);
         }
     })
-    .await
-    .expect("Failed to subscribe to orderbook on Coinbase");
+        .await
+        .expect("Failed to subscribe to orderbook on Coinbase");
 
     std::thread::sleep(std::time::Duration::from_millis(5000));
 }
