@@ -19,6 +19,11 @@
 //! }
 //! ```
 
+#[cfg(feature = "bindings")]
+use ligen_macro::inner_ligen;
+
+#[cfg(feature = "bindings")]
+inner_ligen!(ignore);
 
 use std::convert::TryFrom;
 use async_trait::async_trait;
@@ -126,10 +131,13 @@ impl ExchangeInfoRetrieval for Coinbase {
 #[async_trait]
 impl ExchangeMarketData for Coinbase {
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
-        self.client
+        println!("order_book");
+        let response = self.client
             .book::<model::BookRecordL2>(&req.market_pair)
             .await
-            .map(Into::into)
+            .map(Into::into);
+        println!("returning order_book");
+        response
     }
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {

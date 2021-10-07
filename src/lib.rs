@@ -40,17 +40,11 @@
 
 pub mod exchange;
 pub mod prelude;
+#[cfg(feature = "bindings")]
+pub mod bindings;
 
-use crate::prelude::*;
-use crate::exchange::shared::Result;
 pub use crate::exchange::errors;
 pub use crate::exchange::model;
 
-// /// Can be used to initiate exchanges
-// pub struct OpenLimits {}
-//
-// impl OpenLimits {
-//     pub async fn instantiate<E: Exchange>(parameters: E::InitParams) -> Result<E> {
-//         Ok(E::new(parameters).await?)
-//     }
-// }
+mod openlimits;
+pub use openlimits::*;

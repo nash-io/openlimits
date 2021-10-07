@@ -1,7 +1,7 @@
 use super::Transport;
 
 /// The coinbase client
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BaseClient {
     pub transport: Transport,
 }

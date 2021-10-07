@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\bindings\csharp\OpenLimits.csproj" />
+    <ProjectReference Include="..\..\target\ligen\openlimits\OpenLimits.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

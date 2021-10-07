@@ -1,4 +1,4 @@
-cargo build --manifest-path ../../bindings/csharp/lib/Cargo.toml
-cp ../../bindings/csharp/lib/target/debug/libopenlimits_sharp.so ./bin/Debug/netcoreapp5.0/
+# cargo build --manifest-path ../../Cargo.toml
+cp ../../target/ligen/openlimits/lib/openlimits.dll ./bin/Debug/netcoreapp5.0/openlimits_csharp.dll
 dotnet run
 

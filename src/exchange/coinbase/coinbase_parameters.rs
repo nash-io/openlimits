@@ -1,7 +1,7 @@
 use super::CoinbaseCredentials;
 
 /// This struct represents the coinbase parameters
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct CoinbaseParameters {
     pub sandbox: bool,
     pub credentials: Option<CoinbaseCredentials>,
