@@ -1,25 +1,26 @@
-use crate::exchange::coinbase::{CoinbaseParameters, Coinbase};
-use crate::prelude::*;
+use rust_decimal::Decimal;
 
-mod ask_bid;
-pub use ask_bid::FFIAskBid;
+use runtime::RUNTIME;
+
+pub use crate::bindings::ask_bid::FFIAskBid;
+use crate::exchange::coinbase::{Coinbase, CoinbaseParameters};
+use crate::model::AskBid;
+use crate::prelude::*;
 
 pub mod coinbase;
 
 mod runtime {
     use ligen_macro::inner_ligen;
+
+    pub use runtime::RUNTIME;
+
     inner_ligen!(ignore);
     mod runtime {
         lazy_static::lazy_static! {
             pub static ref RUNTIME: tokio::runtime::Runtime = tokio::runtime::Runtime::new().unwrap();
         }
     }
-    pub use runtime::RUNTIME;
 }
-
-use runtime::RUNTIME;
-use crate::model::AskBid;
-use rust_decimal::Decimal;
 
 #[repr(C)]
 pub struct Client {
@@ -33,6 +34,14 @@ impl Client {
         let client = client.unwrap();
         let client = Box::into_raw(Box::new(client));
         Self { client }
+    }
+
+    pub fn sum(self, a: Vec<u64>) -> u64 {
+        a.iter().sum()
+    }
+
+    pub fn mul(self, a: Vec<u64>, n: u64) -> Vec<u64> {
+        a.iter().map(|x| x * n).collect()
     }
 
     pub fn order_book(self, market_pair: String) -> AskBid {

@@ -4,22 +4,25 @@ namespace Example
 {
     using Openlimits;
     using System.Threading;
+	using System.Collections.Generic;
     class Program
     {
         static public void Main(string[] args)
         {
-//            Console.WriteLine("Init");
-//            Test.Hello();
-//            var test = new Test(64, Environment.Sandbox);
-//            Console.WriteLine(test.value);
-//            Console.WriteLine(test.environment);
-//            var test2 = Test.Create(32);
-//            Console.WriteLine(test2.value);
-//            Console.WriteLine(test2.environment);
             CoinbaseParameters parameters = new CoinbaseParameters(Environment.Production, "a", "b", "c");
             Client client = Client.Coinbase(parameters);
-            Client.OrderBook(client, "BTC-EUR");
-//            var person = new Person("Danilo", "Guanabara");
+            AskBid askBid = client.OrderBook("BTC-EUR");
+            Console.WriteLine(Decimal.Parse(askBid.qty));
+            Console.WriteLine(askBid.price);
+            var list = new List<ulong>();
+            list.Add(1);
+            list.Add(2);
+            list.Add(3);
+            Console.WriteLine(client.Sum(list));
+            var result = client.Mul(list, 2);
+            foreach (var value in result) {
+                Console.WriteLine(value);
+            }
 //            Test.Display(person);
 //            NashClientConfig config = NashClientConfig.Unauthenticated(0, NashEnvironment.Production, 1000);
 //            Console.WriteLine(config.environment);
@@ -28,7 +31,7 @@ namespace Example
 //            client.SubscribeToDisconnect(() => {
 //                Console.WriteLine("Disconnected");
 //            });
-//            foreach(var market in client.R qeceivePairs()) {
+//            foreach(var market in client.ReceivePairs()) {
 //                client.SubscribeToOrderbook(market.symbol, PrintBook);
 //            }
 //

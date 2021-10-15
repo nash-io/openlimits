@@ -131,13 +131,10 @@ impl ExchangeInfoRetrieval for Coinbase {
 #[async_trait]
 impl ExchangeMarketData for Coinbase {
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
-        println!("order_book");
-        let response = self.client
+        self.client
             .book::<model::BookRecordL2>(&req.market_pair)
             .await
-            .map(Into::into);
-        println!("returning order_book");
-        response
+            .map(Into::into)
     }
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {

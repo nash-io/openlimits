@@ -3,6 +3,9 @@
 pub mod string;
 pub mod environment;
 pub mod client;
+pub mod ask_bid;
+pub mod orderbook;
+pub mod vector;
 // use ligen::marshalling::{MarshalFrom, MarshalInto};
 
 // #[repr(C)]

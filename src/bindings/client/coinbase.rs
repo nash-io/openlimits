@@ -2,6 +2,23 @@ use crate::bindings::string::FFIString;
 use crate::bindings::environment::Environment;
 use crate::exchange::coinbase::{CoinbaseParameters, CoinbaseCredentials};
 use ligen::marshalling::MarshalFrom;
+use ligen_macro::inner_ligen;
+
+inner_ligen! {
+    ffi(CoinbaseParameters(name = "FFICoinbaseParameters")),
+    marshal(
+        FFICoinbaseParameters(
+            name = "CoinbaseParameters"
+        )
+    ),
+    csharp(
+        ffi(
+            FFICoinbaseParameters(
+                name = "CoinbaseParameters"
+            )
+        ),
+    )
+}
 
 #[repr(C, packed(1))]
 pub struct FFICoinbaseParameters {
