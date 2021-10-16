@@ -6,6 +6,7 @@ public static implicit operator FFIVector<T>(List<T> from) {
         IntPtr pointer = handle.AddrOfPinnedObject();
         return new FFIVector<T>(pointer, length);
     } finally {
+        // FIXME: Memory leak? It seems to be garbage collected.
         // if (handle.IsAllocated)
         //    handle.Free();
     }
@@ -17,11 +18,7 @@ public static implicit operator List<T>(FFIVector<T> from) {
         fixed (T* apointer = array) {
             long length = (long) from.length * (long) sizeof(T);
             Buffer.MemoryCopy((void*) from.pointer, (void*) apointer, length, length);
-            List<T> list = new List<T>();
-            foreach (T t in array) {
-                list.Add(t);
-            }
-            return list;
+            return new List<T>(array);
         }
     }
 }

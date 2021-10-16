@@ -1,23 +1,16 @@
 use ligen_macro::inner_ligen;
 use ligen::marshalling::MarshalFrom;
+use std::ptr::null_mut;
 
 inner_ligen! {
-    ffi(
-        Vec(name = "FFIVector")
-    ),
+    ffi(Vec(name = "FFIVector")),
     csharp(
         ffi(
-            Vec(
-                name = "FFIVector"
-            ),
-            FFIVector(
-                name = "FFIVector"
-            )
+            Vec(name = "FFIVector"),
+            FFIVector(name = "FFIVector")
         ),
         marshal(
-            Vec(
-                name = "List"
-            ),
+            Vec(name = "List"),
             FFIVector(
                 name = "List",
                 methods = "src/bindings/vector/vector.methods.cs",
@@ -31,6 +24,14 @@ inner_ligen! {
 pub struct FFIVector<T> {
     pub pointer: *mut T,
     pub length: u64
+}
+
+impl<T> Default for FFIVector<T> {
+    fn default() -> Self {
+        let pointer = null_mut();
+        let length = 0;
+        Self { pointer, length }
+    }
 }
 
 impl<T: Clone> MarshalFrom<FFIVector<T>> for Vec<T> {

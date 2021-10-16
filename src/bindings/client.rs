@@ -1,10 +1,6 @@
-use rust_decimal::Decimal;
-
 use runtime::RUNTIME;
 
-pub use crate::bindings::ask_bid::FFIAskBid;
 use crate::exchange::coinbase::{Coinbase, CoinbaseParameters};
-use crate::model::AskBid;
 use crate::prelude::*;
 
 pub mod coinbase;
@@ -44,17 +40,11 @@ impl Client {
         a.iter().map(|x| x * n).collect()
     }
 
-    pub fn order_book(self, market_pair: String) -> AskBid {
+    pub fn order_book(self, market_pair: String) -> OrderBookResponse {
         unsafe {
-            if let Some(client) = self.client.as_ref() {
-                let response = RUNTIME.block_on(client.order_book(&OrderBookRequest { market_pair }));
-                let response = response.unwrap();
-                response.asks[0]
-            } else {
-                let price = Decimal::new(1, 1);
-                let qty = Decimal::new(1, 1);
-                AskBid { price, qty }
-            }
+            let client = self.client.as_ref().unwrap();
+            let response = RUNTIME.block_on(client.order_book(&OrderBookRequest { market_pair }));
+            response.unwrap()
         }
     }
 }
