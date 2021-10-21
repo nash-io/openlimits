@@ -11,9 +11,9 @@ namespace Example
         {
             CoinbaseParameters parameters = new CoinbaseParameters(Environment.Production, "a", "b", "c");
             Client client = Client.Coinbase(parameters);
-            AskBid askBid = client.OrderBook("BTC-EUR");
-            Console.WriteLine(Decimal.Parse(askBid.qty));
-            Console.WriteLine(askBid.price);
+//            OrderBookResponse response = client.OrderBook("BTC-EUR");
+//            Console.WriteLine(Decimal.Parse(askBid.qty));
+//            Console.WriteLine(askBid.price);
             var list = new List<ulong>();
             list.Add(1);
             list.Add(2);
@@ -23,6 +23,8 @@ namespace Example
             foreach (var value in result) {
                 Console.WriteLine(value);
             }
+            Console.WriteLine(client.GetName());
+
 //            Test.Display(person);
 //            NashClientConfig config = NashClientConfig.Unauthenticated(0, NashEnvironment.Production, 1000);
 //            Console.WriteLine(config.environment);

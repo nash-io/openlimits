@@ -5,8 +5,8 @@ use std::ptr::null_mut;
 use ligen::marshalling::MarshalFrom;
 use crate::bindings::ask_bid::FFIAskBid;
 
-# Replicate generics logic to struct fields.
-# We should have a FFI and a normal structure.
+// # Replicate generics logic to struct fields.
+// # We should have a FFI and a normal structure.
 
 inner_ligen! {
     ffi(OrderBookResponse(name = "FFIOrderBookResponse")),

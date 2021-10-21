@@ -1,7 +1,7 @@
 use runtime::RUNTIME;
 
 use crate::exchange::coinbase::{Coinbase, CoinbaseParameters};
-use crate::prelude::*;
+// use crate::prelude::*;
 
 pub mod coinbase;
 
@@ -40,11 +40,15 @@ impl Client {
         a.iter().map(|x| x * n).collect()
     }
 
-    pub fn order_book(self, market_pair: String) -> OrderBookResponse {
-        unsafe {
-            let client = self.client.as_ref().unwrap();
-            let response = RUNTIME.block_on(client.order_book(&OrderBookRequest { market_pair }));
-            response.unwrap()
-        }
+    pub fn get_name(self) -> String {
+        "Abc".to_string()
     }
+
+    // pub fn order_book(self, market_pair: String) -> OrderBookResponse {
+    //     unsafe {
+    //         let client = self.client.as_ref().unwrap();
+    //         let response = RUNTIME.block_on(client.order_book(&OrderBookRequest { market_pair }));
+    //         response.unwrap()
+    //     }
+    // }
 }
