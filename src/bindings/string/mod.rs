@@ -5,8 +5,11 @@ use std::ffi::{CString, CStr};
 
 inner_ligen! {
     ffi(
-        String(name = "FFIString"),
-        FFString(opaque = true)
+        String(
+            opaque = true,
+            name = "FFIString"
+        ),
+        FFIString(opaque = true)
     ),
 
     csharp(
@@ -44,6 +47,12 @@ pub struct FFIString {
     string: CString
 }
 
+impl Drop for FFIString {
+    fn drop(&mut self) {
+        println!("Why is {} being dropped?", self.get_pointer() as u64);
+    }
+}
+
 impl FFIString {
     pub fn new(pointer: *mut i8) -> Self {
         let string = unsafe {
@@ -52,8 +61,10 @@ impl FFIString {
         Self { string }
     }
 
-    pub fn get_pointer(self) -> *const i8 {
-        self.string.as_ptr()
+    pub fn get_pointer(&self) -> *const i8 {
+        let ptr = self.string.as_ptr();
+        println!("ptr: {} of {}", ptr as u64, self.string.to_string_lossy());
+        ptr
     }
 }
 

@@ -1,6 +1,6 @@
         public static implicit operator string(FFIString from) {
             unsafe {
-                return Marshal.PtrToStringUTF8(from.Pointer());
+                return Marshal.PtrToStringUTF8(from.GetPointer());
             }
         }
 

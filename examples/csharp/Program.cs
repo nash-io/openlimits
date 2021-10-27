@@ -5,13 +5,20 @@ namespace Example
     using Openlimits;
     using System.Threading;
 	using System.Collections.Generic;
+    using System.Runtime.InteropServices;
     class Program
     {
         static public void Main(string[] args)
         {
+            var ffi_string = Client.FFIGetName();
+            Console.WriteLine(ffi_string);
+//            var ptr = FFIString.FFIGetPointer(ffi_string);
+//            Console.WriteLine(ptr);
+            return;
             CoinbaseParameters parameters = new CoinbaseParameters(Environment.Production, "a", "b", "c");
+            string key = parameters.apiKey;
             Client client = Client.Coinbase(parameters);
-//            OrderBookResponse response = client.OrderBook("BTC-EUR");
+//            Console.WriteLine(Decimal.Parse(askBid.qty));
 //            Console.WriteLine(Decimal.Parse(askBid.qty));
 //            Console.WriteLine(askBid.price);
             var list = new List<ulong>();
@@ -23,7 +30,6 @@ namespace Example
             foreach (var value in result) {
                 Console.WriteLine(value);
             }
-            Console.WriteLine(client.GetName());
 
 //            Test.Display(person);
 //            NashClientConfig config = NashClientConfig.Unauthenticated(0, NashEnvironment.Production, 1000);

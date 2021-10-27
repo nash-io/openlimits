@@ -40,8 +40,8 @@ impl Client {
         a.iter().map(|x| x * n).collect()
     }
 
-    pub fn get_name(self) -> String {
-        "Abc".to_string()
+    pub fn get_name() -> String {
+        "Abc".into()
     }
 
     // pub fn order_book(self, market_pair: String) -> OrderBookResponse {
