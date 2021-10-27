@@ -47,8 +47,8 @@ derive_more = "0.99"
 #nash-protocol = { version = "0.1", default-features = false, features = ["rustcrypto"] }
 #nash-native-client = { version = "0.1", default-features = false, features = ["rustcrypto"] }
 pyo3 = { version = "0.12.3", optional = true }
-openlimits-binance = { version = "0.1" }
-openlimits-exchange = { version = "0.1" }
+openlimits-binance = { path = "crates/openlimits-binance" }
+openlimits-exchange = { path = "crates/openlimits-exchange" }
 ligen-macro = { path = "../../sensorial/systems/ligen/ligen/macro", optional = true }
 ligen        = { path = "../../sensorial/systems/ligen/ligen", optional = true }
 lazy_static = "1.4.0"

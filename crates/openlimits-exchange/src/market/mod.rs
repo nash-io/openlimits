@@ -1,5 +1,3 @@
-ligen_macro::ignore!();
-
 pub mod symbol;
 
 use symbol::Symbol;

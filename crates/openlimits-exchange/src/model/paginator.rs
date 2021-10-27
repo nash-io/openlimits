@@ -1,5 +1,3 @@
-ligen_macro::ignore!();
-
 use serde::Deserialize;
 use serde::Serialize;
 

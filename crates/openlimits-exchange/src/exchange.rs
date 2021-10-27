@@ -1,5 +1,3 @@
-ligen_macro::ignore!();
-
 use messaging::Subscriber;
 use async_trait::async_trait;
 

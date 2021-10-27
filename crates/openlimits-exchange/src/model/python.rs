@@ -1,5 +1,3 @@
-ligen_macro::ignore!();
-
 use super::websocket::{OpenLimitsWebSocketMessage, Subscription};
 use crate::exchange::any::InitAnyExchange;
 use crate::exchange::binance::{BinanceCredentials, BinanceParameters};

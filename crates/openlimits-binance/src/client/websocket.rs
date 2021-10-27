@@ -19,8 +19,8 @@ pub use openlimits_exchange::{
 use openlimits_exchange::traits::stream::{ExchangeWs, Subscriptions};
 use super::shared::Result;
 
-const WS_URL_PROD: &str = "wss://stream.openlimits-binance.com:9443/stream";
-const WS_URL_SANDBOX: &str = "wss://testnet.openlimits-binance.vision/stream";
+const WS_URL_PROD: &str = "wss://stream.binance.com:9443/stream";
+const WS_URL_SANDBOX: &str = "wss://testnet.binance.vision/stream";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]

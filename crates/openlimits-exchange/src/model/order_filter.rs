@@ -1,5 +1,3 @@
-ligen_macro::ignore!();
-
 use rust_decimal::prelude::Decimal;
 use serde::Deserialize;
 use serde::Serialize;
