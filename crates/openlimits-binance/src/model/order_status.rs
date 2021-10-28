@@ -13,3 +13,9 @@ pub enum OrderStatus {
     Rejected,
     Expired,
 }
+
+impl Default for OrderStatus {
+    fn default() -> Self {
+        Self::New
+    }
+}

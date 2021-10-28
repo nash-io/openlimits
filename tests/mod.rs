@@ -1,6 +1,7 @@
 extern crate openlimits;
 
-mod exchange;
+mod template;
+// mod exchange;
 // mod apis;
 mod binance;
 // mod coinbase;

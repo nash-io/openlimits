@@ -12,19 +12,21 @@ pub struct Order {
     pub symbol: String,
     pub order_id: u64,
     pub client_order_id: String,
-    #[serde(with = "string_to_decimal")]
+    #[serde(default, with = "string_to_decimal")]
     pub price: Decimal,
-    #[serde(with = "string_to_decimal")]
+    #[serde(default, with = "string_to_decimal")]
     pub orig_qty: Decimal,
-    #[serde(with = "string_to_decimal")]
+    #[serde(default, with = "string_to_decimal")]
     pub executed_qty: Decimal,
-    pub status: OrderStatus,
-    pub time_in_force: String,
-    #[serde(rename = "type")]
-    pub type_name: String,
-    pub side: String,
-    #[serde(with = "string_to_opt_decimal")]
     #[serde(default)]
+    pub status: OrderStatus,
+    #[serde(default)]
+    pub time_in_force: Option<String>,
+    #[serde(default, rename = "type")]
+    pub type_name: String,
+    #[serde(default)]
+    pub side: String,
+    #[serde(default, with = "string_to_opt_decimal")]
     pub stop_price: Option<Decimal>,
     #[serde(default)]
     pub iceberg_qty: Option<String>,

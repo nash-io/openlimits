@@ -85,11 +85,11 @@ impl BaseClient {
         tif: TimeInForce,
         post_only: bool,
     ) -> Result<Order> {
-        let order_type = match post_only {
-            true => ORDER_TYPE_LIMIT_MAKER,
-            false => ORDER_TYPE_LIMIT,
-        }
-        .to_string();
+        let (order_type, time_in_force) = match post_only {
+            true => (ORDER_TYPE_LIMIT_MAKER.to_string(), None),
+            false => (ORDER_TYPE_LIMIT.to_string(), Some(tif)),
+        };
+
         let buy: OrderRequest = OrderRequest {
             symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -99,7 +99,7 @@ impl BaseClient {
             )),
             order_side: ORDER_SIDE_BUY.to_string(),
             order_type,
-            time_in_force: Some(tif),
+            time_in_force,
         };
 
         let transaction = self
@@ -120,11 +120,11 @@ impl BaseClient {
         tif: TimeInForce,
         post_only: bool,
     ) -> Result<Order> {
-        let order_type = match post_only {
-            true => ORDER_TYPE_LIMIT_MAKER,
-            false => ORDER_TYPE_LIMIT,
-        }
-        .to_string();
+        let (order_type, time_in_force) = match post_only {
+            true => (ORDER_TYPE_LIMIT_MAKER.to_string(), None),
+            false => (ORDER_TYPE_LIMIT.to_string(), Some(tif)),
+        };
+
         let sell: OrderRequest = OrderRequest {
             symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -134,7 +134,7 @@ impl BaseClient {
             )),
             order_side: ORDER_SIDE_SELL.to_string(),
             order_type,
-            time_in_force: Some(tif),
+            time_in_force,
         };
 
         let transaction = self

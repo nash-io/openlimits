@@ -38,6 +38,7 @@ pub mod client;
 pub use client::websocket::BinanceWebsocket;
 use openlimits_exchange::traits::info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
 use openlimits_exchange::traits::{Exchange, ExchangeMarketData, ExchangeAccount};
+use openlimits_exchange::exchange::Environment;
 
 /// The main struct of the openlimits-binance module
 #[derive(Clone)]
@@ -59,14 +60,14 @@ impl Exchange for Binance {
                     transport: Transport::with_credential(
                         &credentials.api_key,
                         &credentials.api_secret,
-                        parameters.sandbox,
+                        parameters.environment == Environment::Sandbox,
                     )?,
                 },
             },
             None => Binance {
                 exchange_info: ExchangeInfo::new(),
                 client: BaseClient {
-                    transport: Transport::new(parameters.sandbox)?,
+                    transport: Transport::new(parameters.environment == Environment::Sandbox)?,
                 },
             },
         };

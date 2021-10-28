@@ -18,6 +18,7 @@ pub use openlimits_exchange::{
 };
 use openlimits_exchange::traits::stream::{ExchangeWs, Subscriptions};
 use super::shared::Result;
+use openlimits_exchange::exchange::Environment;
 
 const WS_URL_PROD: &str = "wss://stream.binance.com:9443/stream";
 const WS_URL_SANDBOX: &str = "wss://testnet.binance.vision/stream";
@@ -67,9 +68,9 @@ impl ExchangeWs for BinanceWebsocket {
             .collect::<Vec<String>>()
             .join("/");
 
-        let ws_url = match self.parameters.sandbox {
-            true => WS_URL_SANDBOX,
-            false => WS_URL_PROD,
+        let ws_url = match self.parameters.environment {
+            Environment::Sandbox => WS_URL_SANDBOX,
+            Environment::Production => WS_URL_PROD,
         };
         let endpoint = url::Url::parse(&format!("{}?streams={}", ws_url, streams))
             .map_err(OpenLimitsError::UrlParserError)?;
