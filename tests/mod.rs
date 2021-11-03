@@ -4,5 +4,5 @@ mod template;
 // mod exchange;
 // mod apis;
 mod binance;
-// mod coinbase;
+mod coinbase;
 // mod nash;

@@ -17,5 +17,5 @@ pub struct Trade {
     pub fees: Option<Decimal>,
     pub side: Side,
     pub liquidity: Option<Liquidity>,
-    pub created_at: u64,
+    pub created_at: String,
 }

@@ -36,9 +36,10 @@ pub use transport::*;
 pub mod client;
 
 pub use client::websocket::BinanceWebsocket;
-use openlimits_exchange::traits::info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPair, MarketPairHandle};
+use openlimits_exchange::traits::info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPairInfo, MarketPairHandle};
 use openlimits_exchange::traits::{Exchange, ExchangeMarketData, ExchangeAccount};
 use openlimits_exchange::exchange::Environment;
+use openlimits_exchange::model::market_pair::MarketPair;
 
 /// The main struct of the openlimits-binance module
 #[derive(Clone)]
@@ -83,7 +84,7 @@ impl Exchange for Binance {
 
 #[async_trait]
 impl ExchangeInfoRetrieval for Binance {
-    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
+    async fn retrieve_pairs(&self) -> Result<Vec<MarketPairInfo>> {
         self.client.get_exchange_info().await.map(|v| {
             v.symbols
                 .into_iter()
@@ -114,7 +115,7 @@ impl ExchangeInfoRetrieval for Binance {
                         })
                         .expect("Couldn't find tick size.");
 
-                    MarketPair {
+                    MarketPairInfo {
                         base: symbol.base_asset,
                         quote: symbol.quote_asset,
                         symbol: symbol.symbol,
@@ -134,8 +135,9 @@ impl ExchangeInfoRetrieval for Binance {
             .await
     }
 
-    async fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
-        self.exchange_info.get_pair(name)
+    async fn get_pair(&self, market_pair: &MarketPair) -> Result<MarketPairHandle> {
+        let name = crate::model::MarketPair::from(market_pair.clone()).0;
+        self.exchange_info.get_pair(&name)
     }
 }
 
@@ -143,14 +145,14 @@ impl ExchangeInfoRetrieval for Binance {
 impl ExchangeMarketData for Binance {
     async fn order_book(&self, req: &OrderBookRequest) -> Result<OrderBookResponse> {
         self.client
-            .get_depth(req.market_pair.as_str(), None)
+            .get_depth(req.market_pair.clone(), None)
             .await
             .map(Into::into)
     }
 
     async fn get_price_ticker(&self, req: &GetPriceTickerRequest) -> Result<Ticker> {
         self.client
-            .get_price(&req.market_pair)
+            .get_price(req.market_pair.clone())
             .await
             .map(Into::into)
     }
@@ -172,7 +174,7 @@ impl ExchangeMarketData for Binance {
 #[async_trait]
 impl ExchangeAccount for Binance {
     async fn limit_buy(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
-        let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
+        let pair = self.get_pair(&req.market_pair).await?.read()?;
         self.client
             .limit_buy(
                 pair,
@@ -185,7 +187,7 @@ impl ExchangeAccount for Binance {
             .map(Into::into)
     }
     async fn limit_sell(&self, req: &OpenLimitOrderRequest) -> Result<Order> {
-        let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
+        let pair = self.get_pair(&req.market_pair).await?.read()?;
         self.client
             .limit_sell(
                 pair,
@@ -199,11 +201,11 @@ impl ExchangeAccount for Binance {
     }
 
     async fn market_buy(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
-        let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
+        let pair = self.get_pair(&req.market_pair).await?.read()?;
         self.client.market_buy(pair, req.size).await.map(Into::into)
     }
     async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
-        let pair = self.exchange_info.get_pair(&req.market_pair)?.read()?;
+        let pair = self.get_pair(&req.market_pair).await?.read()?;
         self.client
             .market_sell(pair, req.size)
             .await
@@ -228,7 +230,7 @@ impl ExchangeAccount for Binance {
     async fn cancel_all_orders(&self, req: &CancelAllOrdersRequest) -> Result<Vec<OrderCanceled>> {
         if let Some(pair) = req.market_pair.as_ref() {
             self.client
-                .cancel_all_orders(pair)
+                .cancel_all_orders(pair.clone())
                 .await
                 .map(|v| v.into_iter().map(Into::into).collect())
         } else {
@@ -316,7 +318,7 @@ impl From<model::websocket::TradeMessage> for Vec<Trade> {
                 false => Side::Sell,
             },
             liquidity: None,
-            created_at: trade_message.event_time,
+            created_at: trade_message.event_time.to_string(),
         }]
     }
 }
@@ -337,7 +339,7 @@ impl From<TradeMessage> for Trade {
                 false => Side::Buy,
             },
             liquidity: None,
-            created_at: trade.trade_order_time,
+            created_at: trade.trade_order_time.to_string(),
         }
     }
 }
@@ -426,7 +428,7 @@ impl From<model::TradeHistory> for Trade {
                 true => Some(Liquidity::Maker),
                 false => Some(Liquidity::Taker),
             },
-            created_at: trade_history.time,
+            created_at: trade_history.time.to_string(),
         }
     }
 }
@@ -445,9 +447,10 @@ impl TryFrom<&GetOrderHistoryRequest> for model::AllOrderReq {
     fn try_from(req: &GetOrderHistoryRequest) -> Result<Self> {
         Ok(Self {
             paginator: req.paginator.clone().map(|p| p.into()),
-            symbol: req.market_pair.clone().ok_or_else(|| {
-                OpenLimitsError::MissingParameter("market_pair parameter is required.".to_string())
-            })?,
+            symbol: req.market_pair
+                .clone()
+                .map(|market| crate::model::MarketPair::from(market).0)
+                .ok_or_else(|| OpenLimitsError::MissingParameter("market_pair parameter is required.".to_string()))?,
         })
     }
 }
@@ -457,9 +460,10 @@ impl TryFrom<&TradeHistoryRequest> for model::TradeHistoryReq {
     fn try_from(trade_history: &TradeHistoryRequest) -> Result<Self> {
         Ok(Self {
             paginator: trade_history.paginator.clone().map(|p| p.into()),
-            symbol: trade_history.market_pair.clone().ok_or_else(|| {
-                OpenLimitsError::MissingParameter("market_pair parameter is required.".to_string())
-            })?,
+            symbol: trade_history.market_pair
+                .clone()
+                .map(|market| crate::model::MarketPair::from(market).0)
+                .ok_or_else(|| OpenLimitsError::MissingParameter("market_pair parameter is required.".to_string()))?,
         })
     }
 }
@@ -467,11 +471,11 @@ impl TryFrom<&TradeHistoryRequest> for model::TradeHistoryReq {
 impl From<&GetHistoricRatesRequest> for model::KlineParams {
     fn from(req: &GetHistoricRatesRequest) -> Self {
         let interval: &str = req.interval.into();
-
+        let symbol = crate::model::MarketPair::from(req.market_pair.clone()).0;
         Self {
             interval: String::from(interval),
             paginator: req.paginator.clone().map(|d| d.into()),
-            symbol: req.market_pair.clone(),
+            symbol,
         }
     }
 }

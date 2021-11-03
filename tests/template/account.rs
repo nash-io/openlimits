@@ -8,10 +8,12 @@ use openlimits::{
     },
 };
 use rust_decimal::prelude::*;
+use openlimits::exchange::model::market_pair::MarketPair;
+use openlimits::model::currency::Currency;
 
 
-async fn get_current_price(exchange: &impl Exchange, market_pair: &str, multiplier: f32) -> Decimal {
-    let market_pair = market_pair.into();
+async fn get_current_price(exchange: &impl Exchange, market_pair: &MarketPair, multiplier: f32) -> Decimal {
+    let market_pair = market_pair.clone();
     let ticket = exchange
         .get_price_ticker(&GetPriceTickerRequest { market_pair })
         .await
@@ -21,13 +23,13 @@ async fn get_current_price(exchange: &impl Exchange, market_pair: &str, multipli
 }
 
 pub async fn limit_buy(exchange: &impl Exchange) {
-    let pair_text = "BNBBUSD";
-    let price = get_price(exchange, pair_text).await;
+    let market_pair = MarketPair(Currency::ETH, Currency::BTC);
+    let price = get_price(exchange, &market_pair).await;
     let req = OpenLimitOrderRequest {
         client_order_id: None,
         price,
         size: Decimal::new(1, 1),
-        market_pair: String::from(pair_text),
+        market_pair,
         post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
@@ -36,13 +38,14 @@ pub async fn limit_buy(exchange: &impl Exchange) {
 }
 
 pub async fn limit_sell(exchange: &impl Exchange) {
-    let price = get_price(exchange, "BNBBTC").await;
+    let market_pair = MarketPair(Currency::ETH, Currency::BTC);
+    let price = get_price(exchange, &market_pair).await;
     let req = OpenLimitOrderRequest {
         client_order_id: None,
         price,
         post_only: false,
         size: Decimal::new(1, 1),
-        market_pair: String::from("BNBBTC"),
+        market_pair,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
     let resp = exchange
@@ -53,12 +56,13 @@ pub async fn limit_sell(exchange: &impl Exchange) {
 }
 
 pub async fn post_only(exchange: &impl Exchange) {
-    let price = get_current_price(exchange, "BNBBTC", 1.5).await;
+    let market_pair = MarketPair(Currency::ETH, Currency::BTC);
+    let price = get_current_price(exchange, &market_pair, 1.5).await;
     let req = OpenLimitOrderRequest {
         client_order_id: None,
         price,
         size: Decimal::new(1, 1),
-        market_pair: String::from("BNBBTC"),
+        market_pair: market_pair.clone(),
         post_only: true,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
@@ -68,12 +72,12 @@ pub async fn post_only(exchange: &impl Exchange) {
         .expect("Couldn't limit sell.");
     println!("{:?}", resp);
 
-    let price = get_current_price(exchange, "BNBBTC", 0.5).await;
+    let price = get_current_price(exchange, &market_pair, 0.8).await;
     let req = OpenLimitOrderRequest {
         client_order_id: None,
         price,
         size: Decimal::new(1, 1),
-        market_pair: String::from("BNBBTC"),
+        market_pair,
         post_only: true,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
@@ -86,10 +90,11 @@ pub async fn post_only(exchange: &impl Exchange) {
 }
 
 pub async fn market_buy(exchange: &impl Exchange) {
+    let market_pair = MarketPair(Currency::ETH, Currency::BTC);
     let req = OpenMarketOrderRequest {
         client_order_id: None,
         size: Decimal::from_str("0.1").unwrap(),
-        market_pair: String::from("BNBBUSD"),
+        market_pair,
     };
     let resp = exchange
         .market_buy(&req)
@@ -99,10 +104,11 @@ pub async fn market_buy(exchange: &impl Exchange) {
 }
 
 pub async fn market_sell(exchange: &impl Exchange) {
+    let market_pair = MarketPair(Currency::ETH, Currency::BTC);
     let req = OpenMarketOrderRequest {
         client_order_id: None,
         size: Decimal::new(1, 1),
-        market_pair: String::from("BNBBTC"),
+        market_pair,
     };
     let resp = exchange
         .market_sell(&req)
@@ -112,12 +118,13 @@ pub async fn market_sell(exchange: &impl Exchange) {
 }
 
 pub async fn cancel_order(exchange: &impl Exchange) {
-    let price = get_current_price(exchange, "BNBBTC", 1.5).await;
+    let market_pair = MarketPair(Currency::ETH, Currency::BTC);
+    let price = get_current_price(exchange, &market_pair, 1.5).await;
     let req = OpenLimitOrderRequest {
         client_order_id: None,
         price,
         size: Decimal::from_str("1.0").unwrap(),
-        market_pair: String::from("BNBBTC"),
+        market_pair,
         post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
@@ -139,12 +146,13 @@ pub async fn cancel_order(exchange: &impl Exchange) {
 }
 
 pub async fn cancel_all_orders(exchange: &impl Exchange) {
-    let price = get_current_price(exchange, "BNBBTC", 1.5).await;
+    let market_pair = MarketPair(Currency::ETH, Currency::BTC);
+    let price = get_current_price(exchange, &market_pair, 1.5).await;
     let req = OpenLimitOrderRequest {
         client_order_id: None,
         price,
         size: Decimal::from_str("1.0").unwrap(),
-        market_pair: String::from("BNBBTC"),
+        market_pair,
         post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
@@ -158,9 +166,8 @@ pub async fn cancel_all_orders(exchange: &impl Exchange) {
         .await
         .expect("Couldn't limit sell.");
 
-    let req = CancelAllOrdersRequest {
-        market_pair: Some("BNBBTC".to_string()),
-    };
+    let market_pair = Some(MarketPair(Currency::ETH, Currency::BTC));
+    let req = CancelAllOrdersRequest { market_pair };
 
     let resp = exchange
         .cancel_all_orders(&req)
@@ -170,8 +177,10 @@ pub async fn cancel_all_orders(exchange: &impl Exchange) {
 }
 
 pub async fn get_order_history(exchange: &impl Exchange) {
+    let market_pair = MarketPair(Currency::ETH, Currency::BTC);
+    let market_pair = Some(market_pair);
     let req = GetOrderHistoryRequest {
-        market_pair: Some(String::from("BNBBTC")),
+        market_pair,
         order_status: None,
         paginator: None,
     };
@@ -183,19 +192,21 @@ pub async fn get_order_history(exchange: &impl Exchange) {
     println!("{:?}", resp);
 }
 
-async fn get_price(exchange: &impl Exchange, pair: &str) -> Decimal {
-    let get_price_ticker_request = GetPriceTickerRequest { market_pair: pair.to_string() };
+async fn get_price(exchange: &impl Exchange, market_pair: &MarketPair) -> Decimal {
+    let market_pair = market_pair.clone();
+    let get_price_ticker_request = GetPriceTickerRequest { market_pair };
     let ticker = exchange.get_price_ticker(&get_price_ticker_request).await.expect("Couldn't get ticker.");
     ticker.price.expect("Couldn't get price.")
 }
 
 pub async fn get_all_open_orders(exchange: &impl Exchange) {
-    let price = get_price(exchange, "BNBBTC").await;
+    let market_pair = MarketPair(Currency::ETH, Currency::BTC);
+    let price = get_price(exchange, &market_pair).await;
     let req = OpenLimitOrderRequest {
         client_order_id: None,
         price,
         size: Decimal::new(1, 1),
-        market_pair: String::from("BNBBTC"),
+        market_pair,
         post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
     };
@@ -220,10 +231,9 @@ pub async fn get_account_balances(exchange: &impl Exchange) {
 }
 
 pub async fn get_trade_history(exchange: &impl Exchange) {
-    let req = TradeHistoryRequest {
-        market_pair: Some("BNBBTC".to_string()),
-        ..Default::default()
-    };
+    let market_pair = MarketPair(Currency::ETH, Currency::BTC);
+    let market_pair = Some(market_pair);
+    let req = TradeHistoryRequest { market_pair, ..Default::default() };
 
     let resp = exchange
         .get_trade_history(&req)

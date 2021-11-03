@@ -52,6 +52,7 @@ pub use subscribe_cmd::SubscribeCmd;
 pub use subscribe::Subscribe;
 pub use ticker::Ticker;
 pub use super::shared;
+use openlimits_exchange::model::Trade;
 
 impl TryFrom<CoinbaseWebsocketMessage> for WebSocketResponse<CoinbaseWebsocketMessage> {
     type Error = OpenLimitsError;
@@ -60,9 +61,30 @@ impl TryFrom<CoinbaseWebsocketMessage> for WebSocketResponse<CoinbaseWebsocketMe
         match value {
             CoinbaseWebsocketMessage::Level2(level2) => {
                 Ok(WebSocketResponse::Generic(level2.try_into()?))
-            }
-            _ => Ok(WebSocketResponse::Raw(value)),
+            },
+            CoinbaseWebsocketMessage::Match(match_) => {
+                Ok(WebSocketResponse::Generic(match_.into()))
+            },
+            _ => Ok(WebSocketResponse::Raw(value))
         }
+    }
+}
+
+impl From<Match> for OpenLimitsWebSocketMessage {
+    fn from(match_: Match) -> Self {
+        let market_pair = match_.product_id;
+        let price = match_.price;
+        let qty = match_.size;
+        let id = format!("{}", match_.trade_id);
+        let buyer_order_id = Some(match_.taker_order_id);
+        let seller_order_id = Some(match_.maker_order_id);
+        let created_at = match_.time;
+        let fees = None;
+        let liquidity = None;
+        let side = match_.side.into();
+        let trade = Trade { market_pair, price, qty, id, buyer_order_id, created_at, fees, liquidity, seller_order_id, side };
+        let trades = vec![trade];
+        Self::Trades(trades)
     }
 }
 

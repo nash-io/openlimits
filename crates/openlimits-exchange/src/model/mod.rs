@@ -18,6 +18,8 @@ pub mod time_in_force_visitor;
 pub mod time_in_force;
 pub mod trade;
 pub mod transaction;
+pub mod currency;
+pub mod market_pair;
 
 pub use request::*;
 pub use ask_bid::AskBid;

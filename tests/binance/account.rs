@@ -1,15 +1,5 @@
-use dotenv::dotenv;
-use std::env;
-
 use crate::template::account;
-
-use openlimits::{
-    OpenLimits,
-    exchange::binance::Binance,
-    exchange::binance::BinanceCredentials,
-    exchange::binance::BinanceParameters,
-};
-use openlimits_exchange::exchange::Environment;
+use super::client::init_signed as init;
 
 #[tokio::test]
 async fn limit_buy() {
@@ -64,20 +54,4 @@ async fn get_account_balances() {
 #[tokio::test]
 async fn get_trade_history() {
     account::get_trade_history(&init().await).await;
-}
-
-async fn init() -> Binance {
-    dotenv().ok();
-
-    let parameters = BinanceParameters {
-        credentials: Some(BinanceCredentials {
-            api_key: env::var("BINANCE_API_KEY").expect("Couldn't get environment variable."),
-            api_secret: env::var("BINANCE_API_SECRET").expect("Couldn't get environment variable."),
-        }),
-        environment: Environment::Sandbox,
-    };
-
-    OpenLimits::instantiate(parameters)
-        .await
-        .expect("Failed to create Client")
 }

@@ -72,7 +72,7 @@ impl ExchangeWs for BinanceWebsocket {
             Environment::Sandbox => WS_URL_SANDBOX,
             Environment::Production => WS_URL_PROD,
         };
-        let endpoint = url::Url::parse(&format!("{}?streams={}", ws_url, streams))
+        let endpoint = url::Url::parse(&format!("{}?streams={}", ws_url, streams.to_lowercase()))
             .map_err(OpenLimitsError::UrlParserError)?;
         let (ws_stream, _) = connect_async(endpoint).await?;
 
@@ -180,9 +180,8 @@ impl Display for BinanceSubscription {
 impl From<Subscription> for BinanceSubscription {
     fn from(subscription: Subscription) -> Self {
         match subscription {
-            Subscription::OrderBookUpdates(symbol) => BinanceSubscription::Depth(symbol, None),
-            Subscription::Trades(symbol) => BinanceSubscription::Trade(symbol),
-            _ => unimplemented!(),
+            Subscription::OrderBookUpdates(symbol) => BinanceSubscription::Depth(crate::model::MarketPair::from(symbol).0, None),
+            Subscription::Trades(symbol) => BinanceSubscription::Trade(crate::model::MarketPair::from(symbol).0)
         }
     }
 }

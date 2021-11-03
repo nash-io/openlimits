@@ -1,10 +1,7 @@
 use serde_json::json;
 use serde_json::Value;
 use super::BaseClient;
-use crate::model::{
-    BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices,
-    SymbolPrice, Ticker,
-};
+use crate::model::{BookTickers, KlineParams, KlineSummaries, KlineSummary, OrderBook, PriceStats, Prices, SymbolPrice, Ticker, MarketPair};
 pub use openlimits_exchange::OpenLimitsError;
 use rust_decimal::prelude::Decimal;
 use super::shared::Result;
@@ -12,10 +9,12 @@ use super::shared::Result;
 // Market Data endpoints
 impl BaseClient {
     // Order book (Default 100; max 100)
-    pub async fn get_depth<I>(&self, symbol: &str, limit: I) -> Result<OrderBook>
+    pub async fn get_depth<I, S>(&self, symbol: S, limit: I) -> Result<OrderBook>
     where
         I: Into<Option<u64>>,
+        S: Into<MarketPair>
     {
+        let symbol = format!("{}", symbol.into().0);
         let limit = limit.into().unwrap_or(100);
         let params = json! {{"symbol": symbol, "limit": limit}};
 
@@ -31,7 +30,8 @@ impl BaseClient {
     }
 
     // Latest price for ONE symbol.
-    pub async fn get_price(&self, symbol: &str) -> Result<SymbolPrice> {
+    pub async fn get_price<S: Into<MarketPair>>(&self, symbol: S) -> Result<SymbolPrice> {
+        let symbol = format!("{}", symbol.into().0);
         let params = json! {{"symbol": symbol}};
 
         let price = self

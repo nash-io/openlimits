@@ -2,20 +2,20 @@ use std::sync::Arc;
 use std::sync::RwLock;
 use crate::errors::OpenLimitsError;
 use super::shared::Result;
-use super::MarketPair;
+use super::MarketPairInfo;
 
 
 #[derive(Debug)]
 pub struct MarketPairHandle {
-    pub inner: Arc<RwLock<MarketPair>>,
+    pub inner: Arc<RwLock<MarketPairInfo>>,
 }
 
 impl<'a> MarketPairHandle {
-    pub fn new(inner: Arc<RwLock<MarketPair>>) -> Self {
+    pub fn new(inner: Arc<RwLock<MarketPairInfo>>) -> Self {
         Self { inner }
     }
 
-    pub fn read(&'a self) -> Result<MarketPair> {
+    pub fn read(&'a self) -> Result<MarketPairInfo> {
         self.inner
             .read()
             .map(|guard| guard.clone())

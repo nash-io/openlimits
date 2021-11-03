@@ -1,4 +1,6 @@
 //! This module provides models that are used in the coinbase module
+
+mod market_pair;
 mod account;
 mod book_level;
 mod book_record_l1;
@@ -31,6 +33,7 @@ mod ticker;
 mod trade;
 pub mod websocket;
 
+pub use market_pair::MarketPair;
 pub use account::Account;
 pub use book_level::BookLevel;
 pub use book_record_l1::BookRecordL1;

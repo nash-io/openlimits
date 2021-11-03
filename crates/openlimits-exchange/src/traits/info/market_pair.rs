@@ -1,7 +1,9 @@
 use rust_decimal::Decimal;
 
+// TODO: Use MarketPair inside MarketPairInfo.
+
 #[derive(Debug, Clone)]
-pub struct MarketPair {
+pub struct MarketPairInfo {
     pub base: String,
     pub quote: String,
     pub symbol: String,

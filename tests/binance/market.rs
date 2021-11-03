@@ -1,10 +1,5 @@
-use openlimits::{
-    OpenLimits,
-    exchange::binance::Binance,
-    exchange::binance::BinanceParameters,
-};
-use openlimits_exchange::exchange::Environment;
 use crate::template::market;
+use super::client::init;
 
 #[tokio::test]
 async fn order_book() {
@@ -24,15 +19,4 @@ async fn get_historic_rates() {
 #[tokio::test]
 async fn pair() {
     market::pair(&init().await).await;
-}
-
-async fn init() -> Binance {
-    let parameters = BinanceParameters {
-        credentials: None,
-        environment: Environment::Sandbox,
-    };
-
-    OpenLimits::instantiate(parameters)
-        .await
-        .expect("Failed to create Client")
 }

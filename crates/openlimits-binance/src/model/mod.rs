@@ -7,6 +7,7 @@ pub const ORDER_SIDE_BUY: &str = "BUY";
 pub const ORDER_SIDE_SELL: &str = "SELL";
 pub const TIME_IN_FORCE_GTC: &str = "GTC";
 
+mod market_pair;
 mod account_information;
 mod all_order_req;
 mod ask_bid;
@@ -46,6 +47,7 @@ mod transaction;
 mod user_data_stream;
 pub mod websocket;
 
+pub use market_pair::MarketPair;
 pub use account_information::AccountInformation;
 pub use all_order_req::AllOrderReq;
 pub use ask_bid::AskBid;
