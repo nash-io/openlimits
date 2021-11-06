@@ -2,12 +2,11 @@ use std::{pin::Pin, task::Context, task::Poll};
 use async_trait::async_trait;
 use futures::stream::{BoxStream, SelectAll, Stream, StreamExt};
 pub use nash_native_client::{Client, Environment};
-use nash_protocol::protocol::subscriptions::SubscriptionRequest;
 use nash_protocol::protocol::ResponseOrError;
 use crate::errors::OpenLimitsError;
 use crate::exchange::traits::stream::{ExchangeWs, Subscriptions};
 use super::NashParameters;
-use super::SubscriptionResponseWrapper;
+use super::{SubscriptionRequestWrapper, SubscriptionResponseWrapper};
 use super::utils::*;
 use super::shared::Result;
 
@@ -31,7 +30,7 @@ impl Stream for NashWebsocket {
 impl ExchangeWs for NashWebsocket {
     type InitParams = NashParameters;
 
-    type Subscription = SubscriptionRequest;
+    type Subscription = SubscriptionRequestWrapper;
     type Response = SubscriptionResponseWrapper;
 
     async fn new(params: Self::InitParams) -> Result<Self> {

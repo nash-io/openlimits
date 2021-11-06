@@ -16,9 +16,9 @@ path = "examples/rust/orderbook.rs"
 
 [features]
 bindings = ["ligen", "ligen-macro", "ligen-csharp"]
-#default = ["rust_gmp"]
-#rust_gmp = ["nash-protocol/rust_gmp", "nash-native-client/rust_gmp"]
-#num_bigint = ["nash-protocol/num_bigint", "nash-native-client/num_bigint"]
+default = ["rust_gmp"]
+rust_gmp = ["nash-protocol/rust_gmp", "nash-native-client/rust_gmp"]
+num_bigint = ["nash-protocol/num_bigint", "nash-native-client/num_bigint"]
 
 [dependencies]
 async-trait = "0.1"
@@ -46,6 +46,8 @@ url = "2.1.1"
 derive_more = "0.99"
 #nash-protocol = { version = "0.1", default-features = false, features = ["rustcrypto"] }
 #nash-native-client = { version = "0.1", default-features = false, features = ["rustcrypto"] }
+nash-protocol = { path = "../nash-rust/nash-protocol", default-features = false, features = ["rustcrypto"] }
+nash-native-client = { path = "../nash-rust/nash-native-client", default-features = false, features = ["rustcrypto"] }
 pyo3 = { version = "0.12.3", optional = true }
 openlimits-binance = { path = "crates/openlimits-binance" }
 openlimits-exchange = { path = "crates/openlimits-exchange" }

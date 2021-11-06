@@ -4,13 +4,13 @@
 mod nash_credentials;
 mod nash_parameters;
 mod nash_websocket;
-mod subscription_response_wrapper;
+mod subscription_wrapper;
 mod utils;
 
 pub use nash_credentials::NashCredentials;
 pub use nash_parameters::NashParameters;
 pub use nash_websocket::NashWebsocket;
-pub use subscription_response_wrapper::SubscriptionResponseWrapper;
+pub use subscription_wrapper::*;
 pub use utils::client_from_params_failable;
 pub use super::shared;
 
@@ -34,8 +34,9 @@ use openlimits_exchange::traits::info::ExchangeInfoRetrieval;
 use openlimits_exchange::traits::Exchange;
 use openlimits_exchange::traits::ExchangeMarketData;
 use openlimits_exchange::traits::ExchangeAccount;
-use openlimits_exchange::traits::info::MarketPair;
+use openlimits_exchange::traits::info::MarketPairInfo;
 use openlimits_exchange::traits::info::MarketPairHandle;
+use crate::model::market_pair::MarketPair;
 
 /// This struct is the main struct of this module and it is used for communications with the nash openlimits-exchange
 pub struct Nash {
@@ -286,13 +287,15 @@ impl Nash {
         req: &OpenLimitOrderRequest,
         buy_or_sell: nash_protocol::types::BuyOrSell,
     ) -> nash_protocol::protocol::place_order::LimitOrderRequest {
+        let market = req.market_pair.clone();
+        let market = nash_protocol::types::market_pair::MarketPair::from(market).0;
         nash_protocol::protocol::place_order::LimitOrderRequest {
             client_order_id: req.client_order_id.clone(),
             cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(
                 req.time_in_force,
             ),
             allow_taker: !req.post_only,
-            market: req.market_pair.clone(),
+            market,
             buy_or_sell,
             amount: format!("{}", req.size),
             price: format!("{}", req.price),
@@ -302,9 +305,11 @@ impl Nash {
     pub fn convert_market_request(
         req: &OpenMarketOrderRequest,
     ) -> nash_protocol::protocol::place_order::MarketOrderRequest {
+        let market = req.market_pair.clone();
+        let market = nash_protocol::types::market_pair::MarketPair::from(market).0;
         nash_protocol::protocol::place_order::MarketOrderRequest {
             client_order_id: req.client_order_id.clone(),
-            market: req.market_pair.clone(),
+            market,
             amount: format!("{}", req.size),
         }
     }
@@ -328,13 +333,13 @@ impl Nash {
 
 #[async_trait]
 impl ExchangeInfoRetrieval for Nash {
-    async fn retrieve_pairs(&self) -> Result<Vec<MarketPair>> {
+    async fn retrieve_pairs(&self) -> Result<Vec<MarketPairInfo>> {
         Ok(self
             .list_markets()
             .await?
             .markets
             .iter()
-            .map(|(symbol, v)| MarketPair {
+            .map(|(symbol, v)| MarketPairInfo {
                 symbol: symbol.to_string(),
                 base: v.asset_a.asset.name().to_string(),
                 quote: v.asset_b.asset.name().to_string(),
@@ -358,7 +363,8 @@ impl ExchangeInfoRetrieval for Nash {
             .await
     }
 
-    async fn get_pair(&self, name: &str) -> Result<MarketPairHandle> {
-        self.exchange_info.get_pair(name)
+    async fn get_pair(&self, name: &MarketPair) -> Result<MarketPairHandle> {
+        let name = nash_protocol::types::market_pair::MarketPair::from(name.clone()).0;
+        self.exchange_info.get_pair(&name)
     }
 }
