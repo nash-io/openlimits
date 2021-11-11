@@ -6,12 +6,12 @@ pub async fn client_from_params_failable(params: NashParameters) -> Result<Clien
     let client = match params.credentials {
         Some(credentials) => {
             Client::from_keys(
-                &credentials.secret,
-                &credentials.session,
+                &credentials.api_secret,
+                &credentials.api_key,
                 params.affiliate_code,
                 false,
                 params.client_id,
-                params.environment,
+                params.environment.into(),
                 params.timeout,
             )
             .await?
@@ -22,7 +22,7 @@ pub async fn client_from_params_failable(params: NashParameters) -> Result<Clien
                 None,
                 false,
                 params.client_id,
-                params.environment,
+                params.environment.into(),
                 params.timeout,
             )
             .await?

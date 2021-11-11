@@ -1,6 +1,6 @@
 /// This structure represents the Nash account credentials
 #[derive(Clone)]
 pub struct NashCredentials {
-    pub secret: String,
-    pub session: String,
+    pub api_secret: String,
+    pub api_key: String,
 }

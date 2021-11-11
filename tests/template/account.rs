@@ -14,11 +14,11 @@ use openlimits::model::currency::Currency;
 
 async fn get_current_price(exchange: &impl Exchange, market_pair: &MarketPair, multiplier: f32) -> Decimal {
     let market_pair = market_pair.clone();
-    let ticket = exchange
+    let ticker = exchange
         .get_price_ticker(&GetPriceTickerRequest { market_pair })
         .await
-        .unwrap();
-    let price = ticket.price.unwrap();
+        .expect("Failed to get price ticker.");
+    let price = ticker.price.unwrap_or(Decimal::from_f32(1.0).unwrap());
     price * Decimal::from_f32(multiplier).unwrap()
 }
 
@@ -28,7 +28,7 @@ pub async fn limit_buy(exchange: &impl Exchange) {
     let req = OpenLimitOrderRequest {
         client_order_id: None,
         price,
-        size: Decimal::new(1, 1),
+        size: Decimal::from_f32(0.1).unwrap(),
         market_pair,
         post_only: false,
         time_in_force: TimeInForce::GoodTillCancelled,
@@ -196,7 +196,7 @@ async fn get_price(exchange: &impl Exchange, market_pair: &MarketPair) -> Decima
     let market_pair = market_pair.clone();
     let get_price_ticker_request = GetPriceTickerRequest { market_pair };
     let ticker = exchange.get_price_ticker(&get_price_ticker_request).await.expect("Couldn't get ticker.");
-    ticker.price.expect("Couldn't get price.")
+    ticker.price.unwrap_or(Decimal::from_f32(1.0).unwrap())
 }
 
 pub async fn get_all_open_orders(exchange: &impl Exchange) {

@@ -10,7 +10,7 @@ use openlimits::OpenLimits;
 use openlimits::exchange::shared::Result;
 use std::env;
 // use nash_native_client::Environment;
-// use openlimits::exchange::nash::{Nash, NashCredentials, NashParameters};
+// use openlimits::exchange::old_nash_tests::{Nash, NashCredentials, NashParameters};
 // use tokio::time::Duration;
 
 #[tokio::test]

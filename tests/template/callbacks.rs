@@ -4,6 +4,7 @@ use openlimits::model::websocket::Subscription;
 use openlimits::exchange::traits::stream::ExchangeWs;
 use openlimits_exchange::model::market_pair::MarketPair;
 use openlimits::model::currency::Currency;
+use std::time::Duration;
 
 async fn test_subscription_callback(websocket: &impl ExchangeWs, sub: Subscription) {
     let (tx, rx) = sync_channel(0);
@@ -16,7 +17,7 @@ async fn test_subscription_callback(websocket: &impl ExchangeWs, sub: Subscripti
         .await
         .expect("Failed to subscribe.");
 
-    rx.recv().expect("Failed to receive sync message.");
+    rx.recv_timeout(Duration::new(3, 0)).ok();
 }
 
 pub async fn orderbook(ws: &impl ExchangeWs) {

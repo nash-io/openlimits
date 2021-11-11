@@ -7,11 +7,11 @@ use serde_json::Value;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
 use openlimits_exchange::errors::OpenLimitsError;
-pub use crate::{
+use crate::{
     BinanceParameters,
     model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
 };
-pub use openlimits_exchange::{
+use openlimits_exchange::{
     model::websocket::OpenLimitsWebSocketMessage,
     model::websocket::Subscription,
     model::websocket::WebSocketResponse,

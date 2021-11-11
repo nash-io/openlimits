@@ -4,13 +4,11 @@
 mod nash_credentials;
 mod nash_parameters;
 mod nash_websocket;
-mod subscription_wrapper;
 mod utils;
 
 pub use nash_credentials::NashCredentials;
 pub use nash_parameters::NashParameters;
 pub use nash_websocket::NashWebsocket;
-pub use subscription_wrapper::*;
 pub use utils::client_from_params_failable;
 pub use super::shared;
 
@@ -37,6 +35,7 @@ use openlimits_exchange::traits::ExchangeAccount;
 use openlimits_exchange::traits::info::MarketPairInfo;
 use openlimits_exchange::traits::info::MarketPairHandle;
 use crate::model::market_pair::MarketPair;
+use openlimits_exchange::MissingImplementationContent;
 
 /// This struct is the main struct of this module and it is used for communications with the nash openlimits-exchange
 pub struct Nash {
@@ -50,10 +49,12 @@ impl Exchange for Nash {
     type InnerClient = Client;
 
     async fn new(params: Self::InitParams) -> Result<Self> {
-        Ok(Self {
+        let nash = Self {
             exchange_info: ExchangeInfo::new(),
             transport: client_from_params_failable(params).await?,
-        })
+        };
+        nash.refresh_market_info().await.ok();
+        Ok(nash)
     }
 
     fn inner_client(&self) -> Option<&Self::InnerClient> {
@@ -244,7 +245,7 @@ impl ExchangeAccount for Nash {
     async fn market_sell(&self, req: &OpenMarketOrderRequest) -> Result<Order> {
         let req: nash_protocol::protocol::place_order::MarketOrderRequest =
             Nash::convert_market_request(req);
-
+        println!("{:#?}", req);
         let resp = self.transport.run_http(req).await;
         Ok(
             Nash::unwrap_response::<nash_protocol::protocol::place_order::PlaceOrderResponse>(
@@ -254,8 +255,9 @@ impl ExchangeAccount for Nash {
         )
     }
 
-    async fn market_buy(&self, _: &OpenMarketOrderRequest) -> Result<Order> {
-        unimplemented!("Market buys are not supported by nash. A market buy can be simulated by placing a market sell in the inverse market. Market buy in btc_usdc should be translated to a market sell in usdc_btc.")
+    async fn market_buy(&self, _req: &OpenMarketOrderRequest) -> Result<Order> {
+        let message = "Nash client doesn't implement market_buy".into();
+        Err(OpenLimitsError::MissingImplementation(MissingImplementationContent { message }))
     }
 
     async fn get_order(&self, req: &GetOrderRequest) -> Result<Order> {
@@ -291,9 +293,7 @@ impl Nash {
         let market = nash_protocol::types::market_pair::MarketPair::from(market).0;
         nash_protocol::protocol::place_order::LimitOrderRequest {
             client_order_id: req.client_order_id.clone(),
-            cancellation_policy: nash_protocol::types::OrderCancellationPolicy::from(
-                req.time_in_force,
-            ),
+            cancellation_policy: req.time_in_force.into(),
             allow_taker: !req.post_only,
             market,
             buy_or_sell,

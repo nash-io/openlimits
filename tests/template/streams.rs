@@ -4,6 +4,8 @@ use openlimits::model::websocket::Subscription;
 use openlimits::exchange::traits::stream::ExchangeWs;
 use openlimits_exchange::model::market_pair::MarketPair;
 use openlimits::exchange::model::currency::Currency;
+use tokio::time::timeout;
+use std::time::Duration;
 
 pub async fn orderbook(ws: &impl ExchangeWs) {
     let market_pair = MarketPair(Currency::ETH, Currency::BTC);
@@ -23,8 +25,8 @@ pub async fn trades(ws: &impl ExchangeWs) {
         .await
         .expect("Couldn't create stream.");
 
-    let trades = s.next().await;
+    let trades = timeout(Duration::new(2, 0), s.next()).await;
     print!("{:?}", trades);
-    let trades = s.next().await;
+    let trades = timeout(Duration::new(2, 0), s.next()).await;
     print!("{:?}", trades);
 }

@@ -5,4 +5,5 @@ mod template;
 // mod apis;
 mod binance;
 mod coinbase;
-// mod nash;
+mod nash;
+// mod old_nash_tests;

@@ -38,8 +38,9 @@ pub async fn get_historic_rates(exchange: &impl Exchange) {
 
 pub async fn pair(exchange: &impl Exchange) {
     let market_pair = MarketPair(Currency::ETH, Currency::BTC);
-    let _response = exchange
+    let response = exchange
         .get_pair(&market_pair)
         .await
         .expect("Couldn't get pair.");
+    println!("{:#?}", response);
 }

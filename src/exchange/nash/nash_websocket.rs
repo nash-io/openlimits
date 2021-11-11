@@ -6,9 +6,9 @@ use nash_protocol::protocol::ResponseOrError;
 use crate::errors::OpenLimitsError;
 use crate::exchange::traits::stream::{ExchangeWs, Subscriptions};
 use super::NashParameters;
-use super::{SubscriptionRequestWrapper, SubscriptionResponseWrapper};
 use super::utils::*;
 use super::shared::Result;
+use nash_protocol::protocol::subscriptions::{SubscriptionRequest, SubscriptionResponse};
 
 /// This struct represents a websocket connection
 pub struct NashWebsocket {
@@ -29,9 +29,8 @@ impl Stream for NashWebsocket {
 #[async_trait]
 impl ExchangeWs for NashWebsocket {
     type InitParams = NashParameters;
-
-    type Subscription = SubscriptionRequestWrapper;
-    type Response = SubscriptionResponseWrapper;
+    type Subscription = SubscriptionRequest;
+    type Response = SubscriptionResponse;
 
     async fn new(params: Self::InitParams) -> Result<Self> {
         Ok(Self {
@@ -56,7 +55,7 @@ impl ExchangeWs for NashWebsocket {
 
         let s = streams.map(|message| match message {
             Ok(msg) => match msg {
-                ResponseOrError::Response(resp) => Ok(SubscriptionResponseWrapper(resp.data)),
+                ResponseOrError::Response(resp) => Ok(resp.data),
                 ResponseOrError::Error(resp) => {
                     let f = resp
                         .errors
