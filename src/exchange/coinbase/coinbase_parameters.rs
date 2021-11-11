@@ -1,23 +1,24 @@
 use super::CoinbaseCredentials;
+use openlimits_exchange::exchange::Environment;
 
 /// This struct represents the coinbase parameters
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct CoinbaseParameters {
-    pub sandbox: bool,
+    pub environment: Environment,
     pub credentials: Option<CoinbaseCredentials>,
 }
 
 impl CoinbaseParameters {
     pub fn sandbox() -> Self {
         Self {
-            sandbox: true,
+            environment: Environment::Sandbox,
             ..Default::default()
         }
     }
 
-    pub fn prod() -> Self {
+    pub fn production() -> Self {
         Self {
-            sandbox: false,
+            environment: Environment::Production,
             ..Default::default()
         }
     }

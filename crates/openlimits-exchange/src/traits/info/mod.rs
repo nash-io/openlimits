@@ -8,7 +8,7 @@ mod utils;
 pub use exchange_info_retrieval::ExchangeInfoRetrieval;
 pub use exchange_info::ExchangeInfo;
 pub use market_pair_handle::MarketPairHandle;
-pub use market_pair::MarketPair;
+pub use market_pair::MarketPairInfo;
 pub use utils::*;
 pub use super::shared;
 

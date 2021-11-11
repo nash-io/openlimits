@@ -9,7 +9,7 @@ use serde::Serialize;
 use sha2::Sha256;
 use url::Url;
 use crate::BinanceContentError;
-use exchange::OpenLimitsError;
+use openlimits_exchange::OpenLimitsError;
 use super::shared::Result;
 
 type HmacSha256 = Hmac<Sha256>;
@@ -55,9 +55,9 @@ impl Transport {
 
     fn get_base_url(sandbox: bool) -> String {
         if sandbox {
-            String::from("https://testnet.openlimits-binance.vision")
+            String::from("https://testnet.binance.vision")
         } else {
-            String::from("https://api.openlimits-binance.com")
+            String::from("https://api.binance.com")
         }
     }
 

@@ -6,21 +6,22 @@ use serde::{de, Deserialize, Serialize};
 use serde_json::Value;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
-use exchange::errors::OpenLimitsError;
-pub use crate::{
+use openlimits_exchange::errors::OpenLimitsError;
+use crate::{
     BinanceParameters,
     model::websocket::{BinanceSubscription, BinanceWebsocketMessage},
 };
-pub use exchange::{
+use openlimits_exchange::{
     model::websocket::OpenLimitsWebSocketMessage,
     model::websocket::Subscription,
     model::websocket::WebSocketResponse,
 };
-use exchange::traits::stream::{ExchangeWs, Subscriptions};
+use openlimits_exchange::traits::stream::{ExchangeWs, Subscriptions};
 use super::shared::Result;
+use openlimits_exchange::exchange::Environment;
 
-const WS_URL_PROD: &str = "wss://stream.openlimits-binance.com:9443/stream";
-const WS_URL_SANDBOX: &str = "wss://testnet.openlimits-binance.vision/stream";
+const WS_URL_PROD: &str = "wss://stream.binance.com:9443/stream";
+const WS_URL_SANDBOX: &str = "wss://testnet.binance.vision/stream";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
@@ -67,11 +68,11 @@ impl ExchangeWs for BinanceWebsocket {
             .collect::<Vec<String>>()
             .join("/");
 
-        let ws_url = match self.parameters.sandbox {
-            true => WS_URL_SANDBOX,
-            false => WS_URL_PROD,
+        let ws_url = match self.parameters.environment {
+            Environment::Sandbox => WS_URL_SANDBOX,
+            Environment::Production => WS_URL_PROD,
         };
-        let endpoint = url::Url::parse(&format!("{}?streams={}", ws_url, streams))
+        let endpoint = url::Url::parse(&format!("{}?streams={}", ws_url, streams.to_lowercase()))
             .map_err(OpenLimitsError::UrlParserError)?;
         let (ws_stream, _) = connect_async(endpoint).await?;
 
@@ -179,9 +180,8 @@ impl Display for BinanceSubscription {
 impl From<Subscription> for BinanceSubscription {
     fn from(subscription: Subscription) -> Self {
         match subscription {
-            Subscription::OrderBookUpdates(symbol) => BinanceSubscription::Depth(symbol, None),
-            Subscription::Trades(symbol) => BinanceSubscription::Trade(symbol),
-            _ => unimplemented!(),
+            Subscription::OrderBookUpdates(symbol) => BinanceSubscription::Depth(crate::model::MarketPair::from(symbol).0, None),
+            Subscription::Trades(symbol) => BinanceSubscription::Trade(crate::model::MarketPair::from(symbol).0)
         }
     }
 }

@@ -65,9 +65,9 @@ impl Transport {
 
     fn get_base_url(sandbox: bool) -> String {
         if sandbox {
-            String::from("https://api-public.sandbox.pro.coinbase.com")
+            String::from("https://api-public.sandbox.exchange.coinbase.com")
         } else {
-            String::from("https://api.pro.coinbase.com")
+            String::from("https://api.exchange.coinbase.com")
         }
     }
 
@@ -235,7 +235,6 @@ impl Transport {
         };
 
         let sign_message = format!("{}{}{}", prefix, path, body);
-        println!("sign message: {}", sign_message);
 
         mac.update(sign_message.as_bytes());
         let signature = base64::encode(mac.finalize().into_bytes());
@@ -250,7 +249,6 @@ impl Transport {
             StatusCode::OK => {
                 let text = response.text().await?;
                 serde_json::from_str::<O>(&text).map_err(move |err| {
-                    println!("{}", &text);
                     OpenLimitsError::NotParsableResponse(format!("Error:{} Payload: {}", err, text))
                 })
             }

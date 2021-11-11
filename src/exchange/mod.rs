@@ -1,9 +1,9 @@
 //! This module contains all the implemented exchanges.
 
-pub use binance;
+pub use openlimits_binance as binance;
 pub mod coinbase;
 pub mod nash;
-pub use exchange::traits;
-pub use exchange::shared;
-pub use exchange::model;
-pub use exchange::errors;
+pub use openlimits_exchange::traits;
+pub use openlimits_exchange::shared;
+pub use openlimits_exchange::model;
+pub use openlimits_exchange::errors;

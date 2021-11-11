@@ -21,9 +21,10 @@ use futures::stream::BoxStream;
 use std::sync::Mutex;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
 use super::shared::Result;
+use openlimits_exchange::exchange::Environment;
 
-const WS_URL_PROD: &str = "wss://ws-feed.pro.coinbase.com";
-const WS_URL_SANDBOX: &str = "wss://ws-feed-public.sandbox.pro.coinbase.com";
+const WS_URL_PROD: &str = "wss://ws-feed.exchange.coinbase.com";
+const WS_URL_SANDBOX: &str = "wss://ws-feed-public.sandbox.exchange.coinbase.com";
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
@@ -42,14 +43,6 @@ pub struct CoinbaseWebsocket {
 }
 
 impl CoinbaseWebsocket {
-    pub fn new(parameters: CoinbaseParameters) -> Self {
-        Self {
-            subscriptions: Default::default(),
-            parameters,
-            disconnection_senders: Default::default(),
-        }
-    }
-
     pub async fn subscribe_(&mut self, subscription: CoinbaseSubscription) -> Result<()> {
         let (channels, product_ids) = match &subscription {
             CoinbaseSubscription::Level2(product_id) => (
@@ -60,7 +53,10 @@ impl CoinbaseWebsocket {
                 vec![Channel::Name(ChannelType::Heartbeat)],
                 vec![product_id.clone()],
             ),
-            _ => unimplemented!(),
+            CoinbaseSubscription::Matches(product_id) => (
+                vec![Channel::Name(ChannelType::Matches)],
+                vec![product_id.clone()]
+            )
         };
         let subscribe = Subscribe {
             _type: SubscribeCmd::Subscribe,
@@ -75,7 +71,7 @@ impl CoinbaseWebsocket {
     }
 
     pub async fn connect(&self, subscribe: Subscribe) -> Result<SplitStream<WSStream>> {
-        let ws_url = if self.parameters.sandbox {
+        let ws_url = if self.parameters.environment == Environment::Sandbox {
             WS_URL_SANDBOX
         } else {
             WS_URL_PROD
@@ -123,7 +119,11 @@ impl ExchangeWs for CoinbaseWebsocket {
     type Response = CoinbaseWebsocketMessage;
 
     async fn new(parameters: Self::InitParams) -> Result<Self> {
-        Ok(CoinbaseWebsocket::new(parameters))
+        Ok(Self {
+            subscriptions: Default::default(),
+            parameters,
+            disconnection_senders: Default::default(),
+        })
     }
 
     async fn disconnect(&self) {
@@ -139,7 +139,7 @@ impl ExchangeWs for CoinbaseWebsocket {
         &self,
         subscription: Subscriptions<Self::Subscription>,
     ) -> Result<BoxStream<'static, Result<Self::Response>>> {
-        let ws_url = if self.parameters.sandbox {
+        let ws_url = if self.parameters.environment == Environment::Sandbox {
             WS_URL_SANDBOX
         } else {
             WS_URL_PROD
@@ -156,7 +156,10 @@ impl ExchangeWs for CoinbaseWebsocket {
                 vec![Channel::Name(ChannelType::Heartbeat)],
                 vec![product_id.clone()],
             ),
-            _ => unimplemented!(),
+            CoinbaseSubscription::Matches(product_id) => (
+                vec![Channel::Name(ChannelType::Matches)],
+                vec![product_id.clone()]
+            )
         };
         let subscribe = Subscribe {
             _type: SubscribeCmd::Subscribe,

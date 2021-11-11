@@ -1,4 +1,4 @@
-use crate::market::MarketPair;
+use crate::model::market_pair::MarketPair;
 
 #[derive(Debug, Clone)]
 pub enum Subscription {

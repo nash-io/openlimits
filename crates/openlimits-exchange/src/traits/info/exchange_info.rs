@@ -5,12 +5,12 @@ use crate::errors::OpenLimitsError;
 use super::shared::Result;
 use super::ExchangeInfoRetrieval;
 use super::MarketPairHandle;
-use super::MarketPair;
+use super::MarketPairInfo;
 
 /// This struct represents informations about the openlimits-exchange
 #[derive(Clone)]
 pub struct ExchangeInfo {
-    pairs: Arc<RwLock<HashMap<String, Arc<RwLock<MarketPair>>>>>,
+    pairs: Arc<RwLock<HashMap<String, Arc<RwLock<MarketPairInfo>>>>>,
 }
 
 impl ExchangeInfo {

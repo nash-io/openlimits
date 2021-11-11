@@ -1,13 +1,9 @@
 use std::collections::HashMap;
 use rust_decimal::prelude::*;
 use serde_json::json;
-use exchange::errors::OpenLimitsError;
-use crate::model::{
-    AccountInformation, AllOrderReq, Balance, Order, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT,
-    ORDER_TYPE_LIMIT_MAKER, ORDER_TYPE_MARKET, OrderCanceled, OrderRequest, TimeInForce,
-    TradeHistory, TradeHistoryReq,
-};
-use exchange::traits::info::MarketPair;
+use crate::model::{AccountInformation, AllOrderReq, Balance, Order, ORDER_SIDE_BUY, ORDER_SIDE_SELL, ORDER_TYPE_LIMIT, ORDER_TYPE_LIMIT_MAKER, ORDER_TYPE_MARKET, OrderCanceled, OrderRequest, TimeInForce, TradeHistory, TradeHistoryReq, MarketPair};
+use openlimits_exchange::errors::OpenLimitsError;
+use openlimits_exchange::traits::info::MarketPairInfo;
 use super::BaseClient;
 use super::shared::Result;
 
@@ -79,17 +75,17 @@ impl BaseClient {
     // Place a LIMIT order - BUY
     pub async fn limit_buy(
         &self,
-        pair: MarketPair,
+        pair: MarketPairInfo,
         qty: Decimal,
         price: Decimal,
         tif: TimeInForce,
         post_only: bool,
     ) -> Result<Order> {
-        let order_type = match post_only {
-            true => ORDER_TYPE_LIMIT_MAKER,
-            false => ORDER_TYPE_LIMIT,
-        }
-        .to_string();
+        let (order_type, time_in_force) = match post_only {
+            true => (ORDER_TYPE_LIMIT_MAKER.to_string(), None),
+            false => (ORDER_TYPE_LIMIT.to_string(), Some(tif)),
+        };
+
         let buy: OrderRequest = OrderRequest {
             symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -99,7 +95,7 @@ impl BaseClient {
             )),
             order_side: ORDER_SIDE_BUY.to_string(),
             order_type,
-            time_in_force: Some(tif),
+            time_in_force,
         };
 
         let transaction = self
@@ -114,17 +110,17 @@ impl BaseClient {
 
     pub async fn limit_sell(
         &self,
-        pair: MarketPair,
+        pair: MarketPairInfo,
         qty: Decimal,
         price: Decimal,
         tif: TimeInForce,
         post_only: bool,
     ) -> Result<Order> {
-        let order_type = match post_only {
-            true => ORDER_TYPE_LIMIT_MAKER,
-            false => ORDER_TYPE_LIMIT,
-        }
-        .to_string();
+        let (order_type, time_in_force) = match post_only {
+            true => (ORDER_TYPE_LIMIT_MAKER.to_string(), None),
+            false => (ORDER_TYPE_LIMIT.to_string(), Some(tif)),
+        };
+
         let sell: OrderRequest = OrderRequest {
             symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -134,7 +130,7 @@ impl BaseClient {
             )),
             order_side: ORDER_SIDE_SELL.to_string(),
             order_type,
-            time_in_force: Some(tif),
+            time_in_force,
         };
 
         let transaction = self
@@ -146,7 +142,7 @@ impl BaseClient {
     }
 
     // Place a MARKET order - BUY
-    pub async fn market_buy(&self, pair: MarketPair, qty: Decimal) -> Result<Order> {
+    pub async fn market_buy(&self, pair: MarketPairInfo, qty: Decimal) -> Result<Order> {
         let buy: OrderRequest = OrderRequest {
             symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -165,7 +161,7 @@ impl BaseClient {
     }
 
     // Place a MARKET order - SELL
-    pub async fn market_sell(&self, pair: MarketPair, qty: Decimal) -> Result<Order> {
+    pub async fn market_sell(&self, pair: MarketPairInfo, qty: Decimal) -> Result<Order> {
         let sell: OrderRequest = OrderRequest {
             symbol: pair.symbol,
             quantity: qty.round_dp(pair.base_increment.normalize().scale()),
@@ -192,7 +188,8 @@ impl BaseClient {
         Ok(order_canceled)
     }
 
-    pub async fn cancel_all_orders(&self, symbol: &str) -> Result<Vec<OrderCanceled>> {
+    pub async fn cancel_all_orders<P: Into<MarketPair>>(&self, symbol: P) -> Result<Vec<OrderCanceled>> {
+        let symbol = symbol.into().0;
         let params = json! {{"symbol":symbol}};
         let orders_canceled = self
             .transport

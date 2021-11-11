@@ -6,9 +6,10 @@ use crate::exchange::{
         Paginator,
     },
 };
-use crate::exchange::traits::info::MarketPair;
+use crate::exchange::traits::info::MarketPairInfo;
 use super::BaseClient;
 use super::shared::Result;
+use crate::exchange::coinbase::model::MarketPair;
 
 impl BaseClient {
     pub async fn get_account(&self, paginator: Option<&Paginator>) -> Result<Vec<Account>> {
@@ -26,7 +27,7 @@ impl BaseClient {
     }
 
     // TODO: refactor buy and sell in order creation in commun function
-    pub async fn market_buy(&self, pair: MarketPair, size: Decimal) -> Result<Order> {
+    pub async fn market_buy(&self, pair: MarketPairInfo, size: Decimal) -> Result<Order> {
         let data = OrderRequest {
             product_id: pair.symbol,
             client_oid: None,
@@ -47,7 +48,7 @@ impl BaseClient {
         Ok(transaction)
     }
 
-    pub async fn market_sell(&self, pair: MarketPair, size: Decimal) -> Result<Order> {
+    pub async fn market_sell(&self, pair: MarketPairInfo, size: Decimal) -> Result<Order> {
         let data = OrderRequest {
             product_id: pair.symbol,
             client_oid: None,
@@ -70,7 +71,7 @@ impl BaseClient {
 
     pub async fn limit_buy(
         &self,
-        pair: MarketPair,
+        pair: MarketPairInfo,
         size: Decimal,
         price: Decimal,
         time_in_force: OrderTimeInForce,
@@ -102,7 +103,7 @@ impl BaseClient {
 
     pub async fn limit_sell(
         &self,
-        pair: MarketPair,
+        pair: MarketPairInfo,
         size: Decimal,
         price: Decimal,
         time_in_force: OrderTimeInForce,
@@ -150,10 +151,10 @@ impl BaseClient {
         Ok(resp)
     }
 
-    pub async fn cancel_all_orders(&self, product_id: Option<&str>) -> Result<Vec<String>> {
+    pub async fn cancel_all_orders<P: Into<MarketPair>>(&self, product_id: Option<P>) -> Result<Vec<String>> {
         let params = if let Some(product_id) = product_id {
             CancelAllOrders {
-                product_id: Some(String::from(product_id)),
+                product_id: Some(product_id.into().0),
             }
         } else {
             CancelAllOrders { product_id: None }
