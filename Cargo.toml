@@ -23,8 +23,8 @@ num_bigint = ["openlimits-nash/num_bigint"]
 [dependencies]
 openlimits-binance = "0.2.0"
 openlimits-exchange = "0.2.0"
-openlimits-coinbase = { path = "crates/openlimits-coinbase" }
-openlimits-nash = { path = "crates/openlimits-nash", default-features = false, features = ["rustcrypto"] }
+openlimits-coinbase = "0.2.0"
+openlimits-nash = { version = "0.2.0", default-features = false, features = ["rustcrypto"] }
 # ligen-macro = { path = "../../sensorial/systems/ligen/ligen/macro", optional = true }
 # ligen        = { path = "../../sensorial/systems/ligen/ligen", optional = true }
 # lazy_static = "1.4.0"
