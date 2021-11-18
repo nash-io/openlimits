@@ -17,42 +17,23 @@ path = "examples/rust/orderbook.rs"
 [features]
 # bindings = ["ligen", "ligen-macro", "ligen-csharp"]
 default = ["rust_gmp"]
-rust_gmp = ["nash-protocol/rust_gmp", "nash-native-client/rust_gmp"]
-num_bigint = ["nash-protocol/num_bigint", "nash-native-client/num_bigint"]
+rust_gmp = ["openlimits-nash/rust_gmp"]
+num_bigint = ["openlimits-nash/num_bigint"]
 
 [dependencies]
-async-trait = "0.1"
-#base64 = "0.13"
-#chrono = { version = "0.4", features = ["std", "serde"] }
-dotenv = "0.15"
-futures = "0.3"
-futures-util = "0.3"
-hex = "0.4.2"
-hmac = "0.8.1"
-log = "0.4.8"
-reqwest = { version = "0.11", features = ["json", "blocking"] }
-rust_decimal = "1.14.3"
-sugar = "0.2.0"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-serde_urlencoded = "0.7.0"
-thiserror = "1.0.20"
-tokio = { version = "1.0", features = ["full"] }
-tokio-stream = "0.1"
-tokio-tungstenite = { version = "0.13", features = ["tls"] }
-tungstenite = "0.12"
-sha2 = "0.9.1"
-url = "2.1.1"
-derive_more = "0.99"
-nash-protocol = { version = "0.2.0", default-features = false, features = ["rustcrypto"] }
-nash-native-client = { version = "0.2.0", default-features = false, features = ["rustcrypto"] }
-pyo3 = { version = "0.12.3", optional = true }
 openlimits-binance = "0.2.0"
 openlimits-exchange = "0.2.0"
 openlimits-coinbase = { path = "crates/openlimits-coinbase" }
+openlimits-nash = { path = "crates/openlimits-nash", default-features = false, features = ["rustcrypto"] }
 # ligen-macro = { path = "../../sensorial/systems/ligen/ligen/macro", optional = true }
 # ligen        = { path = "../../sensorial/systems/ligen/ligen", optional = true }
-lazy_static = "1.4.0"
+# lazy_static = "1.4.0"
+
+[dev-dependencies]
+rust_decimal = "1.14.3"
+tokio = { version = "1.0", features = ["full"] }
+futures = "0.3"
+dotenv = "0.15.0"
 
 [build-dependencies]
 # ligen        = { path = "../../sensorial/systems/ligen/ligen", optional = true }

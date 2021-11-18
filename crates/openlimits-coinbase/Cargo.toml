@@ -1,7 +1,12 @@
-[package]
 name = "openlimits-coinbase"
-version = "0.1.0"
+version = "0.2.0"
+authors = ["Danilo Guanabara <danilo@sensorial.systems>"]
 edition = "2018"
+description = "Coinbase implementation for OpenLimits."
+license = "BSD-2-Clause"
+repository = "https://github.com/nash-io/openlimits"
+keywords = ["cryptocurrency", "exchange", "openlimits", "api"]
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

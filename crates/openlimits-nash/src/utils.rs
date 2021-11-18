@@ -1,6 +1,6 @@
 use nash_native_client::Client;
 use super::NashParameters;
-use super::shared::Result;
+use openlimits_exchange::shared::Result;
 
 pub async fn client_from_params_failable(params: NashParameters) -> Result<Client> {
     let client = match params.credentials {
