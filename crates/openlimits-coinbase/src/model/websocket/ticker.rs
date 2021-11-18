@@ -5,7 +5,7 @@ use super::shared::string_to_decimal;
 use super::shared::string_to_opt_decimal;
 
 /// This enum represents a ticker
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(untagged)]
 #[serde(rename_all = "camelCase")]
 pub enum Ticker {

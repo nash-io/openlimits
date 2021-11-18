@@ -8,7 +8,7 @@ use super::Match;
 use super::Received;
 
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub enum Full {
     Received(Received),
     Open(Open),

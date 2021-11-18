@@ -4,7 +4,7 @@ use super::OrderSide;
 use super::shared::string_to_decimal;
 use super::shared::string_to_opt_decimal;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Change {
     pub time: String,
     pub sequence: usize,

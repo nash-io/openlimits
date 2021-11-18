@@ -37,6 +37,6 @@ pub enum WebSocketResponse<T> {
 pub enum OpenLimitsWebSocketMessage {
     Ping,
     OrderBook(OrderBookResponse),
-    OrderBookDiff(OrderBookResponse),
+    // OrderBookDiff(OrderBookResponse),
     Trades(Vec<Trade>),
 }

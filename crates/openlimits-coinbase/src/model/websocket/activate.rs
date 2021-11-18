@@ -3,7 +3,7 @@ use serde::Deserialize;
 use super::StopType;
 use super::shared::string_to_decimal;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Activate {
     pub product_id: String,
     #[serde(with = "string_to_decimal")]

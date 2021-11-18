@@ -3,7 +3,7 @@ use super::Level2SnapshotRecord;
 use super::Level2UpdateRecord;
 
 /// This enum represents the level 2
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub enum Level2 {
     Snapshot {
         product_id: String,
