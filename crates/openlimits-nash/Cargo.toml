@@ -1,3 +1,4 @@
+[package]
 name = "openlimits-nash"
 version = "0.2.0"
 authors = ["Danilo Guanabara <danilo@sensorial.systems>"]
