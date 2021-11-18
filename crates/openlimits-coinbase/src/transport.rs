@@ -6,8 +6,8 @@ use serde::Serialize;
 use sha2::Sha256;
 use std::time::SystemTime;
 use url::Url;
-use crate::exchange::coinbase::CoinbaseContentError;
-use crate::errors::OpenLimitsError;
+use crate::CoinbaseContentError;
+use openlimits_exchange::errors::OpenLimitsError;
 use super::shared::Result;
 
 type HmacSha256 = Hmac<Sha256>;

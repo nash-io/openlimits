@@ -8,15 +8,13 @@ use serde::{Deserialize, Serialize};
 use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
-use crate::{
-    exchange::coinbase::model::websocket::{
-        Channel, CoinbaseSubscription, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd,
-    },
-    errors::OpenLimitsError,
+use crate::model::websocket::{
+    Channel, CoinbaseSubscription, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd,
 };
-use crate::exchange::coinbase::model::websocket::ChannelType;
-use crate::exchange::coinbase::CoinbaseParameters;
-use crate::exchange::traits::stream::{ExchangeWs, Subscriptions};
+use openlimits_exchange::errors::OpenLimitsError;
+use crate::model::websocket::ChannelType;
+use crate::CoinbaseParameters;
+use openlimits_exchange::traits::stream::{ExchangeWs, Subscriptions};
 use futures::stream::BoxStream;
 use std::sync::Mutex;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};

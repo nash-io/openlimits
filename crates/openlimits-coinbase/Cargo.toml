@@ -1,0 +1,25 @@
+[package]
+name = "openlimits-coinbase"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+openlimits-exchange = "0.2.0"
+rust_decimal = "1.14.3"
+async-trait = "0.1"
+serde = { version = "1.0", features = ["derive"] }
+futures = "0.3"
+futures-util = "0.3"
+chrono = { version = "0.4", features = ["std", "serde"] }
+tokio = { version = "1.0", features = ["full"] }
+tokio-tungstenite = { version = "0.13", features = ["tls"] }
+hmac = "0.8.1"
+reqwest = { version = "0.11", features = ["json", "blocking"] }
+sha2 = "0.9.1"
+url = "2.1.1"
+thiserror = "1.0.20"
+serde_json = "1.0"
+serde_urlencoded = "0.7.0"
+base64 = "0.13"

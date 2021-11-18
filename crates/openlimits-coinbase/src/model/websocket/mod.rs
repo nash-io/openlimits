@@ -1,9 +1,9 @@
-use crate::errors::OpenLimitsError;
-use crate::model::websocket::OpenLimitsWebSocketMessage;
-use crate::model::websocket::WebSocketResponse;
-use crate::model::AskBid;
-use crate::model::OrderBookResponse;
-use super::shared::Result;
+use openlimits_exchange::errors::OpenLimitsError;
+use openlimits_exchange::model::websocket::OpenLimitsWebSocketMessage;
+use openlimits_exchange::model::websocket::WebSocketResponse;
+use openlimits_exchange::model::AskBid;
+use openlimits_exchange::model::OrderBookResponse;
+use openlimits_exchange::shared::Result;
 use std::convert::{TryFrom, TryInto};
 
 use super::OrderSide;

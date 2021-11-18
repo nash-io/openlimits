@@ -22,8 +22,8 @@ num_bigint = ["nash-protocol/num_bigint", "nash-native-client/num_bigint"]
 
 [dependencies]
 async-trait = "0.1"
-base64 = "0.13"
-chrono = { version = "0.4", features = ["std", "serde"] }
+#base64 = "0.13"
+#chrono = { version = "0.4", features = ["std", "serde"] }
 dotenv = "0.15"
 futures = "0.3"
 futures-util = "0.3"
@@ -49,6 +49,7 @@ nash-native-client = { version = "0.2.0", default-features = false, features = [
 pyo3 = { version = "0.12.3", optional = true }
 openlimits-binance = "0.2.0"
 openlimits-exchange = "0.2.0"
+openlimits-coinbase = { path = "crates/openlimits-coinbase" }
 # ligen-macro = { path = "../../sensorial/systems/ligen/ligen/macro", optional = true }
 # ligen        = { path = "../../sensorial/systems/ligen/ligen", optional = true }
 lazy_static = "1.4.0"
