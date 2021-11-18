@@ -1,0 +1,27 @@
+name = "openlimits-nash"
+version = "0.2.0"
+authors = ["Danilo Guanabara <danilo@sensorial.systems>"]
+edition = "2018"
+description = "Nash implementation for OpenLimits."
+license = "BSD-2-Clause"
+repository = "https://github.com/nash-io/openlimits"
+keywords = ["cryptocurrency", "exchange", "openlimits", "api"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = ["rust_gmp", "rustcrypto"]
+rustcrypto = ["nash-protocol/rustcrypto"]
+libsecp256k1 = ["nash-protocol/libsecp256k1"]
+rust_gmp = ["nash-protocol/rust_gmp", "nash-native-client/rust_gmp"]
+num_bigint = ["nash-protocol/num_bigint", "nash-native-client/num_bigint"]
+
+[dependencies]
+openlimits-exchange = "0.2.0"
+async-trait = "0.1"
+rust_decimal = "1.14.3"
+tokio-stream = "0.1"
+tokio = { version = "1.0", features = ["full"] }
+futures = "0.3"
+nash-protocol = { version = "0.2.0", default-features = false }
+nash-native-client = { version = "0.2.1", default-features = false }

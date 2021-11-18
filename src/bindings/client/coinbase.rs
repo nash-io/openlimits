@@ -1,6 +1,6 @@
 use crate::bindings::string::FFIString;
 use crate::bindings::environment::Environment;
-use crate::exchange::coinbase::{CoinbaseParameters, CoinbaseCredentials};
+use crate::{CoinbaseParameters, CoinbaseCredentials};
 use ligen::marshalling::MarshalFrom;
 use ligen_macro::inner_ligen;
 

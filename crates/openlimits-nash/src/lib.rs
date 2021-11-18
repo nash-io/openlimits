@@ -10,13 +10,13 @@ pub use nash_credentials::NashCredentials;
 pub use nash_parameters::NashParameters;
 pub use nash_websocket::NashWebsocket;
 pub use utils::client_from_params_failable;
-pub use super::shared;
+pub use openlimits_exchange::shared;
 
 use std::convert::TryInto;
 use async_trait::async_trait;
 use nash_native_client::Client;
 use rust_decimal::prelude::*;
-use crate::{
+use openlimits_exchange::{
     errors::OpenLimitsError,
     model::{
         Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle, GetHistoricRatesRequest,
@@ -26,7 +26,7 @@ use crate::{
         Ticker, Trade, TradeHistoryRequest,
     },
 };
-use super::shared::Result;
+use openlimits_exchange::shared::Result;
 use openlimits_exchange::traits::info::ExchangeInfo;
 use openlimits_exchange::traits::info::ExchangeInfoRetrieval;
 use openlimits_exchange::traits::Exchange;
@@ -34,7 +34,7 @@ use openlimits_exchange::traits::ExchangeMarketData;
 use openlimits_exchange::traits::ExchangeAccount;
 use openlimits_exchange::traits::info::MarketPairInfo;
 use openlimits_exchange::traits::info::MarketPairHandle;
-use crate::model::market_pair::MarketPair;
+use openlimits_exchange::model::market_pair::MarketPair;
 use openlimits_exchange::MissingImplementationContent;
 
 /// This struct is the main struct of this module and it is used for communications with the nash openlimits-exchange

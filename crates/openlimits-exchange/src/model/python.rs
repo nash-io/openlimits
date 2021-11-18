@@ -1,7 +1,7 @@
 use super::websocket::{OpenLimitsWebSocketMessage, Subscription};
 use crate::exchange::any::InitAnyExchange;
 use crate::exchange::binance::{BinanceCredentials, BinanceParameters};
-use crate::exchange::coinbase::{CoinbaseCredentials, CoinbaseParameters};
+use crate::{CoinbaseCredentials, CoinbaseParameters};
 use crate::exchange::nash::{NashCredentials, NashParameters};
 use crate::Environment;
 use crate::model::{Interval, Paginator, TimeInForce};

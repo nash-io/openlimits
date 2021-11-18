@@ -1,15 +1,13 @@
 use rust_decimal::prelude::*;
-use crate::exchange::{
-    coinbase::model::{
-        Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
-        OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, OrderTimeInForce,
-        Paginator,
-    },
+use crate::model::{
+    Account, CancelAllOrders, CancelOrder, Fill, GetFillsReq, GetOrderRequest, Order,
+    OrderRequest, OrderRequestMarketType, OrderRequestType, OrderSide, OrderTimeInForce,
+    Paginator,
 };
-use crate::exchange::traits::info::MarketPairInfo;
+use openlimits_exchange::traits::info::MarketPairInfo;
 use super::BaseClient;
 use super::shared::Result;
-use crate::exchange::coinbase::model::MarketPair;
+use crate::model::MarketPair;
 
 impl BaseClient {
     pub async fn get_account(&self, paginator: Option<&Paginator>) -> Result<Vec<Account>> {

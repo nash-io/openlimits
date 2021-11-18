@@ -3,11 +3,11 @@ use async_trait::async_trait;
 use futures::stream::{BoxStream, SelectAll, Stream, StreamExt};
 pub use nash_native_client::{Client, Environment};
 use nash_protocol::protocol::ResponseOrError;
-use crate::errors::OpenLimitsError;
-use crate::exchange::traits::stream::{ExchangeWs, Subscriptions};
+use openlimits_exchange::errors::OpenLimitsError;
+use openlimits_exchange::traits::stream::{ExchangeWs, Subscriptions};
 use super::NashParameters;
 use super::utils::*;
-use super::shared::Result;
+use openlimits_exchange::shared::Result;
 use nash_protocol::protocol::subscriptions::{SubscriptionRequest, SubscriptionResponse};
 
 /// This struct represents a websocket connection

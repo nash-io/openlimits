@@ -32,7 +32,7 @@ use async_trait::async_trait;
 use chrono::Duration;
 use client::BaseClient;
 use transport::Transport;
-use crate::{
+use openlimits_exchange::{
     errors::OpenLimitsError,
     model::{
         AskBid, Balance, CancelAllOrdersRequest, CancelOrderRequest, Candle,
@@ -42,11 +42,10 @@ use crate::{
         Paginator, Side, Ticker, TimeInForce, Trade, TradeHistoryRequest,
     },
 };
-use crate::exchange::traits::info::{ExchangeInfoRetrieval, MarketPairInfo, MarketPairHandle};
-use crate::exchange::traits::Exchange;
-use crate::prelude::*;
-use super::shared::Result;
-use super::shared::timestamp_to_naive_datetime;
+use openlimits_exchange::traits::info::*;
+use openlimits_exchange::traits::*;
+use openlimits_exchange::shared::Result;
+use openlimits_exchange::shared::timestamp_to_naive_datetime;
 
 pub mod client;
 pub mod model;
@@ -58,9 +57,9 @@ mod coinbase_parameters;
 pub use coinbase_content_error::CoinbaseContentError;
 pub use coinbase_credentials::CoinbaseCredentials;
 pub use coinbase_parameters::CoinbaseParameters;
-pub use super::shared;
+pub use openlimits_exchange::shared;
 use openlimits_exchange::exchange::Environment;
-pub use crate::exchange::coinbase::client::websocket::CoinbaseWebsocket;
+pub use crate::client::websocket::CoinbaseWebsocket;
 use openlimits_exchange::model::market_pair::MarketPair;
 
 #[derive(Clone)]
@@ -129,7 +128,7 @@ impl ExchangeInfoRetrieval for Coinbase {
     }
 
     async fn get_pair(&self, name: &MarketPair) -> Result<MarketPairHandle> {
-        let name = crate::exchange::coinbase::model::MarketPair::from(name.clone()).0;
+        let name = crate::model::MarketPair::from(name.clone()).0;
         self.exchange_info.get_pair(&name)
     }
 }
@@ -386,7 +385,7 @@ impl TryFrom<&GetHistoricRatesRequest> for model::CandleRequestParams {
 impl From<&GetOrderHistoryRequest> for model::GetOrderRequest {
     fn from(req: &GetOrderHistoryRequest) -> Self {
         Self {
-            product_id: req.market_pair.clone().map(|market| crate::exchange::coinbase::model::MarketPair::from(market).0),
+            product_id: req.market_pair.clone().map(|market| crate::model::MarketPair::from(market).0),
             paginator: req.paginator.clone().map(|p| p.into()),
             status: None,
         }
@@ -477,7 +476,7 @@ impl From<&TradeHistoryRequest> for model::GetFillsReq {
         Self {
             order_id: req.order_id.clone(),
             paginator: req.paginator.clone().map(|p| p.into()),
-            product_id: req.market_pair.clone().map(|market| crate::exchange::coinbase::model::MarketPair::from(market).0),
+            product_id: req.market_pair.clone().map(|market| crate::model::MarketPair::from(market).0),
         }
     }
 }
