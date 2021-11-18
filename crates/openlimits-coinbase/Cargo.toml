@@ -1,6 +1,6 @@
 [package]
 name = "openlimits-coinbase"
-version = "0.2.0"
+version = "0.2.1-alpha.0"
 authors = ["Danilo Guanabara <danilo@sensorial.systems>"]
 edition = "2018"
 description = "Coinbase implementation for OpenLimits."
