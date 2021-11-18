@@ -6,6 +6,15 @@ use std::fmt;
 pub enum Currency {
     BTC,
     ETH,
+    XRP,
+    FIL,
+    DASH,
+    CNY,
+    SOL,
+    USD,
+    USDC,
+    USDT,
+    BUSD,
     Other(String)
 }
 
