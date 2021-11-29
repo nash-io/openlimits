@@ -4,7 +4,7 @@ use openlimits::{
     OpenLimits,
     exchange::traits::{
         Exchange,
-        stream::ExchangeWs
+        stream::ExchangeStream
     }
 };
 use openlimits_exchange::exchange::Environment;

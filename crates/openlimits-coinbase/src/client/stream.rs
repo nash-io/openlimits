@@ -8,13 +8,11 @@ use serde::{Deserialize, Serialize};
 use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
-use crate::model::websocket::{
-    Channel, CoinbaseSubscription, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd,
-};
+use crate::model::websocket::{Channel, CoinbaseSubscription, CoinbaseWebsocketMessage, Subscribe, SubscribeCmd};
 use openlimits_exchange::errors::OpenLimitsError;
 use crate::model::websocket::ChannelType;
 use crate::CoinbaseParameters;
-use openlimits_exchange::traits::stream::{ExchangeWs, Subscriptions};
+use openlimits_exchange::traits::stream::{ExchangeStream, Subscriptions};
 use futures::stream::BoxStream;
 use std::sync::Mutex;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
@@ -111,7 +109,7 @@ fn parse_message(ws_message: Message) -> Result<CoinbaseWebsocketMessage> {
 }
 
 #[async_trait]
-impl ExchangeWs for CoinbaseWebsocket {
+impl ExchangeStream for CoinbaseWebsocket {
     type InitParams = CoinbaseParameters;
     type Subscription = CoinbaseSubscription;
     type Response = CoinbaseWebsocketMessage;
@@ -145,25 +143,26 @@ impl ExchangeWs for CoinbaseWebsocket {
         let endpoint = url::Url::parse(ws_url).expect("Couldn't parse url.");
         let (ws_stream, _) = connect_async(endpoint).await?;
 
-        let (channels, product_ids) = match &subscription.as_slice()[0] {
+        let (channel_name, product_ids) = match &subscription.as_slice()[0] {
             CoinbaseSubscription::Level2(product_id) => (
-                vec![Channel::Name(ChannelType::Level2)],
+                ChannelType::Level2,
                 vec![product_id.clone()],
             ),
             CoinbaseSubscription::Heartbeat(product_id) => (
-                vec![Channel::Name(ChannelType::Heartbeat)],
+                ChannelType::Heartbeat,
                 vec![product_id.clone()],
             ),
             CoinbaseSubscription::Matches(product_id) => (
-                vec![Channel::Name(ChannelType::Matches)],
+                ChannelType::Matches,
                 vec![product_id.clone()]
             )
         };
+        let channels = vec![Channel::Name(channel_name.clone())];
         let subscribe = Subscribe {
             _type: SubscribeCmd::Subscribe,
             auth: None,
             channels,
-            product_ids,
+            product_ids: product_ids.clone(),
         };
         let subscribe = serde_json::to_string(&subscribe)?;
         let (mut sink, stream) = ws_stream.split();
@@ -178,8 +177,22 @@ impl ExchangeWs for CoinbaseWebsocket {
         if let Ok(mut senders) = self.disconnection_senders.lock() {
             senders.push(disconnection_sender);
         }
-        let s = stream.map(|message| parse_message(message?));
+        let mut s = stream.map(|message| parse_message(message?));
 
-        Ok(s.boxed())
+        let name = channel_name;
+        let product = Channel::WithProduct { name, product_ids };
+        let channels = vec![product];
+        let expected_response = CoinbaseWebsocketMessage::Subscriptions { channels };
+
+        let response = s.next().await;
+        if let Some(Ok(response)) = response {
+            if response == expected_response {
+                Ok(s.boxed())
+            } else {
+                Err(OpenLimitsError::UnkownResponse(format!("Response: {:#?}, expected response: {:#?}", response, expected_response)))
+            }
+        } else {
+            Err(OpenLimitsError::UnkownResponse(format!("No response")))
+        }
     }
 }

@@ -16,7 +16,7 @@ use openlimits_exchange::{
     model::websocket::Subscription,
     model::websocket::WebSocketResponse,
 };
-use openlimits_exchange::traits::stream::{ExchangeWs, Subscriptions};
+use openlimits_exchange::traits::stream::{ExchangeStream, Subscriptions};
 use super::shared::Result;
 use openlimits_exchange::exchange::Environment;
 
@@ -37,7 +37,7 @@ pub struct BinanceWebsocket {
 }
 
 #[async_trait]
-impl ExchangeWs for BinanceWebsocket {
+impl ExchangeStream for BinanceWebsocket {
     type InitParams = BinanceParameters;
     type Subscription = BinanceSubscription;
     type Response = BinanceWebsocketMessage;

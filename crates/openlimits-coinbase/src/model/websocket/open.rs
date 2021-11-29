@@ -2,7 +2,7 @@ use rust_decimal::prelude::Decimal;
 use serde::Deserialize;
 use super::shared::string_to_decimal;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Open {
     pub time: String,
     pub product_id: String,

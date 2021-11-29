@@ -4,15 +4,15 @@ use crate::model::websocket::WebSocketResponse;
 use crate::model::websocket::Subscription;
 use super::shared::Result;
 use super::CallbackHandle;
-use super::ExchangeWs;
+use super::ExchangeStream;
 use super::Subscriptions;
 
 #[derive(Constructor)]
-pub struct OpenLimitsWs<E: ExchangeWs> {
+pub struct OpenLimitStream<E: ExchangeStream> {
     pub websocket: E,
 }
 
-impl<E: ExchangeWs> OpenLimitsWs<E> {
+impl<E: ExchangeStream> OpenLimitStream<E> {
     pub async fn instantiate(params: E::InitParams) -> Result<Self> {
         let websocket = E::new(params).await?;
         Ok(Self { websocket })

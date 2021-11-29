@@ -3,7 +3,7 @@ use super::shared::string_to_opt_decimal;
 use rust_decimal::prelude::Decimal;
 use serde::Deserialize;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(tag = "order_type")]
 #[serde(rename_all = "camelCase")]
 pub enum Received {

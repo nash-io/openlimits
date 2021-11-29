@@ -3,12 +3,12 @@
 
 mod nash_credentials;
 mod nash_parameters;
-mod nash_websocket;
+mod nash_stream;
 mod utils;
 
 pub use nash_credentials::NashCredentials;
 pub use nash_parameters::NashParameters;
-pub use nash_websocket::NashWebsocket;
+pub use nash_stream::NashWebsocket;
 pub use utils::client_from_params_failable;
 pub use openlimits_exchange::shared;
 

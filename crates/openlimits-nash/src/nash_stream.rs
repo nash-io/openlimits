@@ -4,7 +4,7 @@ use futures::stream::{BoxStream, SelectAll, Stream, StreamExt};
 pub use nash_native_client::{Client, Environment};
 use nash_protocol::protocol::ResponseOrError;
 use openlimits_exchange::errors::OpenLimitsError;
-use openlimits_exchange::traits::stream::{ExchangeWs, Subscriptions};
+use openlimits_exchange::traits::stream::{ExchangeStream, Subscriptions};
 use super::NashParameters;
 use super::utils::*;
 use openlimits_exchange::shared::Result;
@@ -27,7 +27,7 @@ impl Stream for NashWebsocket {
 }
 
 #[async_trait]
-impl ExchangeWs for NashWebsocket {
+impl ExchangeStream for NashWebsocket {
     type InitParams = NashParameters;
     type Subscription = SubscriptionRequest;
     type Response = SubscriptionResponse;

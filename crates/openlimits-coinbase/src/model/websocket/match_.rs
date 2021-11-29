@@ -3,7 +3,7 @@ use serde::Deserialize;
 use super::OrderSide;
 use super::shared::string_to_decimal;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct Match {
     pub trade_id: usize,
     pub sequence: usize,

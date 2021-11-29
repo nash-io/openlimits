@@ -65,7 +65,19 @@ impl TryFrom<CoinbaseWebsocketMessage> for WebSocketResponse<CoinbaseWebsocketMe
             CoinbaseWebsocketMessage::Match(match_) => {
                 Ok(WebSocketResponse::Generic(match_.into()))
             },
+            CoinbaseWebsocketMessage::Full(full) => {
+                Ok(WebSocketResponse::Generic(full.into()))
+            },
             _ => Ok(WebSocketResponse::Raw(value))
+        }
+    }
+}
+
+impl From<Full> for OpenLimitsWebSocketMessage {
+    fn from(from: Full) -> Self {
+        match from {
+            Full::Match(match_) => match_.into(),
+            _ => todo!("Full is not fully implemented :)")
         }
     }
 }
@@ -124,7 +136,7 @@ impl TryFrom<Level2> for OpenLimitsWebSocketMessage {
                     update_id,
                     last_update_id,
                 };
-                OpenLimitsWebSocketMessage::OrderBookDiff(order_book_response)
+                OpenLimitsWebSocketMessage::OrderBook(order_book_response)
             }
         })
     }

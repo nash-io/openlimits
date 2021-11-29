@@ -18,11 +18,12 @@ rust_gmp = ["nash-protocol/rust_gmp", "nash-native-client/rust_gmp"]
 num_bigint = ["nash-protocol/num_bigint", "nash-native-client/num_bigint"]
 
 [dependencies]
-openlimits-exchange = "0.2.0"
+openlimits-exchange = { path = "../openlimits-exchange" }
 async-trait = "0.1"
 rust_decimal = "1.14.3"
 tokio-stream = "0.1"
 tokio = { version = "1.0", features = ["full"] }
 futures = "0.3"
-nash-protocol = { version = "0.2.0", default-features = false }
-nash-native-client = { version = "0.2.1", default-features = false }
+#nash-protocol = { version = "0.2.0", default-features = false }
+nash-protocol = { path = "../../../nash-rust/nash-protocol", default-features = false }
+nash-native-client = { path = "../../../nash-rust/nash-native-client", default-features = false }

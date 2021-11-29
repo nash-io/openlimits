@@ -4,7 +4,7 @@ use super::OrderSide;
 use super::Reason;
 use super::shared::string_to_decimal;
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone, PartialEq)]
 #[serde(untagged)]
 pub enum Done {
     Limit {

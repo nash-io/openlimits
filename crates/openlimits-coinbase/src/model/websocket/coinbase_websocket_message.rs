@@ -8,7 +8,7 @@ use super::InputMessage;
 use super::Full;
 
 /// This enum represents a coinbase websocket message
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum CoinbaseWebsocketMessage {
     Subscriptions {
         channels: Vec<Channel>,

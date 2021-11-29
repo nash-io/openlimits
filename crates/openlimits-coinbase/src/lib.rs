@@ -59,7 +59,7 @@ pub use coinbase_credentials::CoinbaseCredentials;
 pub use coinbase_parameters::CoinbaseParameters;
 pub use openlimits_exchange::shared;
 use openlimits_exchange::exchange::Environment;
-pub use crate::client::websocket::CoinbaseWebsocket;
+pub use crate::client::stream::CoinbaseWebsocket;
 use openlimits_exchange::model::market_pair::MarketPair;
 
 #[derive(Clone)]
