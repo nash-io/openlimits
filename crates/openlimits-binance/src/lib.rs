@@ -35,7 +35,7 @@ pub use transport::*;
 
 pub mod client;
 
-pub use client::websocket::BinanceWebsocket;
+pub use client::stream::BinanceWebsocket;
 use openlimits_exchange::traits::info::{ExchangeInfo, ExchangeInfoRetrieval, MarketPairInfo, MarketPairHandle};
 use openlimits_exchange::traits::{Exchange, ExchangeMarketData, ExchangeAccount};
 use openlimits_exchange::exchange::Environment;

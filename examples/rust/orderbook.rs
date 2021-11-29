@@ -1,5 +1,5 @@
 use openlimits::prelude::*;
-use openlimits::exchange::coinbase::client::websocket::CoinbaseWebsocket;
+use openlimits::exchange::coinbase::client::stream::CoinbaseWebsocket;
 use openlimits::exchange::coinbase::CoinbaseParameters;
 use openlimits::model::websocket::OpenLimitsWebSocketMessage::OrderBook;
 use openlimits::model::websocket::Subscription::OrderBookUpdates;

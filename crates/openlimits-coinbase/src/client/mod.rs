@@ -3,7 +3,7 @@
 mod account;
 mod market;
 mod base_client;
-pub mod websocket;
+pub mod stream;
 
 pub use base_client::BaseClient;
 pub use super::shared;

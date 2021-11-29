@@ -1,13 +1,13 @@
 use futures::stream::StreamExt;
 
 use openlimits::model::websocket::{Subscription, WebSocketResponse, OpenLimitsWebSocketMessage};
-use openlimits::exchange::traits::stream::ExchangeWs;
+use openlimits::exchange::traits::stream::ExchangeStream;
 use openlimits_exchange::model::market_pair::MarketPair;
 use openlimits::exchange::model::currency::Currency;
 use tokio::time::timeout;
 use std::time::Duration;
 
-pub async fn orderbook(ws: &impl ExchangeWs) {
+pub async fn orderbook(ws: &impl ExchangeStream) {
     let market_pair = MarketPair(Currency::ETH, Currency::BTC);
     let mut stream = ws
         .create_stream(&[Subscription::OrderBookUpdates(market_pair)])
@@ -30,7 +30,7 @@ pub async fn orderbook(ws: &impl ExchangeWs) {
     }
 }
 
-pub async fn trades(ws: &impl ExchangeWs) {
+pub async fn trades(ws: &impl ExchangeStream) {
     let market_pair = MarketPair(Currency::ETH, Currency::BTC);
     let mut stream = ws
         .create_stream(&[Subscription::Trades(market_pair)])

@@ -12,7 +12,7 @@ use crate::model::websocket::{Channel, CoinbaseSubscription, CoinbaseWebsocketMe
 use openlimits_exchange::errors::OpenLimitsError;
 use crate::model::websocket::ChannelType;
 use crate::CoinbaseParameters;
-use openlimits_exchange::traits::stream::{ExchangeWs, Subscriptions};
+use openlimits_exchange::traits::stream::{ExchangeStream, Subscriptions};
 use futures::stream::BoxStream;
 use std::sync::Mutex;
 use tokio::sync::mpsc::{unbounded_channel, UnboundedSender};
@@ -109,7 +109,7 @@ fn parse_message(ws_message: Message) -> Result<CoinbaseWebsocketMessage> {
 }
 
 #[async_trait]
-impl ExchangeWs for CoinbaseWebsocket {
+impl ExchangeStream for CoinbaseWebsocket {
     type InitParams = CoinbaseParameters;
     type Subscription = CoinbaseSubscription;
     type Response = CoinbaseWebsocketMessage;

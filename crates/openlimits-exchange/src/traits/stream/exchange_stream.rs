@@ -14,7 +14,7 @@ use super::CallbackHandle;
 
 
 #[async_trait]
-pub trait ExchangeWs: Send + Sync + Sized {
+pub trait ExchangeStream: Send + Sync + Sized {
     type InitParams: Clone + Send + Sync + 'static;
     type Subscription: From<Subscription> + Send + Sync + Sized + Clone;
     type Response: TryInto<WebSocketResponse<Self::Response>, Error = OpenLimitsError>
