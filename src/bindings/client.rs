@@ -1,6 +1,6 @@
 use runtime::RUNTIME;
+use openlimits_coinbase::{Coinbase, CoinbaseParameters};
 
-use crate::{Coinbase, CoinbaseParameters};
 // use crate::prelude::*;
 
 pub mod coinbase;

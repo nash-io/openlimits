@@ -28,29 +28,10 @@ inner_ligen! {
             )
         ),
     )
-
-    // csharp(
-    //     marshal(
-    //         FFIString(
-    //             name = "string",
-    //             MarshalAs = "UnmanagedType.LPStr"
-    //         ),
-    //         String(
-    //             name = "string",
-    //             MarshalAs = "UnmanagedType.LPStr"
-    //         )
-    //     ),
-    // )
 }
 
 pub struct FFIString {
     string: CString
-}
-
-impl Drop for FFIString {
-    fn drop(&mut self) {
-        println!("Why is {} being dropped?", self.get_pointer() as u64);
-    }
 }
 
 impl FFIString {
@@ -62,9 +43,7 @@ impl FFIString {
     }
 
     pub fn get_pointer(&self) -> *const i8 {
-        let ptr = self.string.as_ptr();
-        println!("ptr: {} of {}", ptr as u64, self.string.to_string_lossy());
-        ptr
+        self.string.as_ptr()
     }
 }
 

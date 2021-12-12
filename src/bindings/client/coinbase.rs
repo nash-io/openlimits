@@ -1,6 +1,6 @@
 use crate::bindings::string::FFIString;
 use crate::bindings::environment::Environment;
-use crate::{CoinbaseParameters, CoinbaseCredentials};
+use openlimits_coinbase::{CoinbaseParameters, CoinbaseCredentials};
 use ligen::marshalling::MarshalFrom;
 use ligen_macro::inner_ligen;
 
@@ -30,10 +30,6 @@ pub struct FFICoinbaseParameters {
 
 impl MarshalFrom<FFICoinbaseParameters> for CoinbaseParameters {
     fn marshal_from(from: FFICoinbaseParameters) -> Self {
-        let sandbox = match from.environment {
-            Environment::Sandbox => true,
-            _ => false
-        };
         let api_key = String::marshal_from(from.apiKey);
         let api_secret = String::marshal_from(from.apiSecret);
         let passphrase = String::marshal_from(from.passphrase);
@@ -42,6 +38,7 @@ impl MarshalFrom<FFICoinbaseParameters> for CoinbaseParameters {
         } else {
             None
         };
-        Self { sandbox, credentials }
+        let environment = from.environment.into();
+        Self { environment, credentials }
     }
 }
