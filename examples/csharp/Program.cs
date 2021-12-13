@@ -11,8 +11,9 @@ namespace Example
         static public void Main(string[] args)
         {
             Console.WriteLine("String: " + Client.GetName());
-            CoinbaseParameters parameters = new CoinbaseParameters(Environment.Production, "a", "b", "c");
-            Client client = Client.Coinbase(parameters);
+            Console.WriteLine("Appended string: " + Client.AppendString("estringue"));
+//            CoinbaseParameters parameters = new CoinbaseParameters(Environment.Production, "a", "b", "c");
+//            Client client = Client.Coinbase(parameters);
 //            Console.WriteLine(Decimal.Parse(askBid.qty));
 //            Console.WriteLine(Decimal.Parse(askBid.qty));
 //            Console.WriteLine(askBid.price);

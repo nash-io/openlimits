@@ -44,6 +44,10 @@ impl Client {
         "Abc".into()
     }
 
+    pub fn append_string(s: String) -> String {
+        format!("hello {}", s)
+    }
+
     // pub fn order_book(self, market_pair: String) -> OrderBookResponse {
     //     unsafe {
     //         let client = self.client.as_ref().unwrap();
