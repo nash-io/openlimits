@@ -1,4 +1,4 @@
-use ligen::marshalling::{MarshalFrom, MarshalInto};
+use ligen::traits::marshalling::{MarshalFrom, MarshalInto};
 use ligen_macro::inner_ligen;
 use rust_decimal::Decimal;
 use std::ffi::{CString, CStr};

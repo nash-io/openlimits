@@ -4,14 +4,18 @@ fn main() {
     {
         use ligen::prelude::*;
         use ligen_csharp::CSharpGenerator;
+        use ligen_cargo::CargoProject;
+        use ligen_rust::RustGenerator;
 
-        match Project::current() {
+        match CargoProject::current().and_then(Project::try_from) {
             Ok(project) => {
                 println!("Generating C# bindings...");
+                let rust_generator = RustGenerator::default();
                 let csharp_generator = CSharpGenerator::default();
-                csharp_generator.generate(&project).expect("Failed to generate C# bindings.");
+                rust_generator.generate(&project).expect("Failed to generate Rust interface.");
+                csharp_generator.generate(&project).expect("Failed to generate C# interface.");
             },
-            Err(e) => println!("e: {:#?}", e)
+            Err(e) => panic!("e: {:#?}", e)
         }
     }
 }

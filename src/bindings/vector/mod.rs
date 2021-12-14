@@ -1,5 +1,5 @@
 use ligen_macro::inner_ligen;
-use ligen::marshalling::MarshalFrom;
+use ligen::traits::marshalling::MarshalFrom;
 use std::ptr::null_mut;
 
 inner_ligen! {

@@ -2,7 +2,7 @@ use crate::model::OrderBookResponse;
 use crate::bindings::vector::FFIVector;
 use ligen_macro::inner_ligen;
 use std::ptr::null_mut;
-use ligen::marshalling::MarshalFrom;
+use ligen::traits::marshalling::MarshalFrom;
 use crate::bindings::ask_bid::FFIAskBid;
 
 // # Replicate generics logic to struct fields.

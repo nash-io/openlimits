@@ -1,4 +1,4 @@
-use ligen::marshalling::{MarshalFrom, MarshalInto};
+use ligen::traits::marshalling::{MarshalFrom, MarshalInto};
 use crate::model::AskBid;
 use rust_decimal::Decimal;
 use std::str::FromStr;
