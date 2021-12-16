@@ -1,0 +1,16 @@
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\bin\Debug\net5.0\test.exe
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\bin\Debug\net5.0\test.deps.json
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\bin\Debug\net5.0\test.runtimeconfig.json
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\bin\Debug\net5.0\test.runtimeconfig.dev.json
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\bin\Debug\net5.0\test.dll
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\bin\Debug\net5.0\ref\test.dll
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\bin\Debug\net5.0\test.pdb
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\obj\Debug\net5.0\test.csproj.AssemblyReference.cache
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\obj\Debug\net5.0\test.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\obj\Debug\net5.0\test.AssemblyInfoInputs.cache
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\obj\Debug\net5.0\test.AssemblyInfo.cs
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\obj\Debug\net5.0\test.csproj.CoreCompileInputs.cache
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\obj\Debug\net5.0\test.dll
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\obj\Debug\net5.0\ref\test.dll
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\obj\Debug\net5.0\test.pdb
+C:\Users\dangu\dev\nash-io\openlimits\examples\test\obj\Debug\net5.0\test.genruntimeconfig.cache

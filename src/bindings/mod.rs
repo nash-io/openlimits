@@ -1,6 +1,5 @@
 #![allow(non_snake_case)]
 
-pub mod string;
 pub mod environment;
 pub mod client;
 // pub mod ask_bid;

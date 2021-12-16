@@ -1,11 +1,6 @@
 use runtime::RUNTIME;
 use openlimits_coinbase::{Coinbase, CoinbaseParameters};
 
-// use crate::prelude::*;
-
-pub mod coinbase;
-
-
 mod runtime {
     use ligen_macro::inner_ligen;
 
@@ -61,4 +56,8 @@ impl Client {
     //         response.unwrap()
     //     }
     // }
+
+    pub fn test() {
+        println!("Hello from Rust!");
+    }
 }
