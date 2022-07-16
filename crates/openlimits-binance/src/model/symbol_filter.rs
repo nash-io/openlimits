@@ -7,6 +7,13 @@ use super::shared::string_to_decimal;
 #[serde(tag = "filterType", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SymbolFilter {
     #[serde(rename_all = "camelCase")]
+    TrailingDelta {
+        min_trailing_above_delta: Decimal,
+        max_trailing_above_delta: Decimal,
+        min_trailing_below_delta: Decimal,
+        max_trailing_below_delta: Decimal
+    },
+    #[serde(rename_all = "camelCase")]
     LotSize {
         #[serde(with = "string_to_decimal")]
         min_qty: Decimal,

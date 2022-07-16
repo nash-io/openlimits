@@ -7,4 +7,5 @@ use serde::Serialize;
 pub enum RateLimitType {
     Orders,
     RequestWeight,
+    RawRequests
 }
