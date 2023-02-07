@@ -15,7 +15,7 @@ path = "examples/rust/orderbook.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-# bindings = ["ligen", "ligen-macro", "ligen-csharp"]
+bindings = ["ligen", "ligen-macro", "ligen-cargo", "ligen-rust", "ligen-csharp"]
 default = ["rust_gmp"]
 rust_gmp = ["openlimits-nash/rust_gmp"]
 num_bigint = ["openlimits-nash/num_bigint"]
@@ -25,16 +25,20 @@ openlimits-binance  = "0.3.0"
 openlimits-exchange = "0.3.0"
 openlimits-coinbase = "0.3.0"
 openlimits-nash = "0.3.0"
-# ligen-macro = { path = "../../sensorial/systems/ligen/ligen/macro", optional = true }
-# ligen        = { path = "../../sensorial/systems/ligen/ligen", optional = true }
-# lazy_static = "1.4.0"
+ligen-macro = { path = "../../sensorial/systems/ligen/ligen/macro", optional = true }
+ligen        = { path = "../../sensorial/systems/ligen/ligen", optional = true }
+lazy_static = "1.4.0"
+rust_decimal = "1.17.0"
+tokio = { version = "1.0", features = ["full"] }
 
 [dev-dependencies]
 rust_decimal = "1.14.3"
-tokio = { version = "1.0", features = ["full"] }
 futures = "0.3"
 dotenv = "0.15.0"
 
 [build-dependencies]
-# ligen        = { path = "../../sensorial/systems/ligen/ligen", optional = true }
-# ligen-csharp = { path = "../../sensorial/systems/ligen/generators/ligen-csharp", optional = true }
+ligen        = { path = "../../sensorial/systems/ligen/ligen", optional = true }
+ligen-cargo  = { path = "../../sensorial/systems/ligen/generators/ligen-cargo", optional = true }
+ligen-rust   = { path = "../../sensorial/systems/ligen/generators/ligen-rust", optional = true }
+ligen-csharp = { path = "../../sensorial/systems/ligen/generators/ligen-csharp", optional = true }
+serde_json = "1.0.73"

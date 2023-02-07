@@ -10,26 +10,23 @@ namespace Example
     {
         static public void Main(string[] args)
         {
-            var ffi_string = Client.FFIGetName();
-            Console.WriteLine(ffi_string);
-//            var ptr = FFIString.FFIGetPointer(ffi_string);
-//            Console.WriteLine(ptr);
-            return;
             CoinbaseParameters parameters = new CoinbaseParameters(Environment.Production, "a", "b", "c");
-            string key = parameters.apiKey;
-            Client client = Client.Coinbase(parameters);
+            Console.WriteLine("String: " + Client.GetName());
+            Console.WriteLine("Appended string: " + Client.AppendString("estringue"));
+            Console.WriteLine("Appended strings in structure: " + Client.AppendParameters(parameters));
+//            Client client = Client.Coinbase(parameters);
 //            Console.WriteLine(Decimal.Parse(askBid.qty));
 //            Console.WriteLine(Decimal.Parse(askBid.qty));
 //            Console.WriteLine(askBid.price);
-            var list = new List<ulong>();
-            list.Add(1);
-            list.Add(2);
-            list.Add(3);
-            Console.WriteLine(client.Sum(list));
-            var result = client.Mul(list, 2);
-            foreach (var value in result) {
-                Console.WriteLine(value);
-            }
+//            var list = new List<ulong>();
+//            list.Add(1);
+//            list.Add(2);
+//            list.Add(3);
+//            Console.WriteLine(client.Sum(list));
+//            var result = client.Mul(list, 2);
+//            foreach (var value in result) {
+//                Console.WriteLine(value);
+//            }
 
 //            Test.Display(person);
 //            NashClientConfig config = NashClientConfig.Unauthenticated(0, NashEnvironment.Production, 1000);
